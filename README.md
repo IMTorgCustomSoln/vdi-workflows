@@ -9,5 +9,7 @@ System consists of the following applications:
 
 Applications use independent dependencies:
 
+* pdfjs-dist
 * EnteroDoc
+* URL
 * vdi-workspace-io

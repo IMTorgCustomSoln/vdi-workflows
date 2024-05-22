@@ -36,8 +36,11 @@ class WorkflowASR(Workflow):
     def __init__(self):
         CONFIG = {}
         try:
+            #user input
             CONFIG['INPUT_DIR'] = Path('./tests/data/samples/')
             CONFIG['WORKING_DIR'] = Path('./tests/tmp/')
+
+            #system input
             CONFIG['START_TIME'] = None
             CONFIG['LOGGER'] = logger
             CONFIG['BATCH_COUNT'] = 25
@@ -133,7 +136,8 @@ class WorkflowASR(Workflow):
         self.config['START_TIME'] = time.time()
         for task in self.tasks:
             task.run()
-        self.config['LOGGER'].info(f"End process, execution took: {round(time.time() - self.config['START_TIME'], 3)}sec")
+        self.config['LOGGER'].info(f"end process, execution took: {round(time.time() - self.config['START_TIME'], 3)}sec")
+        return True
 
     def report(self):
         """

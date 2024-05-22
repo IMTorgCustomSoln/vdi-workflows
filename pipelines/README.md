@@ -7,14 +7,17 @@
     - HF_TOKEN - huggingface account
     - HF_HOME - models dir
     - CURL_CA_BUNDLE - public key (.pem)
-* set the following in `src/workflow.py`
+* ensure folders are populated:
+    - `logs/`
+    - `pretrained_models/`
+* set the following in `src/workflow_*.py`
     - `CONFIG['INPUT_DIR']` - location of input files
     - `CONFIG['WORKING_DIR']` - location for all files produced
 * choose the workflow file from the `workflows/` directory.
 * register it in the `main.py` file at `#register here`
 
 ```
-python main.py workflow-asr 
+python main.py workflow_asr prepare_workspace
 ```
 
 

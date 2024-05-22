@@ -22,7 +22,7 @@ from workflows import (
     workflow_asr
 )
 workflow_options = {
-    'workflow_asr': workflow_asr
+    'workflow_asr': workflow_asr.workflow_asr
     }
 
 
@@ -31,7 +31,8 @@ def main(args):
     """..."""
     config_env.config()
     if args.workflow in workflow_options.keys():
-        workflow_options[args.workflow].run()
+        workflow = workflow_options[args.workflow]
+        getattr(workflow, args.task)()
 
 
 
@@ -41,8 +42,9 @@ if __name__ == "__main__":
     """ This is executed when run from the command line """
     parser = argparse.ArgumentParser()
     parser.add_argument("workflow", 
-                        help="Choose workflow from available files: `./workflows/workflow-*` ")
-   
+                        help="Choose workflow from available files: `./workflows/workflow_*` ")
+    parser.add_argument("task", 
+                        help="Choose task workflow should perform")
     parser.add_argument(
         "--version",
         action="version",

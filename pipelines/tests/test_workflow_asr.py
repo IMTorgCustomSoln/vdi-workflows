@@ -15,13 +15,13 @@ def test_workflow_asr_prepare_models():
     assert True == True
 
 def test_workflow_asr_prepare_workspace():
-    workflow_asr.prepare_workspace()
-    assert True == True
+    check = workflow_asr.prepare_workspace()
+    assert check == True
 
 def test_workflow_asr_run():
-    workflow_asr.run()
-    assert True == True
+    check = workflow_asr.run()
+    assert check == True
 
 def test_workflow_asr_report():
-    workflow_asr.report()
-    assert True == True
+    check = workflow_asr.report()
+    assert check == True
