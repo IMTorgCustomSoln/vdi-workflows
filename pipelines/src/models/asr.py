@@ -66,7 +66,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                 'sampling_rate': sampling_rate, 
                 'chunks': file['chunks']
                 }
-            config['LOGGER'].info(f'processed file {idx} - {file_name}')
+            config['LOGGER'].info(f'asr-processing completed for file {idx} - {file_name}')
             dialogues.append(record)
     
     else:
@@ -89,59 +89,23 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                     dialogues[idx]['classifier'].append(result)
                 else:
                     dialogues[idx]['classifier'].append({})
+        config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
                
-
 
     #save
     from src.io import export
 
     save_json_paths = []
     if intermediate_save_dir:
-        for dialogue in dialogues:
+        for idx, dialogue in enumerate(dialogues):
             save_path = Path(intermediate_save_dir) / f'{dialogue["file_name"]}.json'
             try:
                 with open(save_path, 'w') as f:
                     json.dump(dialogue, f)
                 save_json_paths.append( str(save_path) )
+                config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
             except Exception as e:
                 print(e)
             #TODO:   dialogues.extend(processed_dialogues)   #combine records of previously processed dialogues
             
     return save_json_paths
-
-    """
-    #format and output
-    from src.modules import utils
-
-    pdfs = []
-    for dialogue in dialogues:
-        '''
-        #to file
-        output_name = Path('./tests/results') / f"{dialogue['file_name']}.pdf"
-        pdf = utils.output_to_pdf(
-            lines=dialogue['chunks'], 
-            filename=output_name,
-            output_type='file'
-        )
-        '''
-        #to string
-        pdf = utils.output_to_pdf(
-            dialogue=dialogue,
-            output_type='str'
-        )
-        if pdf!=None:
-            pdfs.append(pdf)
-
-    #TODO:change to zip file
-    '''
-    * prepare output by loading Workspace, then extracting schema
-    * fill-in key values
-    * (later: use EnteroDoc to extract info)
-    * 
-    * export and zip
-    '''
-    #utils.export_to_vdi_workspace(pdfs)
-
-    
-    return pdfs
-    """
