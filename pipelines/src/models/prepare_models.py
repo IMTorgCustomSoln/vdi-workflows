@@ -3,6 +3,7 @@
 Module Docstring
 
 """
+import torch
 
 from pathlib import Path
 import sys
@@ -21,12 +22,14 @@ def finetune():
     """..."""
 
     #config_env.config()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    logger.info(f'using device: {device}')
 
     #load model
     from setfit import SetFitModel
 
     model = SetFitModel.from_pretrained("BAAI/bge-small-en-v1.5")
-
+    model.to(device)
 
     #get train / test records
     from datasets import load_dataset, Dataset

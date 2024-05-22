@@ -9,6 +9,8 @@ __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
 
+import torch
+
 import os
 from pathlib import Path
 import json
@@ -18,6 +20,9 @@ import json
 
 def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_classify_only=False):
     """..."""
+    #env
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    config['LOGGER'].info(f'using device: {device}')
 
     #prepare data
     from datasets import Dataset, Audio
@@ -33,6 +38,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
         asr_pipeline = pipeline(
             task='automatic-speech-recognition', 
             model='openai/whisper-base',
+            device=device,
             generate_kwargs={"language": "english"},
             )
         #TODO: Whisper did not predict an ending timestamp,[ref](https://github.com/huggingface/transformers/issues/23231)
