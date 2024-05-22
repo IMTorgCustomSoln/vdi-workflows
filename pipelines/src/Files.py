@@ -8,6 +8,7 @@ __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
 
+from operator import itemgetter
 import os
 from pathlib import Path
 import json
@@ -80,6 +81,7 @@ class Files:
         self.extension_patterns = extension_patterns
 
     def get_files(self, type='full_path'):
+        """Return files from smallest to largest by size"""
         def get_full_path(file):
             return file
         def get_name_only(file):
@@ -88,7 +90,12 @@ class Files:
             'full_path': get_full_path,
             'name_only': get_name_only
         }
-        for file in self.directory.rglob('*'):
+        files = [{'file': file, 'size':file.stat().st_size} 
+                 for file in self.directory.rglob('*')
+                 ]
+        files_ascending_size = sorted(files, key=itemgetter('size'))
+        files_sorted = [file['file'] for file in files_ascending_size]
+        for file in files_sorted:
             check1 = '__MACOSX' not in str(file)
             suffixes = [ext for ext in self.extension_patterns 
                       if ext==file.suffix
