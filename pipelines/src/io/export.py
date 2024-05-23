@@ -240,7 +240,14 @@ def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
             document_record['title'] = record_path.name
             document_record['filepath'] = str(record_path)
             document_record['filetype'] = 'audio'
-            dt = record_path.stem.split('_')[1]
+            dt_group1 = record_path.stem.split('_')
+            dt_group2 = record_path.stem.split('.')
+            if len(dt_group1)>1:
+                dt = dt_group1[1]
+            elif len(dt_group2)>1:
+                dt = dt_group2[3]
+            else:
+                raise Exception(f'neither dt_group format is acceptable to extract from name: {record_path.stem}')
             document_record['date'] = (datetime(int(dt[0:4]), int(dt[4:6]), int(dt[6:8]) )).isoformat()
             document_record['reference_number'] = record_path.stem.split('_')[0]
             highest_pred_target = max(pdf['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
