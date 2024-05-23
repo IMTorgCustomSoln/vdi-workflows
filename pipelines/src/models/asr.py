@@ -22,7 +22,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
     """..."""
     #env
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    config['LOGGER'].info(f'using device: {device}')
+    config['LOGGER'].info(f'asr using device: {device}')
 
     #prepare data
     from datasets import Dataset, Audio

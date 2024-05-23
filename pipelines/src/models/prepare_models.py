@@ -23,7 +23,7 @@ def finetune():
 
     #config_env.config()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logger.info(f'using device: {device}')
+    logger.info(f'finetune() using device: {device}')
 
     #load model
     from setfit import SetFitModel
