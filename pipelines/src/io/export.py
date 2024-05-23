@@ -250,7 +250,10 @@ def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
                 raise Exception(f'neither dt_group format is acceptable to extract from name: {record_path.stem}')
             document_record['date'] = (datetime(int(dt[0:4]), int(dt[4:6]), int(dt[6:8]) )).isoformat()
             document_record['reference_number'] = record_path.stem.split('_')[0]
-            highest_pred_target = max(pdf['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+            if 'classifier' in pdf['dialogue'].keys():
+                highest_pred_target = max(pdf['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+            else:
+                highest_pred_target = {}
             document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
             document_record['hit_count'] = len([model for model in pdf['dialogue']['classifier'] if model!={}])
             document_record['snippets'] = []
