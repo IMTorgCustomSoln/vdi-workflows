@@ -252,10 +252,12 @@ def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
             document_record['reference_number'] = record_path.stem.split('_')[0]
             if 'classifier' in pdf['dialogue'].keys():
                 highest_pred_target = max(pdf['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+                hit_count = len([model for model in pdf['dialogue']['classifier'] if model!={}])
             else:
                 highest_pred_target = {}
+                hit_count = None
             document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
-            document_record['hit_count'] = len([model for model in pdf['dialogue']['classifier'] if model!={}])
+            document_record['hit_count'] = hit_count
             document_record['snippets'] = []
             document_record['summary'] = "TODO:summary"
             document_record['_showDetails'] = False
