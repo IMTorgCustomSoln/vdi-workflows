@@ -6,7 +6,15 @@ Module Docstring
 
 #TODO:from nltk.tokenize import word_tokenize 
 
+#from transformers import AutoModel
+from setfit import SetFitModel
+
 from pathlib import Path
+
+
+#load models
+model_path = Path("pretrained_models/finetuned--BAAI")
+model = SetFitModel.from_pretrained(model_path)
 
 
 def classifier(chunk):
@@ -58,20 +66,12 @@ def phrase_classifier(chunk):
 
 def fs_classifier(chunk):
     """..."""
-
-    #from transformers import AutoModel
-    from setfit import SetFitModel
-
-    from pathlib import Path
-
     result = {
         'search': 'FS',
         'target': None,
         'timestamp': None,
         'pred': None
         }
-    model_path = Path("pretrained_models/finetuned--BAAI")
-    model = SetFitModel.from_pretrained(model_path)
     if len(chunk['text']) > 40:
         probs = model.predict_proba(chunk['text'])
         pos_idx = model.labels.index('positive')
