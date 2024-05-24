@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 export const useAppDisplay = defineStore('appDisplay', {
     state: () => {
         return {
+            pdfViewerAvailable: true,
             exportAppStateFileName: 'WorkSession.gz',
             api: {
                 server: 'http://localhost:8000/api/',

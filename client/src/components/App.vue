@@ -27,8 +27,12 @@
                                 <div
                                     v-if="appDisplayStore.views.viewSelection == 'read' && userContentStore.documentsIndex.documents.length > 0">
                                     <div class="viewer">
-                                        <!--<PdfViewer />-->
-                                        <PdfPlaceholder />
+                                        <div v-if="pdfViewerAvailable">
+                                            <PdfViewer />
+                                        </div>
+                                        <div v-else>
+                                            <PdfPlaceholder />
+                                        </div>
                                     </div>
                                 </div>
                             </pane>
@@ -85,7 +89,8 @@ export default {
                 searchTerms: [],
                 resultIds: [],
                 resultGroups: []
-            }
+            },
+            pdfViewerAvailable:true
         }
     },
     computed: {

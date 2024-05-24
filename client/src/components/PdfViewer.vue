@@ -26,6 +26,7 @@ import { toRaw } from 'vue'
 import { mapStores } from 'pinia'
 import { useAppDisplay } from '@/stores/AppDisplay'
 import { useUserContent } from '@/stores/UserContent'
+import json from '@/components/support/placeholder.json'
 
 
 export default {
@@ -66,12 +67,24 @@ export default {
         //TODO task: populate viewer with actual file - not `public/` test
         // `uint8arra to base64`, ref: https://stackoverflow.com/questions/12710001/how-to-convert-uint8-array-to-base64-encoded-string
         // `load `pathViewer` with base64, ref: https://stackoverflow.com/questions/54651395/not-able-to-render-pdf-by-passing-uint8array-in-the-viewer-html-file-parameter-w
+        // Pass a stream or blob to the viewer: https://stackoverflow.com/questions/24535799/pdf-js-and-viewer-js-pass-a-stream-or-blob-to-the-viewer
+        //
+        //below block does NOT work
+        /*
+        const dataArray = Object.values(json['dataArray']) //new Uint8Array( 
+        const blob = new Blob([dataArray])
+        const url = URL.createObjectURL(blob)
+        this.pathFile = encodeURIComponent(url)
+        */
+        //below line works
         this.pathFile = '/annotation-highlight.pdf'   //initialize with `public/` test file
     },
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
-        getPath() { return this.pathViewer + this.query + this.pathFile },
-        async getApp() { return await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication },
+        getPath(){ 
+            return this.pathViewer + this.query + this.pathFile 
+        },
+        async getApp() { return await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication},
         getDocument() {
             const docId = this.userContentStore.getSelectedDocument
             return this.userContentStore.documentsIndex.documents.filter(item => item.id==docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect
