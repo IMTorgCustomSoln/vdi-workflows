@@ -58,10 +58,14 @@ python create_estimation_model.py --input_dir = "./tests/logs/"
 
 __Staging__
 
+* create .csv list of files that are in each batch .gz
+* perform analysis on log files to estimate processing time
+
 * style
   - ~~sort Score by descending~~
   - ~~Round Score numbers~~
   - Search score is updated in column
+  - Search score notes => definition
   - Add number of hits as count column in Table
   - ~~terms used: get key terms~~
   - READ > text block: try / catch for PdfViewer

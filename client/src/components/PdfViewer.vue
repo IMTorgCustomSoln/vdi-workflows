@@ -13,8 +13,12 @@
             }})</b-button>
         </b-button-group>
     </div>
-    <div id="pageContainer">
-        <iframe ref="frame" @load="iframeLoaded" id="pdf-js-viewer" :src="getPath" title="IFrameViewer" frameborder="0"
+    <div id="pageContainer" @srcData="">
+        <iframe ref="frame" 
+            id="pdf-js-viewer" title="IFrameViewer" frameborder="0"
+            @load="iframeLoaded" 
+            :src="getPath"
+            sandbox="allow-same-origin allow-scripts"
             width="100%" height="100%">
         </iframe>
     </div>
@@ -26,7 +30,6 @@ import { toRaw } from 'vue'
 import { mapStores } from 'pinia'
 import { useAppDisplay } from '@/stores/AppDisplay'
 import { useUserContent } from '@/stores/UserContent'
-import json from '@/components/support/placeholder.json'
 
 
 export default {
@@ -35,7 +38,7 @@ export default {
         //TODO, note: event source is Table Snippets
         'userContentStore.selectedSnippet': {
             handler: async function (newVal, oldVal) {
-                let pg = 0
+                let pg = 1
                 let tgtText = ''
                 if(newVal.snippet!=''){
                     const txtPg = parseInt(newVal.snippet.split('<b>pg.')[1].split('|')[0])
@@ -47,13 +50,13 @@ export default {
                 this.search(tgtText)
                 app.page = pg
             }
-        }
+        },
     },
     data() {
         return {
             docBlob: null,
             docPath: null,
-            pathViewer: '/pdfjs-4.0.379-dist/web/viewer.html',
+            pathViewer: '/pdfjs-4.0.379-dist/web/viewer.html', //'https://cdn.jsdelivr.net/gh/IMTorgOpenDataTools/pdfjs-dist@master/web/viewer.html'
             query: '?file=',
             pathFile: null,    //'../../../tests/data/10469527483063392000-cs_nlp_2301.09640.pdf',    //must be relative to `viewer.html` location
 
@@ -63,26 +66,21 @@ export default {
             extractImage: false
         }
     },
-    async created() {
-        //TODO task: populate viewer with actual file - not `public/` test
-        // `uint8arra to base64`, ref: https://stackoverflow.com/questions/12710001/how-to-convert-uint8-array-to-base64-encoded-string
-        // `load `pathViewer` with base64, ref: https://stackoverflow.com/questions/54651395/not-able-to-render-pdf-by-passing-uint8array-in-the-viewer-html-file-parameter-w
-        // Pass a stream or blob to the viewer: https://stackoverflow.com/questions/24535799/pdf-js-and-viewer-js-pass-a-stream-or-blob-to-the-viewer
-        //
-        //below block does NOT work
+    async mounted() {
+        //TODO task: populate src with cdn
+        //ref: https://stackoverflow.com/questions/25098021/securityerror-blocked-a-frame-with-origin-from-accessing-a-cross-origin-frame
         /*
-        const dataArray = Object.values(json['dataArray']) //new Uint8Array( 
-        const blob = new Blob([dataArray])
-        const url = URL.createObjectURL(blob)
-        this.pathFile = encodeURIComponent(url)
-        */
-        //below line works
-        this.pathFile = '/annotation-highlight.pdf'   //initialize with `public/` test file
+        const frame = document.getElementById('pdf-js-viewer')
+        await frame.contentWindow.postMessage('message', 'https://cdn.jsdelivr.net/gh/IMTorgOpenDataTools/pdfjs-dist@master/web/viewer.html')
+        this.$el.addEventListener('message', event => {
+        // IMPORTANT: check the origin of the data!
+        console.log(event.data)
+        })*/
     },
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
         getPath(){ 
-            return this.pathViewer + this.query + this.pathFile 
+            return this.pathViewer + this.query         //+ this.pathFile //<<< default pdf
         },
         async getApp() { return await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication},
         getDocument() {
