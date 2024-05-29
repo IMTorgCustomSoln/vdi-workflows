@@ -15,7 +15,10 @@ from src.Task import (
     AsrWithTextClassificationTask,
     ExportVdiWorkspaceTask
 )
-from src.Report import TaskStatusReport
+from src.Report import (
+    TaskStatusReport,
+    MapBatchFilesReport
+)
 from src.models import prepare_models
 from src.io import load
 
@@ -39,6 +42,7 @@ class WorkflowASR(Workflow):
             #user input
             CONFIG['INPUT_DIR'] = Path('./tests/data/samples/')
             CONFIG['WORKING_DIR'] = Path('./tests/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -52,6 +56,9 @@ class WorkflowASR(Workflow):
             DIR_UNZIPPED = CONFIG['WORKING_DIR'] / 'UNZIPPED'
             DIR_PROCESSED = CONFIG['WORKING_DIR'] / 'PROCESSED'
             DIR_OUTPUT = CONFIG['WORKING_DIR'] / 'OUTPUT'
+
+            DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
+            CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
             #files
             input_files = Files(
                 name='input',
@@ -139,7 +146,7 @@ class WorkflowASR(Workflow):
         self.config['LOGGER'].info(f"end process, execution took: {round(time.time() - self.config['START_TIME'], 3)}sec")
         return True
 
-    def report(self):
+    def report_task_status(self):
         """
         TODO:
         * typical size of files
@@ -147,6 +154,15 @@ class WorkflowASR(Workflow):
         * place code in a separate file
         """
         TaskStatusReport(
+            files=self.files,
+            config=self.config
+        ).run()
+        return True
+    
+    def report_map_batch_to_files(self):
+        """Create .csv of files in each batch output
+        """
+        MapBatchFilesReport(
             files=self.files,
             config=self.config
         ).run()

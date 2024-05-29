@@ -22,6 +22,10 @@ def test_workflow_asr_run():
     check = workflow_asr.run()
     assert check == True
 
-def test_workflow_asr_report():
-    check = workflow_asr.report()
+def test_workflow_asr_report_task_status():
+    check = workflow_asr.report_task_status()
+    assert check == True
+
+def test_workflow_asr_report_map_batch_to_files():
+    check = workflow_asr.report_map_batch_to_files()
     assert check == True
