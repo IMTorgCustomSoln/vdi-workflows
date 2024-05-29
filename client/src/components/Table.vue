@@ -78,6 +78,12 @@
 
 
             <b-col ><!--:cols="this.appDisplayStore.views.attrs.table.collsSnippets">-->
+                <!-- TODO: 
+                    * create Search Snippets component
+                    * keep guide with snippets
+                    * create new guide for table: Score, Hits, ...
+                
+                -->
                 <div
                     v-if="appDisplayStore.views.viewSelection == 'read' && userContentStore.documentsIndex.documents.length > 0">
                     <div class="itemconfiguration snippet_container">
@@ -143,7 +149,7 @@ export default {
                 if (typeof (this.$props.search) == 'object') {
                     this.filterTable()
                 }
-                this.createTable()
+                //this.createTable()  => using this destroys changes to item fields, such as Score, Hit
             },
             deep: false
         },
@@ -152,7 +158,7 @@ export default {
                 if (typeof (this.$props.tableFields) == 'object') {
                     this.fields = this.$props.tableFields
                 }
-                this.createTable()
+                //this.createTable()  => using this destroys changes to item fields, such as Score, Hit
             },
             deep: false
         },
@@ -243,10 +249,18 @@ ready to be organized with the note Topics.`
                         //filter and sort table items 
                         this.tableFilter.push(item.id)
                         const idx = this.$props.search.resultGroups.map(resultFile => resultFile.ref).indexOf(item.id)
+                        let resultFile = this.$props.search.resultGroups[idx]
                         if (idx <= -1) {
+                            //empty search
                             this.resetItem(item)
+                        } else if(resultFile.score == 'NaN'){
+                            //this.searchModel()
+                            const record = this.$props.records.filter(rec => rec.id == item.id)[0]
+                            item.sort_key = record.sort_key
+                            item.hit_count = record.hit_count
+                            item.snippets.length = 0
                         } else {
-                            let resultFile = this.$props.search.resultGroups[idx]
+                            //typical
                             item.sort_key = resultFile.score
                             item.hit_count = resultFile.count
                             item.snippets.length = 0

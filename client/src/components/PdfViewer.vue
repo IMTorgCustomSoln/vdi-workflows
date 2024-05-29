@@ -48,7 +48,7 @@ export default {
                 const app = await this.getApp
                 await this.loadDoc()
                 this.search(tgtText)
-                app.page = pg
+                app.page = pg     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
             }
         },
     },

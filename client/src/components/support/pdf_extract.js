@@ -29,7 +29,7 @@ export async function getFileRecord(filestore){
                   pdf.getPage(i).then(function(page) {
                       let n = page.pageNumber;
                       let page_text = ""
-                      createCanvasImage(page, n, record)
+                      //createCanvasImage(page, n, record)
                       page.getTextContent().then(function(textContent) {
                           for (let item of textContent.items) {
                               page_text += String(item.str)

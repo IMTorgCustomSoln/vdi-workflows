@@ -27,7 +27,7 @@
                                 <div
                                     v-if="appDisplayStore.views.viewSelection == 'read' && userContentStore.documentsIndex.documents.length > 0">
                                     <div class="viewer">
-                                        <div v-if="pdfViewerAvailable">
+                                        <div v-if="appDisplayStore.pdfViewerAvailable">
                                             <PdfViewer />
                                         </div>
                                         <div v-else>
@@ -90,7 +90,7 @@ export default {
                 resultIds: [],
                 resultGroups: []
             },
-            pdfViewerAvailable:true
+            pdfViewerAvailable:true     // => appDisplayStore.pdfViewerAvailable
         }
     },
     computed: {

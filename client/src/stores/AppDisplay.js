@@ -57,11 +57,7 @@ export const useAppDisplay = defineStore('appDisplay', {
                 this.views.attrs.table.colsSnippets = 0
             }
         }
-
     }
-
-
-
 })
 
 
@@ -74,6 +70,10 @@ const searchTableFields = [{
     sortable: true,
     sortDirection: 'desc',
     formatter: "getFormattedScore"
+}, {
+    key: 'hit_count',
+    label: 'Hits',
+    sortable: true
 }, {
     key: 'id',
     label: 'Id'
@@ -116,6 +116,10 @@ const readTableFields = [{
     sortable: true,
     sortDirection: 'desc',
     formatter: "getFormattedScore"
+}, {
+    key: 'hit_count',
+    label: 'Hits',
+    sortable: true
 }, {
     key: 'title',
     label: 'Title',

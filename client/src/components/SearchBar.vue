@@ -369,14 +369,18 @@ The results are ordered by the 'Score' column, which is a weighted formula of th
             } else if (this.searchQuery.type.value == 'Models') {
                 this.searchModel()
                 
-                // lunrJs query
+            // lunrJs query
             //} else if (this.userContentStore.documentsIndex.indices.lunrIndex) {
             } else if (this.searchQuery.type.value == 'Fuzzy' && this.userContentStore.documentsIndex.indices.lunrIndex) {
                 this.searchFuzzy()
             } else {
                 return false
             }
-        },
+        },/*
+        resetRecordModels(){
+            for(const [idx, rec] of Object.entries(this.$props.records) ){
+            }
+        },*/
         resetAllItems() {
             this.query = ''
             this.searchTableResults = { ...this.searchTableResults, query: '' }

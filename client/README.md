@@ -64,9 +64,10 @@ __Staging__
 * style
   - ~~sort Score by descending~~
   - ~~Round Score numbers~~
-  - Search score is updated in column
+  - ~~Add number of hits as count column in Table~~
+  - ~~Search score is updated in column~~
+  - ~~Hit count is updated in column~~
   - Search score notes => definition
-  - Add number of hits as count column in Table
   - ~~terms used: get key terms~~
   - READ > text block: try / catch for PdfViewer
   - ~~READ > text block: enable scrolling~~
