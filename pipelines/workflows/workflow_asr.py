@@ -22,6 +22,7 @@ from src.Report import (
 )
 from src.models import prepare_models
 from src.io import load
+from tests.estimate_processing_time import ProcessTimeQrModel
 
 from config._constants import (
     logging_dir,
