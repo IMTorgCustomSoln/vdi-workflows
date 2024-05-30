@@ -260,6 +260,9 @@ def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
                 models = None
             document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
             document_record['hit_count'] = hit_count
+            document_record['time_asr'] = pdf['dialogue']['time_asr']
+            document_record['time_textmdl'] = pdf['dialogue']['time_textmdl']
+
             document_record['snippets'] = []
             document_record['summary'] = "TODO:summary"
             document_record['_showDetails'] = False

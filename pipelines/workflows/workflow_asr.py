@@ -17,7 +17,8 @@ from src.Task import (
 )
 from src.Report import (
     TaskStatusReport,
-    MapBatchFilesReport
+    MapBatchFilesReport,
+    ProcessTimeAnalysisReport
 )
 from src.models import prepare_models
 from src.io import load
@@ -163,6 +164,19 @@ class WorkflowASR(Workflow):
         """Create .csv of files in each batch output
         """
         MapBatchFilesReport(
+            files=self.files,
+            config=self.config
+        ).run()
+        return True
+    
+    def report_process_time_analysis(self):
+        """Analyze processing times of completed files
+        """
+        MapBatchFilesReport(
+            files=self.files,
+            config=self.config
+        ).run()
+        ProcessTimeAnalysisReport(
             files=self.files,
             config=self.config
         ).run()

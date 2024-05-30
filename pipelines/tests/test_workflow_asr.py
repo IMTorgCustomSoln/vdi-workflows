@@ -29,3 +29,7 @@ def test_workflow_asr_report_task_status():
 def test_workflow_asr_report_map_batch_to_files():
     check = workflow_asr.report_map_batch_to_files()
     assert check == True
+
+def test_workflow_asr_report_process_time_analysis():
+    check = workflow_asr.report_process_time_analysis()
+    assert check == True

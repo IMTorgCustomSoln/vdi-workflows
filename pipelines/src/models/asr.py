@@ -14,6 +14,7 @@ import torch
 import os
 from pathlib import Path
 import json
+import time
 
 
 
@@ -64,7 +65,8 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                 'file_name': file_name,
                 'file_path': file_path, 
                 'sampling_rate': sampling_rate, 
-                'chunks': file['chunks']
+                'chunks': file['chunks'],
+                'time_asr': time.time() - config['START_TIME']
                 }
             config['LOGGER'].info(f'asr-processing completed for file {idx} - {file_name}')
             dialogues.append(record)
@@ -89,6 +91,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                     dialogues[idx]['classifier'].append(result)
                 else:
                     dialogues[idx]['classifier'].append({})
+        dialogues[idx]['time_textmdl'] = time.time() - config['START_TIME']
         config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
                
 

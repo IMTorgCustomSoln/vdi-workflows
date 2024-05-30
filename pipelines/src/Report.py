@@ -114,10 +114,39 @@ class MapBatchFilesReport(Report):
             result = {}
             result['filepath'] = doc['filepath']
             result['batch'] = doc['batch']
+            result['time_asr'] = doc['time_asr']
+            result['time_textmdl'] = doc['time_textmdl']
+            result['file_size_mb'] = doc['file_size_mb']
+            result['body_chars'] = sum(doc['body_chars'].values())
             records.append(result)
 
         #export to csv
         df = pd.DataFrame(records)
-        df.to_csv(filepath)
+        df.to_csv(filepath, index=False)
+
+        return True
+    
+
+class ProcessTimeAnalysisReport(Report):
+    """..."""
+
+    def run(self):
+
+        #find most-recent report
+        dirpath = self.config['WORKING_DIR'] / 'Reports'
+        if not dirpath.is_dir():
+            raise Exception(f'no directory: {dirpath}')
+        mx = (None, 0)
+        for file in dirpath.glob('**/*'):
+            if file.is_file():
+                filename_part = file.stem.split('report-batch_files')[1]
+                dt_str = filename_part.split('_')[0] 
+                tm_str = f"T{filename_part.split('_')[1].replace('-',':')}"
+                dt = int( datetime.datetime.fromisoformat(dt_str+tm_str).timestamp() )
+                if mx[1] < dt:
+                    mx = (file, dt)
+
+        #get distribution of times
+        df = pd.read_csv(mx[0])
 
         return True
