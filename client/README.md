@@ -64,12 +64,25 @@ __Staging__
   - ~~Add number of hits as count column in Table~~
   - ~~Search score is updated in column~~
   - ~~Hit count is updated in column~~
-  - Search score notes => definition
   - ~~terms used: get key terms~~
-  - READ > text block: try / catch for PdfViewer
   - ~~READ > text block: enable scrolling~~
   - ~~READ > improve space efficiency in panels~~
-  - READ > text block: allow text selection to Notes
+
+* errors
+  - ~~'Add More Files' fails~~ => seems to work
+  - READ > text block: try / catch for PdfViewer
+  - Search score notes => definition
+  - PdfViewer error on: i) first try of port, ii) `Disable cache`  - pdfjs-dist not being loaded???  This is difficult to reproduce.
+    ```
+    TypeError: Cannot read properties of undefined (reading 'open')
+    at Proxy.loadDoc ((index):127:10551)
+    at async Proxy.iframeLoaded ((index):127:8357)
+    ```
+    or
+    ```
+    Message: Setting up fake worker failed: "Failed to fetch dynamically imported module: http://localhost:4002/pdfjs-4.0.379-dist/build/pdf.worker.mjs"
+    ```
+  - TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.
 
 * search 
   - ~~dropdown for search type~~

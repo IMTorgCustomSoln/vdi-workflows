@@ -80,9 +80,12 @@ export default {
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
         getPath(){ 
-            return this.pathViewer + this.query         //+ this.pathFile //<<< default pdf
+            return this.pathViewer //+ this.query         //+ this.pathFile //<<< default pdf
         },
-        async getApp() { return await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication},
+        async getApp() { 
+            const app = await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication
+            return app
+        },
         getDocument() {
             const docId = this.userContentStore.getSelectedDocument
             return this.userContentStore.documentsIndex.documents.filter(item => item.id==docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect

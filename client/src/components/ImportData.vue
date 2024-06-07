@@ -130,7 +130,7 @@
 
 
             <!-- Server -->
-            <b-tab title="Server" :disabled=disableServerBtn id="tabServer"> <!-- popover placed in tab-0 -->
+            <b-tab title="Server" :disabled="disableServerBtn" id="tabServer"> <!-- popover placed in tab-0 -->
                 <div>
                     <form name="uploadForm">
                         <p>
@@ -214,7 +214,7 @@ export default {
             uploadWorkspaceBtn: true,
             disableWorkspaceBtn: false,
             uploadServerBtn: true,
-            disableServerBtn: false,
+            disableServerBtn: true,
 
             /*TODO note: keep code that would enable deconstruction to independent component
             documentsIndex: DocumentIndexData,

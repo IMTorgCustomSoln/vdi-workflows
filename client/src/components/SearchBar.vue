@@ -11,7 +11,7 @@
                         v-model="selectedIdx" 
                         variant="outline-primary"
                         >
-                        <b-dropdown-item v-for="option in queryOptions" :key="option.id" @click="changeItem(option)">
+                        <b-dropdown-item v-for="option in queryOptions" :key="option.id" @click="changeItem(option)" :disabled="option.state">
                             {{ option.value }}
                         </b-dropdown-item>
                     </b-dropdown>
@@ -67,10 +67,10 @@ export default {
             selectedIdx: 0,
             query: '',
             queryOptions: [
-                {id:0, value:'Fuzzy', disablePrompt:false},
-                {id:1, value:'Exact', disablePrompt:false},
-                {id:2, value:'Concept', disablePrompt:false},
-                {id:3, value:'Models', disablePrompt:true}
+                {id:0, value:'Fuzzy', disablePrompt:false, state: false},
+                {id:1, value:'Exact', disablePrompt:false, state: false},
+                {id:2, value:'Concept', disablePrompt:true, state: true},
+                {id:3, value:'Models', disablePrompt:true, state: false}
             ],
             searchTableResults: {
                 type: null,
