@@ -230,8 +230,7 @@ export default {
                     await app.open(tgt)
                 }catch{
                     alert(
-                        `*** ALERT: Please reload the page. ***\n\n
-                        This error is caused by an unavailable 'worker'.  It will be solved in a future release.
+                        `*** ALERT: Please press 'OK' then reload the page. ***\n\nThis error is caused by an unavailable 'worker' provided by the server.  It will be solved in a future release.
                         `
                     )
                 }

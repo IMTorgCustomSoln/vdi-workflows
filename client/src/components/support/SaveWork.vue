@@ -1,6 +1,7 @@
 <template>
    <!-- Open modal button 
     TODO:disabled - determine how to save to file then update with each change 
+    ref: https://github.com/IMTorgCustomSoln/visual-document-index/blob/master/components/support/SaveWork.vue
 -->
    <b-button
         id='btnSaveContinue' 
