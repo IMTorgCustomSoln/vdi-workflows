@@ -41,7 +41,7 @@ def kw_classifier(chunk):
     data_path = Path('./src/data')
     with open(data_path / 'pos_kw.txt', 'r') as file:
         kw_lines = file.readlines()
-    KEYWORDS = [word.replace('\n','') for word in kw_lines]
+    KEYWORDS = [f" {word.replace('\n','')} " for word in kw_lines]      #ensure spacing around word
 
     result = {
         'search': 'KW',
