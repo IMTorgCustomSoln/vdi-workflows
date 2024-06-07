@@ -69,9 +69,8 @@ __Staging__
   - ~~READ > improve space efficiency in panels~~
 
 * errors
-  - Search score notes => definition
   - ~~'Add More Files' fails~~ => seems to work
-  - READ > text block: try / catch for PdfViewer
+  - ~~READ > text block: try / catch for PdfViewer~~
   - PdfViewer error on: i) first try of port, ii) `Disable cache`  - pdfjs-dist not being loaded???  This is difficult to reproduce.
     ```
     TypeError: Cannot read properties of undefined (reading 'open')
@@ -82,7 +81,9 @@ __Staging__
     ```
     Message: Setting up fake worker failed: "Failed to fetch dynamically imported module: http://localhost:4002/pdfjs-4.0.379-dist/build/pdf.worker.mjs"
     ```
+  - [ref](https://stackoverflow.com/questions/45532733/how-to-add-ui-and-toolbar-to-pdf-js-viewer), [ref](https://github.com/mozilla/pdf.js/tree/master/examples/components), [ref](https://github.com/alekswebnet/pdfjs-viewer-element)
   - TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.
+  - Search score notes => definition
 
 * search 
   - ~~dropdown for search type~~

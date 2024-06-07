@@ -1,10 +1,13 @@
 <template>
-   <!-- Open modal button -->
+   <!-- Open modal button 
+    TODO:disabled - determine how to save to file then update with each change 
+-->
    <b-button
         id='btnSaveContinue' 
         v-b-modal="'save-continue-modal'"
         variant="primary"
         class=""
+        :disabled="true"
         >
         {{ btnText }}
     </b-button>
