@@ -58,7 +58,7 @@ export default {
             docPath: null,
             pathViewer: '/pdfjs-4.0.379-dist/web/viewer.html', //'https://cdn.jsdelivr.net/gh/IMTorgOpenDataTools/pdfjs-dist@master/web/viewer.html'
             query: '?file=',
-            pathFile: null,    //'../../../tests/data/10469527483063392000-cs_nlp_2301.09640.pdf',    //must be relative to `viewer.html` location
+            pathFile: null,     //'./compressed.tracemonkey-pldi-09.pdf',      //'../../../tests/data/10469527483063392000-cs_nlp_2301.09640.pdf',    //must be relative to `viewer.html` location
 
             newNote: null,
             currentDocumentId: null,
@@ -80,7 +80,7 @@ export default {
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
         getPath(){ 
-            return this.pathViewer //+ this.query         //+ this.pathFile //<<< default pdf
+            return this.pathViewer + this.query //+ this.pathFile //<<< default pdf
         },
         async getApp() { 
             const app = await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication

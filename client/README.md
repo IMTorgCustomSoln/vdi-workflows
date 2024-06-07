@@ -69,9 +69,9 @@ __Staging__
   - ~~READ > improve space efficiency in panels~~
 
 * errors
+  - Search score notes => definition
   - ~~'Add More Files' fails~~ => seems to work
   - READ > text block: try / catch for PdfViewer
-  - Search score notes => definition
   - PdfViewer error on: i) first try of port, ii) `Disable cache`  - pdfjs-dist not being loaded???  This is difficult to reproduce.
     ```
     TypeError: Cannot read properties of undefined (reading 'open')
