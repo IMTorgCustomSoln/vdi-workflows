@@ -225,7 +225,15 @@ export default {
             if (doc.id != this.currentDocumentId) {
                 const dataArray = await toRaw(doc.getDataArray())
                 const tgt = { data: Object.values(dataArray.dataArray) }
-                await app.open(tgt)
+                try{
+                    await app.open(tgt)
+                }catch{
+                    alert(
+                        `*** ALERT: Please reload the page. ***\n\n
+                        This error is caused by an unavailable 'worker'.  It will be solved in a future release.
+                        `
+                    )
+                }
                 this.currentDocumentId = doc.id
             }
         },
