@@ -117,6 +117,7 @@ function createMetadata(pdf, record){
 
 function createOutline(pdf, record){
   //ref: https://medium.com/@csofiamsousa/creating-a-table-of-contents-with-pdf-js-4a4316472fff
+  //TODO: this causes `Error: Invalid destination request.` in document money-creation-in-the-modern-economy.pdf, but works with 51172457010912950000-prob_2301.09751.pdf 
   pdf.getOutline().then(async outline => {    
     if (outline){
       for (let i =0; i< outline.length; i++){

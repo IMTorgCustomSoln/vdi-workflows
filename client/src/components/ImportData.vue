@@ -47,9 +47,10 @@
                         <br />
                         <ul class="no-li-dot">
                             <li><label for="fileCount">Files: &nbsp</label> <output id="fileCount">{{ preview.fileCount
-                            }}</output></li>
-                            <li><label for="fileSize">Total size: &nbsp</label> <output id="fileSize"> {{ preview.fileSize
-                            }}</output></li>
+                                    }}</output></li>
+                            <li><label for="fileSize">Total size: &nbsp</label> <output id="fileSize"> {{
+        preview.fileSize
+    }}</output></li>
                             <li><label for="estimatedTime">Approximate time to upload and process: &nbsp</label> <output
                                     id="estimatedTime"> {{ preview.estimateProcessTime }}</output></li>
                         </ul>
@@ -95,8 +96,10 @@
                                 <li>only PDF files with selectable text (not images) can be used.</li>
                                 <li>limit single upload batch to less than 20 files for processing performance. Multiple
                                     batches may be performed.</li>
-                                <li>subsequent uploads are only performed on files with different reference numbers. If no
-                                    reference number is available in file name, a unique hash of the file name is created
+                                <li>subsequent uploads are only performed on files with different reference numbers. If
+                                    no
+                                    reference number is available in file name, a unique hash of the file name is
+                                    created
                                     for reference.</li>
                                 <li>workspace session may not be saveable after 50MB.</li>
                             </ul>
@@ -111,7 +114,8 @@
                 <div>
                     <form name="uploadForm">
                         <p>
-                            Select a previously saved session file (ie. <code>VDI_ApplicationStateData_v*.*.*.gz'</code>) to
+                            Select a previously saved session file (ie.
+                            <code>VDI_ApplicationStateData_v*.*.*.gz'</code>) to
                             continue your work.
                         </p>
                         <label for="uploadAppDataInput" class="custom-file-upload">
@@ -120,9 +124,9 @@
                         <input id="uploadAppDataInput" type="file" @change="previewWorkspace" accept=".gz" />
                         <ul class="no-li-dot">
                             <li><label for="fileName">File: &nbsp</label><output id="fileName">{{ preview.fileName
-                            }}</output></li>
+                                    }}</output></li>
                             <li><label for="fileSize">Size: &nbsp</label><output id="fileSize">{{ preview.fileSize
-                            }}</output></li>
+                                    }}</output></li>
                         </ul>
                     </form>
                 </div>
@@ -141,10 +145,10 @@
                         </b-form-select>
                         <ul class="no-li-dot">
                             <li><label for="fileCount">Files: &nbsp</label> <output id="fileCount">{{
-                                preview.serverFiles.length
-                            }}</output></li>
+        preview.serverFiles.length
+    }}</output></li>
                             <li><label for="fileSize">Total size: &nbsp</label> <output id="fileSize"> {{ getFilesSize
-                            }}</output></li>
+                                    }}</output></li>
                         </ul>
                     </form>
                 </div>
@@ -415,18 +419,18 @@ export default {
             }
             const object = JSON.parse(buffer)
             //documents
-            for(const [idx, doc] of Object.entries(object.documentsIndex.documents) ){
+            for (const [idx, doc] of Object.entries(object.documentsIndex.documents)) {
                 const doc_rec = new DocumentRecord()
                 const check1 = await doc_rec.setAttrWithObj(doc)
-                if(doc_rec.accumPageChars==null){
+                if (doc_rec.accumPageChars == null) {
                     const check2 = await doc_rec.setProcessedFileData()
                 }
                 const check3 = await doc_rec.setDataArray()
                 object.documentsIndex.documents[idx] = doc_rec
             }
             //lunr index
-            if(isEmpty(object.documentsIndex.indices.lunrIndex)==true){
-                this.userContentStore.createIndex( object.documentsIndex['documents'] )
+            if (isEmpty(object.documentsIndex.indices.lunrIndex) == true) {
+                this.userContentStore.createIndex(object.documentsIndex['documents'])
             }
 
             this.userContentStore.documentsIndex.documents.length = 0
@@ -578,7 +582,7 @@ function processFiles(files) {
     const processedFiles = []
     for (const file of files) {
         const check = file.setProcessedFileData()
-        if(check){
+        if (check) {
             processedFiles.push(file)
         }
     }
