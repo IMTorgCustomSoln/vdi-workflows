@@ -396,7 +396,7 @@ ready to be organized with the note Topics.`
         },
 
         resetItem(item) {
-            item.sort_key = item.id
+            item.sort_key = 0
             item.hit_count = 0
             item.snippets = []
         },

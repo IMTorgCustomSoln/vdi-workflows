@@ -159,7 +159,9 @@ export class DocumentRecord{
       // prepare images
       //this.canvas_array = this.canvas_array.sort((a, b) => a.idx - b.idx)
       this.selected_snippet_page = 1
-
+      if(this.models==null){
+        this.models = []
+      }
       //processedFiles.push(item)
       return true
     }

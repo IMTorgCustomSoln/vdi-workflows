@@ -76,6 +76,7 @@ export default {
         // IMPORTANT: check the origin of the data!
         console.log(event.data)
         })*/
+        //await this.getApp
     },
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
