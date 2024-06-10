@@ -97,7 +97,7 @@ export default {
         // Listener Logic
         //listener and selector for user-selected text
         async iframeLoaded() {
-            //const app = document.getElementById('pdf-js-viewer').contentWindow.document
+            await this.getApp
             await this.loadDoc()
             return true
         },
@@ -228,11 +228,11 @@ export default {
                 const tgt = { data: Object.values(dataArray.dataArray) }
                 try{
                     await app.open(tgt)
-                }catch{
+                }catch{/*
                     alert(
                         `*** ALERT: Please press 'OK' then reload the page. ***\n\nThis error is caused by an unavailable 'worker' provided by the server.  It will be solved in a future release.
                         `
-                    )
+                    )*/
                 }
                 this.currentDocumentId = doc.id
             }
