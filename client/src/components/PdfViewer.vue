@@ -1,9 +1,4 @@
 <template>
-    <!--<input @click="search" value="Search text" type="button"/>
-    <input @click="saveDoc" value="Save file" type="button"/>
-    <input @click="loadDoc" value="Load prev file" type="button"/>
-    <input @click="chgToPg3" value="Change to `Contents` Page" type="button"/>
-    <br/>-->
     <div style="background-color: black;">
         <b-button-group size="sm">
             <b-button @click="loadDoc">Load Selected Doc</b-button>
@@ -66,18 +61,6 @@ export default {
             extractImage: false
         }
     },
-    async mounted() {
-        //TODO task: populate src with cdn
-        //ref: https://stackoverflow.com/questions/25098021/securityerror-blocked-a-frame-with-origin-from-accessing-a-cross-origin-frame
-        /*
-        const frame = document.getElementById('pdf-js-viewer')
-        await frame.contentWindow.postMessage('message', 'https://cdn.jsdelivr.net/gh/IMTorgOpenDataTools/pdfjs-dist@master/web/viewer.html')
-        this.$el.addEventListener('message', event => {
-        // IMPORTANT: check the origin of the data!
-        console.log(event.data)
-        })*/
-        //await this.getApp
-    },
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
         getPath(){ 
@@ -125,7 +108,6 @@ export default {
         },
         logTextToNotesManager(e) {
             const txt = this.getSelectedText(e)
-            //console.log(txt)
             this.newNote = txt
         },
         getSelectedText(e) {
@@ -134,7 +116,6 @@ export default {
                 return iframeWindow.getSelection().toString()
             }
             else if (document.selection) {
-                //e.target.getSelection().toString()
                 return document.selection.createRange().text
             }
             return '';
@@ -249,8 +230,6 @@ export default {
         highlightText() {
             const selected = this.getSelectionCoords()
             this.showHighlight(selected)
-            //console.log(selected)
-
         },
         getSelectionCoords() {
             const iframeWindow = document.getElementById('pdf-js-viewer').contentWindow
