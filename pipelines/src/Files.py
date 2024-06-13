@@ -17,14 +17,15 @@ import gzip
 
 class File:
     """..."""
-    types = ['json','schema','workspace']#TODO:,'archive']
+    types = ['txt','json','schema','workspace']#TODO:,'archive']
 
     def __init__(self, filepath, type):
         filepath = Path(filepath).resolve()
         if filepath.is_file():
             self.filepath = filepath
         else:
-            raise TypeError
+            #raise TypeError
+            pass
         if type in File.types:
             self.type = type
         else:
@@ -32,8 +33,13 @@ class File:
         self.content = None
 
     def load_file(self, return_content=False):
-        """..."""
+        """Import from file"""
         #support functions
+        def import_text(filepath):
+            with open(filepath, 'r') as f_in:
+                text_content = f_in.read()
+            return text_content
+
         def import_json(filepath):
             with open(filepath, 'r') as f:
                 json_content = json.load(f)
@@ -45,6 +51,7 @@ class File:
             return workspace_json
         
         options = {
+            'text-.txt': import_text,
             'json-.json': import_json,
             'schema-.json': import_json,
             'workspace-.gz': import_workspace
@@ -61,6 +68,39 @@ class File:
 
     def get_content(self):
         return self.content
+    
+    def export_to_file(self):
+        """Export to file"""
+        #support functions
+        def import_text(self, filepath):
+            with open(filepath, 'w') as f_out:
+                if type(self.content)==list:
+                    for item in self.content:
+                        f_out.write(f"{item}\n")
+            return True
+        '''TODO:complete
+        def import_json(filepath):
+            with open(filepath, 'w') as f:
+                json_content = json.load(f)
+            return json_content
+            
+        def import_workspace(filepath):
+            with gzip.open(filepath, 'wb') as f:
+                workspace_json = json.load(f)
+            return workspace_json
+        '''
+        options = {
+            'text-.txt': import_text,
+            #'json-.json': import_json,
+            #'schema-.json': import_json,
+            #'workspace-.gz': import_workspace
+        }
+        #workflow
+        ext = self.filepath.suffix
+        key = f'{self.type}-{ext}'
+        self.content = options[key](self.filepath)
+        return True
+
 
     
     
