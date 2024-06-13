@@ -19,10 +19,12 @@ from datetime import datetime
 #register here
 from config import config_env
 from workflows import (
-    workflow_asr
+    workflow_asr,
+    workflow_site_scrape
 )
 workflow_options = {
-    'workflow_asr': workflow_asr.workflow_asr
+    'workflow_asr': workflow_asr.workflow_asr,
+    'workflow_site_scrape': workflow_site_scrape.workflow_site_scrape
     }
 
 

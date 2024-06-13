@@ -38,5 +38,7 @@ python main.py workflow_asr prepare_workspace
 * add new workflow-scraping
 * generalize classes for extensibility of workflows
 
-issues
+
+Issues
+
 * compress pdf size with [`pdfsizeopt](https://github.com/pts/pdfsizeopt), but must update for py3.*, first

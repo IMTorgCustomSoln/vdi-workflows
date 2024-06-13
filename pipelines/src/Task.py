@@ -50,6 +50,7 @@ class ImportTask(Task):
     """..."""
 
 
+
 class ExportTask(Task):
     """..."""
 
@@ -144,3 +145,19 @@ class ExportVdiWorkspaceTask(Task):
             cnt = len(batch)
             self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")
         return True
+    
+
+class ValidateUrlsTask(Task):
+    """..."""
+
+class CrawlUrlsTask(Task):
+    """..."""
+
+class DownloadlUrlsTask(Task):
+    """..."""
+
+class ConvertPdfsTask(Task):
+    """..."""
+
+class ApplyModelsTask(Task):
+    """..."""
