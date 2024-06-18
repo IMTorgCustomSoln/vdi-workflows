@@ -8,8 +8,8 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 
-from ..structures.url import UniformResourceLocator
-from ..services._constants import logger
+from .url import UniformResourceLocator
+#from ..services._constants import logger
 
 import googlesearch
 
@@ -101,7 +101,7 @@ class Crawler:
                 validated_urls.append(Url)
             else:
                 pass
-        logger.info(f'validated urls: {validated_urls}')
+        self.logger.info(f'validated urls: {validated_urls}')
         return validated_urls
 
     def generate_href_chain(self):
@@ -109,7 +109,7 @@ class Crawler:
         href links."""
         result_urls = {}
         
-        initial_list = self.get_initial_url_list(self.scenario.url, self.list_of_search_terms)
+        initial_list = self.get_initial_url_list(self.scenario.url, self.scenario.list_of_search_terms)
         hrefs = self.get_hrefs_within_depth(base_url = self.scenario.url, 
                                            depth = 0, 
                                            initial_url_list = initial_list
@@ -135,9 +135,9 @@ class Crawler:
         result_url_list = []
         for terms in stringified_lists:
             try:
-                search_results = googlesearch.search(query = terms, 
-                                                     stop =  NumberOfSearchResults,
-                                                     pause = 1 
+                search_results = googlesearch.search(term = terms, 
+                                                     num_results = NumberOfSearchResults,
+                                                     sleep_interval = 1 
                                                      )
                 unique_urls = [url for url in search_results if url not in result_url_list]
                 SearchUrls = [UniformResourceLocator(result) for result in unique_urls]

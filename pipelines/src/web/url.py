@@ -7,7 +7,7 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
-from ..services._constants import logger
+#from ..services._constants import logger
 
 import tldextract
 import whois
@@ -22,6 +22,16 @@ from pathlib import Path
 import io
 import time
 import sys
+
+
+class LoggerPlaceholder:
+    def __init__(self):
+        self.info = self.print_statement
+        self.error = self.print_statement
+
+    def print_statement(self, text):
+        print(text)
+
 
 
 class UniformResourceLocator:
@@ -43,11 +53,11 @@ class UniformResourceLocator:
 
     def __init__(self, url):
         self.url = None
-        self.logger = None
+        self.logger = LoggerPlaceholder()
         if type(url) == str:
             self.url = url.lower()
         elif type(url) == UniformResourceLocator:
-            logger.error(f'url is already of type {UniformResourceLocator}')
+            self.logger.error(f'url is already of type {UniformResourceLocator}')
             raise Exception
         else:
             raise TypeError
@@ -227,9 +237,9 @@ class UniformResourceLocator:
     def get_file_document(self):
         """Get the file in whatever file type is supported."""
         if not all([self.file_format, self.file_document]):
-            logger.error(f"no data try calling `self.get_file_artifact_()")
+            self.logger.error(f"no data try calling `self.get_file_artifact_()")
         elif self.file_format == None:
-            logger.error(f"`self.get_file_artifact_() called, but no data")
+            self.logger.error(f"`self.get_file_artifact_() called, but no data")
         return (self.file_type ,self.file_document)
 
 
@@ -240,7 +250,7 @@ class UniformResourceLocator:
             self.get_owner_()
             self.get_file_artifact_()
         except:
-            logger.error('there was a problem making requests.')
+            self.logger.error('there was a problem making requests.')
         return True
     
     def get_owner_(self):
@@ -259,7 +269,7 @@ class UniformResourceLocator:
                 self.whois_account = whois.whois(self.url)
                 self.owner = self.whois_account.text.split('Organization:')[1].split('\n')[0].strip()
             except:
-                logger.error(f'ICANN WHOIS gave no response for url: `{self.url}`')
+                self.logger.error(f'ICANN WHOIS gave no response for url: `{self.url}`')
             time.sleep(1)
             return self.owner
 
@@ -293,7 +303,7 @@ class UniformResourceLocator:
         else:
             result = False
         if not result:
-            logger.info(f'WARNING: Different Owners:\n'
+            self.logger.info(f'WARNING: Different Owners:\n'
                         f'current url: `{self.url}`'
                         f'    owner [{self.owner}]\n' 
                         f'comparison url: `{comparison_url.url}`' 
@@ -327,32 +337,32 @@ class UniformResourceLocator:
                     self.file_type = content_type
                     if 'text/html' in content_type:
                         if self.url_type != 'html':
-                            logger.error('ERROR: `self.url_type` does not match content-type')  
+                            self.logger.error('ERROR: `self.url_type` does not match content-type')  
                             raise Exception
                         #resp.html.render()
                         #txt = resp.html.text      #output as string
                         txt = resp.text
                         if len(txt) < 100:
-                            logger.error('ERROR: HTML content length is insignificant')  
+                            self.logger.error('ERROR: HTML content length is insignificant')  
                             raise Exception
                         self.file_str = txt
                     elif 'application/pdf' in content_type:
                         if self.url_type != 'pdf':
-                            logger.error('ERROR: `self.url_type` does not match content-type') 
+                            self.logger.error('ERROR: `self.url_type` does not match content-type') 
                             raise Exception
                         bytes = resp.content
                         if len(bytes) < 100:
-                            logger.error('ERROR: PDF content length is insignificant')  
+                            self.logger.error('ERROR: PDF content length is insignificant')  
                             raise Exception
                         self.file_str = bytes        #output as bytes for binary file (PDF file, audio, image, etc.)
                     else:
-                        logger.error(f'ERROR: unaddressed content-type: {content_type}')
+                        self.logger.error(f'ERROR: unaddressed content-type: {content_type}')
                         raise Exception
                 else:
-                    logger.error(f'ERROR: when requesting url, got status-code: {resp.status_code}')
+                    self.logger.error(f'ERROR: when requesting url, got status-code: {resp.status_code}')
                     raise Exception
             except Exception:
-                logger.error(f'ERROR: in request for url: {self.url}')
+                self.logger.error(f'ERROR: in request for url: {self.url}')
             return resp
 
         def parse_artifact_from_suffix(resp):
@@ -367,7 +377,7 @@ class UniformResourceLocator:
                         self.file_format = result
                         self.file_document = soup
                 except:
-                    logger.error(f'ERROR: file for url {self.url} is invalid HTML')
+                    self.logger.error(f'ERROR: file for url {self.url} is invalid HTML')
                     result = None
             #pdf
             elif resp and self.url_type == 'pdf':
@@ -381,7 +391,7 @@ class UniformResourceLocator:
                     else:
                         raise Exception
                 except Exception:    #pypdf.errors.PdfReadError:
-                    logger.error(f'ERROR: file for url {resp.url} is invalid PDF')
+                    self.logger.error(f'ERROR: file for url {resp.url} is invalid PDF')
                     result = None
             #if no url (no file)
             else:

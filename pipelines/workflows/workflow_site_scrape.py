@@ -31,7 +31,7 @@ from src.Report import (
 """
 from src.models import prepare_models
 from src.io import load
-from tests.estimate_processing_time import ProcessTimeQrModel
+#from tests.estimate_processing_time import ProcessTimeQrModel
 
 from config._constants import (
     logging_dir,
@@ -51,9 +51,9 @@ class WorkflowSiteScrape(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/data/samples/')
-            CONFIG['WORKING_DIR'] = Path('./tests/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/tmp/OUTPUT')]
+            CONFIG['INPUT_DIR'] = Path('./tests/test_site_scrape/data/samples/')
+            CONFIG['WORKING_DIR'] = Path('./tests/test_site_scrape/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_site_scrape/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -176,7 +176,7 @@ class WorkflowSiteScrape(Workflow):
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/test_site_scrape/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema

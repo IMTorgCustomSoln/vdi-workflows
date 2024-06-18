@@ -18,6 +18,13 @@ xlsxwriter = "*"
 plotnine = "*"
 scikit-learn = "*"
 numpy = "*"
+tldextract = "*"
+requests-html = "*"
+beautifulsoup4 = "*"
+lxml = "*"
+python-whois = "*"
+lxml-html-clean = "*"
+googlesearch-python = "*"
 
 [dev-packages]
 

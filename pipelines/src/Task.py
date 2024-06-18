@@ -148,27 +148,33 @@ class ExportVdiWorkspaceTask(Task):
 
 
 from .Files import File
-from web.url import UniformResourceLocator
-from web.crawler import Crawler
+from .web.url import UniformResourceLocator
+from .web.crawler import Crawler, scenario
 
 class ValidateUrlsTask(Task):
     """..."""
 
     def run(self):
         input_files = [file for file in self.input_files.get_files()]
-        if len(input_files) > 1:
+        if len(input_files) < 1:
             self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
         input_file = input_files[0]
         urls = File(filepath=input_file, type='txt').load_file(return_content=True)
         url_list = [UniformResourceLocator(url) for url in urls]
-        ValidatedUrls = Crawler.check_urls_are_valid(url_list)
-        
-        out_file = File(filepath=self.output_files, type='txt')
+        scenario.url = urls[0]
+        crawler = Crawler(
+            scenario=scenario,
+            logger=self.config['LOGGER'],
+            exporter=''
+        )
+        ValidatedUrls = crawler.check_urls_are_valid(url_list)
+        outfile = self.output_files.directory / 'output.txt'
+        out_file = File(filepath=outfile, type='txt')
         out_file.content = ValidatedUrls
-        out_file.export_to_file()
-        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files from location {self.input_files.resolve().__str__()} ")
-        self.config['LOGGER'].info(f"validated {len(ValidatedUrls)} urls and saved to location {self.output_files.resolve().__str__()} ")
-        return True
+        check = out_file.export_to_file()
+        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+        self.config['LOGGER'].info(f"validated {len(ValidatedUrls)} urls and saved to location {self.output_files.directory.__str__()} ")
+        return check
 
 
 class CrawlUrlsTask(Task):
@@ -185,15 +191,22 @@ class CrawlUrlsTask(Task):
         #process
         results = []
         for Url in url_list:
-            UrlCrawl = Crawler(Url, self.config['LOGGER'])
+            #UrlCrawl = crawler(Url, self.config['LOGGER'])
+            scenario.url = Url
+            UrlCrawl = Crawler(
+                scenario=scenario,
+                logger=self.config['LOGGER'],
+                exporter=''
+                )
             result_urls = UrlCrawl.generate_href_chain()
             results.append(result_urls)
         #output
-        out_file = File(filepath=self.output_files, type='txt')
+        outfile = self.output_files.directory / 'output.txt'
+        out_file = File(filepath=outfile, type='txt')
         out_file.content = results
         out_file.export_to_file()
-        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files from location {self.input_files.resolve().__str__()} ")
-        self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.resolve().__str__()} ")
+        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+        self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
         return True
 
 

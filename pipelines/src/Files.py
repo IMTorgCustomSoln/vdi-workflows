@@ -21,11 +21,10 @@ class File:
 
     def __init__(self, filepath, type):
         filepath = Path(filepath).resolve()
-        if filepath.is_file():
-            self.filepath = filepath
-        else:
-            #raise TypeError
-            pass
+        if not filepath.is_file():
+            with open(filepath, 'w') as f_out:
+                f_out.write("")
+        self.filepath = filepath
         if type in File.types:
             self.type = type
         else:
@@ -37,7 +36,7 @@ class File:
         #support functions
         def import_text(filepath):
             with open(filepath, 'r') as f_in:
-                text_content = f_in.read()
+                text_content = f_in.readlines()
             return text_content
 
         def import_json(filepath):
@@ -51,6 +50,7 @@ class File:
             return workspace_json
         
         options = {
+            'txt-.txt': import_text,
             'text-.txt': import_text,
             'json-.json': import_json,
             'schema-.json': import_json,
@@ -72,7 +72,7 @@ class File:
     def export_to_file(self):
         """Export to file"""
         #support functions
-        def import_text(self, filepath):
+        def import_text(filepath):
             with open(filepath, 'w') as f_out:
                 if type(self.content)==list:
                     for item in self.content:
@@ -90,6 +90,7 @@ class File:
             return workspace_json
         '''
         options = {
+            'txt-.txt': import_text,
             'text-.txt': import_text,
             #'json-.json': import_json,
             #'schema-.json': import_json,
@@ -98,8 +99,8 @@ class File:
         #workflow
         ext = self.filepath.suffix
         key = f'{self.type}-{ext}'
-        self.content = options[key](self.filepath)
-        return True
+        check = options[key](self.filepath)
+        return check
 
 
     

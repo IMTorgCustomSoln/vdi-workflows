@@ -24,17 +24,22 @@ python main.py workflow_asr prepare_workspace
 
 ## TODO:
 
-* create .csv list of files that are in each batch .gz
-* perform analysis on log files to estimate processing time
+### ASR
+
+* ~~create .csv list of files that are in each batch .gz
+* ~~perform analysis on log files to estimate processing time
 * integrate tests/
   - ~~test_workflow_asr.py~~
   - test_prepare_config.py
   - test_export.py
   - test_export_to_vdi_workspace.py
   - test_main.py
+
+### Site_Scrape
+
 * make modules
   - EnteroDoc
-  - URL
+  - ~~URL
 * add new workflow-scraping
 * generalize classes for extensibility of workflows
 

@@ -22,7 +22,7 @@ from src.Report import (
 )
 from src.models import prepare_models
 from src.io import load
-from tests.estimate_processing_time import ProcessTimeQrModel
+from tests.test_asr.estimate_processing_time import ProcessTimeQrModel
 
 from config._constants import (
     logging_dir,
@@ -42,9 +42,9 @@ class WorkflowASR(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/data/samples/')
-            CONFIG['WORKING_DIR'] = Path('./tests/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/tmp/OUTPUT')]
+            CONFIG['INPUT_DIR'] = Path('./tests/test_asr/data/samples/')
+            CONFIG['WORKING_DIR'] = Path('./tests/test_asr/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_asr/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
