@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 URL to PDF Workflow
+
+
+TODO-remove: generalize so 'jpmorgan' references is added to scenario
+TODO-remove: generalize so scenario, 'list_of_search_terms', can be changed
 """
 
 __author__ = "Jason Beach"
@@ -168,15 +172,18 @@ class Crawler:
         while depth > -1:
             level_hrefs = []
             for url in hrefs:
-                Url = self._ensure_url_class(url)
-                check_owner = Url.has_same_url_owner_(BaseUrl)
-                if not (Url in searched_hrefs) and not check_owner:
-                    new_hrefs = Url.get_hrefs_within_hostname_(searched_hrefs = searched_hrefs)
-                    valid_hrefs = self.check_urls_are_valid(url_list = new_hrefs, 
-                                                       base_url = BaseUrl_JPM
-                                                       )
-                    searched_hrefs.add(Url)
-                    level_hrefs.extend(valid_hrefs)
+                try:
+                    Url = self._ensure_url_class(url)
+                    check_owner = Url.has_same_url_owner_(BaseUrl)
+                    if not (Url in searched_hrefs) and not check_owner:
+                        new_hrefs = Url.get_hrefs_within_hostname_(searched_hrefs = searched_hrefs)
+                        valid_hrefs = self.check_urls_are_valid(url_list = new_hrefs, 
+                                                           base_url = BaseUrl_JPM
+                                                           )
+                        searched_hrefs.add(Url)
+                        level_hrefs.extend(valid_hrefs)
+                except:
+                    self.logger.info(f'the following html extract could not be converted to class url: {url}')
             hrefs = list(set(level_hrefs))
             depth = depth - 1
 

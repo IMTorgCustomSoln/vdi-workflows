@@ -9,7 +9,7 @@ __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
 
-from src.modules.styled_text import StyledText
+from src.modules.styled_text.styled_text import StyledText
 from src.io import utils
 
 import os

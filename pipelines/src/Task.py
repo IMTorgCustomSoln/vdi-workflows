@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
 Task class
+
+
+TODO: apply `get_next_run_files()` to new Tasks
+  - but instead of simple review of files, apply to content of files
+  - ensure it picks-up at last url - it is currently only designed for last file
 """
 
 __author__ = "Jason Beach"
@@ -201,7 +206,7 @@ class CrawlUrlsTask(Task):
             result_urls = UrlCrawl.generate_href_chain()
             results.append(result_urls)
         #output
-        outfile = self.output_files.directory / 'output.txt'
+        outfile = self.output_files.directory / 'output.txt'    #TODO:output to json
         out_file = File(filepath=outfile, type='txt')
         out_file.content = results
         out_file.export_to_file()
@@ -210,8 +215,32 @@ class CrawlUrlsTask(Task):
         return True
 
 
+
+from src.modules.enterodoc.document_factory import DocumentFactory
+from src.modules.enterodoc.record import DocumentRecord
+
 class ConvertUrlDocToPdf(Task):
     """Download URL document to memory then convert to PDF Format."""
+
+    def run(self):
+        #input
+        input_files = [file for file in self.input_files.get_files()]
+        if len(input_files) > 1:
+            self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
+        input_file = input_files[0]
+        urls = File(filepath=input_file, type='txt').load_file(return_content=True)
+        #process
+        Doc = DocumentFactory()
+        results = []
+        for url in urls:
+            doc = Doc.build(url)
+            docrec = DocumentRecord()
+            result = docrec.validate_object_attrs(doc)
+            results.append(result)
+        #output
+        '''TODO:output as each document is a record, similar to workspace_asr
+        '''
+        return True
 
 
 #TODO REMOVE
