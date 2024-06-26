@@ -7,7 +7,7 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 #sys.path.append(Path('backend').absolute().as_posix() )
-from src.web.url import UniformResourceLocator
+from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 
 from pathlib import Path
 
@@ -20,7 +20,8 @@ hrefs = [
     'htt://somedomain.com',
     'http://domain.xml'
 ]
-urls = [UniformResourceLocator(url) for url in hrefs]
+URL = UrlFactory()
+urls = [URL.build(url) for url in hrefs]
 
 
 

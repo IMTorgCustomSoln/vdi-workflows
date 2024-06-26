@@ -12,7 +12,7 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 
-from .url import UniformResourceLocator
+from src.modules.enterodoc.url import UniformResourceLocator
 #from ..services._constants import logger
 
 import googlesearch

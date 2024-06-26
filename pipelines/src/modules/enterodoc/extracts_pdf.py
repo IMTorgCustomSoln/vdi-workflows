@@ -31,7 +31,7 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
-from entero_document.record import record_attrs, DocumentTemplate
+from .record import record_attrs, DocumentTemplate
 from .utils import timeout, get_clean_text
 
 #pdf

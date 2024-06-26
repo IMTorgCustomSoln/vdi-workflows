@@ -37,8 +37,11 @@ class ExtractsSuite:
 
     def extract_from_pdf(self, record):
         pdf_stream = ''
-        with open(record.filepath, 'rb') as f:
-            pdf_stream = f.read()
+        if not record.file_str:
+            with open(record.filepath, 'rb') as f:
+                pdf_stream = f.read()
+        else:
+            pdf_stream = record.file_str
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream)
         return result_record
 

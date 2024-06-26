@@ -25,6 +25,12 @@ lxml = "*"
 python-whois = "*"
 lxml-html-clean = "*"
 googlesearch-python = "*"
+faker = "*"
+pdftitle = "*"
+"pdfminer.six" = "*"
+pikepdf = "*"
+pymupdf = "*"
+xhtml2pdf = "*"
 
 [dev-packages]
 

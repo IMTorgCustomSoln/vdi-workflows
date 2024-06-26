@@ -34,16 +34,25 @@ class Task:
         self.name_diff = name_diff
     
     def get_next_run_files(self):
-        """Get the files that should be provided to run()
+        """Get the remaining files that should be provided to run()
+        Each record is an file and they are processed, individually, as opposed
+        to multiple records within a file.
+
         Typically:
         * get input files
         * get output files
         * get remainder files by comparing input to output
+
+        TODO:add as function to Files.py and ensure appropriate attr: .name, .stem, etc.
         """
-        input_names = set(self.input_files.get_files(type='name_only'))
-        processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type='name_only')])
+        Type = 'name_only'
+        input_names = set(self.input_files.get_files(type=Type))
+        processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
         remainder_names = list( input_names.difference(processed_names) )
-        remainder_paths = [file for file in self.input_files.get_files() if file.name in remainder_names]
+        if len(remainder_names)>0 and Type == 'name_only':
+            remainder_paths = [file for file in self.input_files.get_files() if file.stem in remainder_names]
+        else:
+            remainder_paths = []
         return remainder_paths
 
     def run(self):
@@ -138,47 +147,67 @@ class ExportVdiWorkspaceTask(Task):
             batch_span = f'{cnt+idx}-{len(batch)}'
             dt = datetime.datetime.now().isoformat().split('T')[0].replace('-','')
             export_filepath = self.target_folder / f'VDI_ApplicationStateData_v0.2.1_{dt}_{batch_span}.gz'    #v0.2.1_YYYYMMDD_0-100.gz
-            dialogues = [File(file, 'json').load_file(return_content=True)
+            #dialogues
+            if False:
+                documents = [File(file, 'json').load_file(return_content=True)
                          for file in batch
                          ]
-            check = export.export_to_output(
-                schema=self.config['WORKSPACE_SCHEMA'], 
-                dialogues=dialogues, 
-                filepath=export_filepath, 
-                output_type='vdi_workspace'
-                )
+                check = export.export_dialogues_to_output(
+                    schema=self.config['WORKSPACE_SCHEMA'], 
+                    records=documents, 
+                    filepath=export_filepath,
+                    output_type='vdi_workspace'
+                    )
+            #documents
+            if True:
+                file = batch[0]
+                documents = File(file, 'json').load_file(return_content=True)
+                check = export.export_documents_to_vdiworkspace(
+                    schema=self.config['WORKSPACE_SCHEMA'], 
+                    records=documents, 
+                    filepath=export_filepath
+                    )
             cnt = len(batch)
             self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")
         return True
 
 
 from .Files import File
-from .web.url import UniformResourceLocator
+from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 from .web.crawler import Crawler, scenario
 
 class ValidateUrlsTask(Task):
     """..."""
 
     def run(self):
+        """
         input_files = [file for file in self.input_files.get_files()]
         if len(input_files) < 1:
             self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
         input_file = input_files[0]
-        urls = File(filepath=input_file, type='txt').load_file(return_content=True)
-        url_list = [UniformResourceLocator(url) for url in urls]
-        scenario.url = urls[0]
-        crawler = Crawler(
-            scenario=scenario,
-            logger=self.config['LOGGER'],
-            exporter=''
-        )
-        ValidatedUrls = crawler.check_urls_are_valid(url_list)
-        outfile = self.output_files.directory / 'output.txt'
-        out_file = File(filepath=outfile, type='txt')
-        out_file.content = ValidatedUrls
-        check = out_file.export_to_file()
-        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-        self.config['LOGGER'].info(f"validated {len(ValidatedUrls)} urls and saved to location {self.output_files.directory.__str__()} ")
+        """
+        URL = UrlFactory()
+        input_files = self.get_next_run_files()
+        if len(input_files) == 1:
+            input_file = input_files[0]
+            urls = File(filepath=input_file, type='txt').load_file(return_content=True)
+            url_list = [URL.build(url) for url in urls]
+            scenario.url = urls[0]
+            crawler = Crawler(
+                scenario=scenario,
+                logger=self.config['LOGGER'],
+                exporter=''
+            )
+            ValidatedUrls = crawler.check_urls_are_valid(url_list)
+            outfile = self.output_files.directory / 'urls.txt'
+            out_file = File(filepath=outfile, type='txt')
+            out_file.content = ValidatedUrls
+            check = out_file.export_to_file()
+            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+            self.config['LOGGER'].info(f"validated {len(ValidatedUrls)} urls and saved to location {self.output_files.directory.__str__()} ")
+        else:
+            self.config['LOGGER'].info(f"urls previously validated")
+            check=True
         return check
 
 
@@ -186,36 +215,49 @@ class CrawlUrlsTask(Task):
     """..."""
 
     def run(self):
+        """
         #input
         input_files = [file for file in self.input_files.get_files()]
         if len(input_files) > 1:
             self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
         input_file = input_files[0]
-        urls = File(filepath=input_file, type='txt').load_file(return_content=True)
-        url_list = [UniformResourceLocator(url) for url in urls]
-        #process
-        results = []
-        for Url in url_list:
-            #UrlCrawl = crawler(Url, self.config['LOGGER'])
-            scenario.url = Url
-            UrlCrawl = Crawler(
-                scenario=scenario,
-                logger=self.config['LOGGER'],
-                exporter=''
-                )
-            result_urls = UrlCrawl.generate_href_chain()
-            results.append(result_urls)
-        #output
-        outfile = self.output_files.directory / 'output.txt'    #TODO:output to json
-        out_file = File(filepath=outfile, type='txt')
-        out_file.content = results
-        out_file.export_to_file()
-        self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-        self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
-        return True
+        """
+        URL = UrlFactory()
+        input_files = self.get_next_run_files()
+        if len(input_files) == 1:
+            input_file = input_files[0]
+            urls = File(filepath=input_file, type='txt').load_file(return_content=True)
+            url_list = [URL.build(url) for url in urls]
+            #process
+            results = {}
+            for Url in url_list:
+                #UrlCrawl = crawler(Url, self.config['LOGGER'])
+                scenario.url = Url
+                UrlCrawl = Crawler(
+                    scenario=scenario,
+                    logger=self.config['LOGGER'],
+                    exporter=''
+                    )
+                result_urls = UrlCrawl.generate_href_chain()
+                #results.append(result_urls)
+                k = str( list(result_urls.keys())[0] )
+                v = [str(item) for item in result_urls[Url]]
+                results[k] = v
+            #output
+            outfile = self.output_files.directory / 'urls.json'
+            out_file = File(filepath=outfile, type='json')
+            out_file.content = results
+            check = out_file.export_to_file()
+            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+        else:
+            self.config['LOGGER'].info(f"urls previously validated")
+            check=True
+        return check
 
 
 
+from src.modules.enterodoc.config import ConfigObj
 from src.modules.enterodoc.document_factory import DocumentFactory
 from src.modules.enterodoc.record import DocumentRecord
 
@@ -224,32 +266,76 @@ class ConvertUrlDocToPdf(Task):
 
     def run(self):
         #input
+        """
         input_files = [file for file in self.input_files.get_files()]
         if len(input_files) > 1:
             self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
         input_file = input_files[0]
-        urls = File(filepath=input_file, type='txt').load_file(return_content=True)
-        #process
-        Doc = DocumentFactory()
-        results = []
-        for url in urls:
-            doc = Doc.build(url)
-            docrec = DocumentRecord()
-            result = docrec.validate_object_attrs(doc)
-            results.append(result)
-        #output
-        '''TODO:output as each document is a record, similar to workspace_asr
-        '''
-        return True
+        """
+        URL = UrlFactory()
+        input_files = self.get_next_run_files()
+        if len(input_files) == 1:
+            input_file = input_files[0]
+            root_urls = File(filepath=input_file, type='json').load_file(return_content=True)
+            #process
+            ConfigObj.set_logger(self.config['LOGGER'])
+            Doc = DocumentFactory(ConfigObj)
+            results = []
+            for root, urls in root_urls.items():
+                for url_str in urls:
+                    url = URL.build(url_str)
+                    url.run_data_requests_()
+                    doc = Doc.build(url)
+                    docrec = DocumentRecord()
+                    try:
+                        check = docrec.validate_object_attrs(doc)
+                    except Exception as e:
+                        self.config['LOGGER'].info(f"DocumentRecord attribute validation error with url: {url_str}")
+                        self.config['LOGGER'].info(e)
+                        continue
 
+                    #format
+                    #TODO:use pickle to keep all data
+                    #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
+                    doc['filepath'] = str(doc['filepath'])
+                    doc['file_str'] = str(doc['file_str'])
+                    doc['date'] = str(doc['date'])
+                    del doc['file_document']
+                    #end changes
+                    results.append(doc.record)
+        
+            #output
+            outfile = self.output_files.directory / 'urls.json'
+            out_file = File(filepath=outfile, type='json')
+            out_file.content = results
+            check = out_file.export_to_file()
+            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+        else:
+            self.config['LOGGER'].info(f"urls previously validated")
+            check=True
+        return check
 
-#TODO REMOVE
-class DownloadlUrlsTask(Task):
-    """..."""
-
-#TODO REMOVE
-class ConvertPdfsTask(Task):
-    """..."""
 
 class ApplyModelsTask(Task):
-    """..."""
+    """Apply models to each doc record text."""
+
+    def run(self):
+        input_files = self.get_next_run_files()
+        if len(input_files) == 1:
+            input_file = input_files[0]
+            docs = File(filepath=input_file, type='json').load_file(return_content=True)
+            results = []
+            for doc in docs:
+                results.append(doc)
+            #output
+            outfile = self.output_files.directory / 'urls.json'
+            out_file = File(filepath=outfile, type='json')
+            out_file.content = results
+            check = out_file.export_to_file()
+            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+        else:
+            self.config['LOGGER'].info(f"urls previously validated")
+            check=True
+        return check

@@ -130,7 +130,7 @@ import copy
 from datetime import datetime
 
 
-def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
+def export_dialogues_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
     """...
     
     TODO: separate excel from vdi_workspace
@@ -277,3 +277,71 @@ def export_to_output(schema, dialogues, filepath, output_type='vdi_workspace'):
         with gzip.open(filepath_export_wksp_gzip, 'wb') as f_out:
             f_out.write( bytes(json.dumps(workspace_schema, default=utils.date_handler), encoding='utf8') )    #TODO: datetime handlder, ref: https://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
         return True
+    
+
+
+def export_documents_to_vdiworkspace(schema, records, filepath):
+    """...
+    
+    """
+    workspace_schema = copy.deepcopy(schema)
+    documents_schema = workspace_schema['documentsIndex']['documents']
+    documents = []
+    for idx, rec in enumerate(records):
+        document_record = copy.deepcopy(documents_schema)
+        #raw
+        document_record['id'] = str(idx)
+        document_record['body_chars'] = None    #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
+        document_record['body_pages'] = None                                                                           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
+        document_record['date_created'] = rec['date']
+        #document_record['length_lines'] = None    #0
+        #document_record['length_lines_array'] = None    #[26, 26, 7, 
+        document_record['page_nos'] = rec['page_nos']
+        document_record['length_lines'] = rec['length_lines']
+        #data_array = {idx: val for idx,val in enumerate(list( rec['byte_string'] ))}        #new list of integers that are the ascii values of the byte string
+        document_record['dataArray'] = rec['file_str']
+        document_record['toc'] = rec['toc']
+        document_record['pp_toc'] = rec['pp_toc']
+        document_record['clean_body'] = ''.join(rec['clean_body'])
+        #file info
+        #record_path = Path(rec['dialogue']['file_path'])
+        document_record['file_extension'] = rec['file_extension']
+        document_record['file_size_mb'] = rec['file_size_mb']
+        document_record['filename_original'] = rec['filename_original']
+        document_record['title'] = rec['title']
+        document_record['filepath'] = rec['filepath']
+        document_record['filetype'] = rec['filetype']
+        document_record['author'] = rec['author']
+        document_record['subject'] = rec['subject']
+        #models
+        if 'classifier' in rec.keys():
+            highest_pred_target = max(rec['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+            hit_count = len([model for model in rec['dialogue']['classifier'] if model!={}])
+            models = rec['dialogue']['classifier']
+            time_asr = rec['time_asr']
+            time_textmdl = rec['time_textmdl']
+        else:
+            highest_pred_target = {}
+            hit_count = None
+            models = None
+            time_asr = None
+            time_textmdl = None
+        document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
+        document_record['hit_count'] = hit_count
+        document_record['time_asr'] = time_asr
+        document_record['time_textmdl'] = time_textmdl
+        #display
+        document_record['snippets'] = []
+        document_record['summary'] = "TODO:summary"
+        document_record['_showDetails'] = False
+        document_record['_activeDetailsTab'] = 0
+        document_record['models'] = models
+        documents.append(document_record)
+    #validate
+    workspace_schema['documentsIndex']['documents'] = documents
+    #export
+    #filepath_export_wksp_gzip = Path('./tests/results/VDI_ApplicationStateData_vTEST.gz')
+    filepath_export_wksp_gzip = filepath
+    with gzip.open(filepath_export_wksp_gzip, 'wb') as f_out:
+        f_out.write( bytes(json.dumps(workspace_schema, default=utils.date_handler), encoding='utf8') )    #TODO: datetime handlder, ref: https://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
+    return True

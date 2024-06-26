@@ -17,8 +17,7 @@ from src.Files import Files
 from src.Task import (
     ValidateUrlsTask,
     CrawlUrlsTask,
-    DownloadlUrlsTask,
-    ConvertPdfsTask,
+    ConvertUrlDocToPdf,
     ApplyModelsTask,
     ExportVdiWorkspaceTask
 )
@@ -66,10 +65,9 @@ class WorkflowSiteScrape(Workflow):
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
             DIR_CRAWLED = CONFIG['WORKING_DIR'] / '2_CRAWLED'
-            DIR_DOWNLOADED = CONFIG['WORKING_DIR'] / '3_DOWNLOADED'
-            DIR_CONVERTED = CONFIG['WORKING_DIR'] / '4_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '5_MODELS_APPLIED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '6_OUTPUT'
+            DIR_CONVERTED = CONFIG['WORKING_DIR'] / '3_CONVERTED'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '4_MODELS_APPLIED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '5_OUTPUT'
 
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
@@ -87,17 +85,12 @@ class WorkflowSiteScrape(Workflow):
             crawled_files = Files(
                 name='crawled',
                 directory=DIR_CRAWLED,
-                extension_patterns=['.txt']
-                )
-            downloaded_files = Files(
-                name='downloaded',
-                directory=DIR_DOWNLOADED,
-                extension_patterns=['.htm', '.html', '.pdf']
+                extension_patterns=['.json','.pickle']
                 )
             converted_files = Files(
                 name='converted',
                 directory=DIR_CONVERTED,
-                extension_patterns=['.pdf']
+                extension_patterns=['.json']
                 )
             models_applied_files = Files(
                 name='models_applied',
@@ -113,7 +106,6 @@ class WorkflowSiteScrape(Workflow):
                 'input_files': input_files,
                 'validated_files': validated_files,
                 'crawled_files': crawled_files,
-                'downloaded_files': downloaded_files,
                 'converted_files': converted_files,
                 'models_applied_files': models_applied_files,
                 'output_files': output_files
@@ -129,14 +121,9 @@ class WorkflowSiteScrape(Workflow):
                 input=validated_files,
                 output=crawled_files
             )
-            download_task = DownloadlUrlsTask(
+            convert_task = ConvertUrlDocToPdf(
                 config=CONFIG,
                 input=crawled_files,
-                output=downloaded_files
-            )
-            convert_task = ConvertPdfsTask(
-                config=CONFIG,
-                input=downloaded_files,
                 output=converted_files
             )
             apply_models_task = ApplyModelsTask(
@@ -152,7 +139,6 @@ class WorkflowSiteScrape(Workflow):
             tasks = [
                 validate_task,
                 crawl_task,
-                download_task,
                 convert_task,
                 apply_models_task,
                 output_task

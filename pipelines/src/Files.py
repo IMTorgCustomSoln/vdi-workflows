@@ -13,11 +13,12 @@ import os
 from pathlib import Path
 import json
 import gzip
+import pickle
 
 
 class File:
     """..."""
-    types = ['txt','json','schema','workspace']#TODO:,'archive']
+    types = ['txt','json','pickle','schema','workspace']#TODO:,'archive']
 
     def __init__(self, filepath, type):
         filepath = Path(filepath).resolve()
@@ -43,6 +44,11 @@ class File:
             with open(filepath, 'r') as f:
                 json_content = json.load(f)
             return json_content
+        
+        def import_pickle(filepath):
+            with open(filepath, 'rb') as f:
+                content = pickle.load(f)
+            return content
             
         def import_workspace(filepath):
             with gzip.open(filepath, 'rb') as f:
@@ -53,6 +59,7 @@ class File:
             'txt-.txt': import_text,
             'text-.txt': import_text,
             'json-.json': import_json,
+            'pickle-.pickle': import_pickle,
             'schema-.json': import_json,
             'workspace-.gz': import_workspace
         }
@@ -72,27 +79,34 @@ class File:
     def export_to_file(self):
         """Export to file"""
         #support functions
-        def import_text(filepath):
+        def export_text(filepath):
             with open(filepath, 'w') as f_out:
                 if type(self.content)==list:
                     for item in self.content:
                         f_out.write(f"{item}\n")
             return True
-        '''TODO:complete
-        def import_json(filepath):
+        
+        def export_json(filepath):
             with open(filepath, 'w') as f:
-                json_content = json.load(f)
-            return json_content
-            
+                json.dump(self.content, f)
+            return True
+        
+        def export_pickle(filepath):
+            with open(filepath, 'wb') as f:
+                pickle.dump(self.content, f)
+            return True
+        
+        '''TODO:complete    
         def import_workspace(filepath):
             with gzip.open(filepath, 'wb') as f:
                 workspace_json = json.load(f)
             return workspace_json
         '''
         options = {
-            'txt-.txt': import_text,
-            'text-.txt': import_text,
-            #'json-.json': import_json,
+            'txt-.txt': export_text,
+            'text-.txt': export_text,
+            'json-.json': export_json,
+            'pickle-.pickle': export_pickle,
             #'schema-.json': import_json,
             #'workspace-.gz': import_workspace
         }
@@ -125,11 +139,17 @@ class Files:
         """Return files from smallest to largest by size"""
         def get_full_path(file):
             return file
-        def get_name_only(file):
+        def get_name_and_suffix(file):
             return file.name
+        def get_name_without_suffix(file):
+            return file.stem
+        def get_name_only(file):
+            return file.stem.split('.')[0]
         options = {
             'full_path': get_full_path,
-            'name_only': get_name_only
+            'name_and_suffix': get_name_and_suffix,
+            'name_without_suffix': get_name_without_suffix,
+            'name_only': get_name_only,
         }
         files = [{'file': file, 'size':file.stat().st_size} 
                  for file in self.directory.rglob('*')
