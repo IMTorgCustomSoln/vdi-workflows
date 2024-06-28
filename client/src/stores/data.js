@@ -144,19 +144,23 @@ export class DocumentRecord{
       }
 
       // body items
-      let bodyArr = Object.values(this.body_pages)
-      this.body = bodyArr.length > 0 ? bodyArr.reduce((partialSum, a) => partialSum += (a || 0)) : ''
-      let clean_body = this.body
-      this.clean_body = clean_body
-      this.html_body = clean_body     //.replaceAll("\n\n", "<br>")
-      this.summary = clean_body.slice(0, 500)   //TODO:apply model to summarize text
+      if(this.clean_body==null){
+        let bodyArr = Object.values(this.body_pages)
+        this.body = bodyArr.length > 0 ? bodyArr.reduce((partialSum, a) => partialSum += (a || 0)) : ''
+        let clean_body = this.body
+        this.clean_body = clean_body
+      }
+      this.html_body = this.clean_body     //.replaceAll("\n\n", "<br>")
+      this.summary = this.clean_body.slice(0, 500)   //TODO:apply model to summarize text
       this.pp_toc = this.toc.map(section => `${section.title} (pg.${section.pageNumber})`)
 
       // prepare page numbers for search snippets
       //item.accumPageLines = item.length_lines_array.map((sum => value => sum += value)(0))    //.map((sum = 0, n => sum += n))  -> assignment to undeclared variable
-      let charArr = Object.values(this.body_chars)
-      this.accumPageChars = charArr.map((sum => value => sum += value)(0))    //.map((sum = 0, n => sum += n))  -> assignment to undeclared variable
-      // prepare images
+      if(this.body_chars!=null){
+        let charArr = Object.values(this.body_chars)
+        this.accumPageChars = charArr.map((sum => value => sum += value)(0))    //.map((sum = 0, n => sum += n))  -> assignment to undeclared variable
+      }
+        // prepare images
       //this.canvas_array = this.canvas_array.sort((a, b) => a.idx - b.idx)
       this.selected_snippet_page = 1
       if(this.models==null){

@@ -297,10 +297,10 @@ class ConvertUrlDocToPdf(Task):
                     #format
                     #TODO:use pickle to keep all data
                     #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
-                    doc['filepath'] = str(doc['filepath'])
-                    doc['file_str'] = str(doc['file_str'])
-                    doc['date'] = str(doc['date'])
-                    del doc['file_document']
+                    doc.record['filepath'] = str(doc.record['filepath'])
+                    doc.record['file_str'] = str(doc.record['file_str'])
+                    doc.record['date'] = str(doc.record['date'])
+                    del doc.record['file_document']
                     #end changes
                     results.append(doc.record)
         

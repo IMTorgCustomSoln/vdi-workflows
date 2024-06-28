@@ -12,7 +12,7 @@ from workflows.workflow_site_scrape import workflow_site_scrape
 
 def test_workflow_site_scrape_prepare_models():
     check1 = workflow_site_scrape.prepare_models()
-    assert True == True
+    assert check1 == True
 
 def test_workflow_site_scrape_prepare_workspace():
     check1 = workflow_site_scrape.prepare_workspace()

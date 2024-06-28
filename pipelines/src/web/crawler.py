@@ -12,7 +12,7 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 
-from src.modules.enterodoc.url import UniformResourceLocator
+from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 #from ..services._constants import logger
 
 import googlesearch
@@ -74,17 +74,18 @@ class Crawler:
     """
 
     def __init__(self, scenario, logger, exporter):
-        self.scenario = scenario
-        self.scenario.url = self._ensure_url_class(scenario.url)
         self.logger = logger
         self.exporter = exporter
+        self.url_factory = UrlFactory()
+        self.scenario = scenario
+        self.scenario.url = self._ensure_url_class(scenario.url)
 
     def __repr__(self):
         return self.scenario.url
     
     def _ensure_url_class(self, url):
         """Provide url of class UniformResourceLocator if not one already."""
-        result = url if type(url) == UniformResourceLocator else UniformResourceLocator(url)
+        result = url if type(url) == UniformResourceLocator else self.url_factory.build(url)
         return result
     
     def check_urls_are_valid(self, url_list, base_url=''):
@@ -125,7 +126,7 @@ class Crawler:
     def get_initial_url_list(self, url, list_of_search_terms=[]):
         """Get initial list of urls from google given search terms."""
         NumberOfSearchResults = 5
-        BaseUrl = UniformResourceLocator('https://www.jpmorgan.com')
+        BaseUrl = self.url_factory.build('https://www.jpmorgan.com')
         domain = url.get_domain()
 
         term_permutations = list(itertools.permutations(list_of_search_terms, r=2))
@@ -144,7 +145,7 @@ class Crawler:
                                                      sleep_interval = 1 
                                                      )
                 unique_urls = [url for url in search_results if url not in result_url_list]
-                SearchUrls = [UniformResourceLocator(result) for result in unique_urls]
+                SearchUrls = [self.url_factory.build(result) for result in unique_urls]
                 ValidUrls = self.check_urls_are_valid(url_list = SearchUrls, 
                                                  base_url = BaseUrl
                                                  )
@@ -160,7 +161,7 @@ class Crawler:
         This is similar to `wget --recursive http://site.com`, but it removes 
         links that are out of scope.
         """
-        BaseUrl_JPM = UniformResourceLocator('https://www.jpmorgan.com')
+        BaseUrl_JPM = self.url_factory.build('https://www.jpmorgan.com')
         searched_hrefs = set()
         BaseUrl = self._ensure_url_class(base_url)
         #if len(initial_url_list) == 0:
