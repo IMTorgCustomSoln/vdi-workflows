@@ -298,7 +298,7 @@ class ConvertUrlDocToPdf(Task):
                     #TODO:use pickle to keep all data
                     #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
                     doc.record['filepath'] = str(doc.record['filepath'])
-                    doc.record['file_str'] = str(doc.record['file_str'])
+                    doc.record['file_str'] = [x for x in doc.record['file_str']]    #convert bytes to uInt8Array for json
                     doc.record['date'] = str(doc.record['date'])
                     del doc.record['file_document']
                     #end changes

@@ -212,8 +212,9 @@ def export_dialogues_to_output(schema, dialogues, filepath, output_type='vdi_wor
         documents = []
         for idx, pdf in enumerate(pdfs):
             document_record = copy.deepcopy(documents_schema)
+            byttes = ''.join(list(pdf['byte_string']))
             pdf_pages = {}
-            with io.BytesIO(pdf['byte_string']) as open_pdf_file:
+            with io.BytesIO(byttes) as open_pdf_file:
                 reader = PdfReader(open_pdf_file)
                 for page in range( len(reader.pages) ):
                     text = reader.pages[page].extract_text()
@@ -289,6 +290,18 @@ def export_documents_to_vdiworkspace(schema, records, filepath):
     documents = []
     for idx, rec in enumerate(records):
         document_record = copy.deepcopy(documents_schema)
+
+        #for body_pages, but is it necessary???
+        #byte_string = bytes(rec['file_str'].encode('utf-8'))
+        '''
+        pdf_pages = {}
+        with io.BytesIO(byte_string) as open_pdf_file:
+            reader = PdfReader(open_pdf_file)
+            for page in range( len(reader.pages) ):
+                text = reader.pages[page].extract_text()
+                pdf_pages[page+1] = text
+        '''
+
         #raw
         document_record['id'] = str(idx)
         document_record['body_chars'] = None    #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
@@ -298,7 +311,10 @@ def export_documents_to_vdiworkspace(schema, records, filepath):
         #document_record['length_lines_array'] = None    #[26, 26, 7, 
         document_record['page_nos'] = rec['page_nos']
         document_record['length_lines'] = rec['length_lines']
-        #data_array = {idx: val for idx,val in enumerate(list( rec['byte_string'] ))}        #new list of integers that are the ascii values of the byte string
+
+        #data_array = {idx: val for idx,val in enumerate(list( byte_string ))} 
+        #data_array = [x for x in byte_string]
+        #document_record['dataArray'] = data_array
         document_record['dataArray'] = rec['file_str']
         document_record['toc'] = rec['toc']
         document_record['pp_toc'] = rec['pp_toc']
