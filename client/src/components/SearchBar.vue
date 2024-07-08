@@ -35,6 +35,7 @@ import { useUserContent } from '@/stores/UserContent'
 
 import Guide from '@/components/support/Guide.vue'
 //import {DocumentIndexData} from '@/components/support/data'
+import { getUniqueOrderedByCount } from '@/components/support/utils.js'
 
 export default {
     name: 'SearchBar',
@@ -326,7 +327,15 @@ The results are ordered by the 'Score' column, which is a weighted formula of th
             phrases.push(...removeDuplicatesUsingSet(resultGroups.map(item => item.phrase)))
             const rawKeyTerms = phrases.flat().filter(item => item.trim().split(' ').length == 1)
             const keyTerms = rawKeyTerms.length > 0 ? rawKeyTerms : ['...no single-key terms used']
-            const formattedTerms = [keyTerms.join('\u00A0 ...\n \u00A0\u00A0\u00A0\u00A0')]
+            //const formattedTerms = [keyTerms.join('\u00A0 ...\n \u00A0\u00A0\u00A0\u00A0')]
+            const uniqueKeyTerms = getUniqueOrderedByCount(keyTerms)
+            let formattedTerms = ''
+            if(uniqueKeyTerms.length >= 5){
+                const remainingCount = uniqueKeyTerms.length - 5
+                formattedTerms = getUniqueOrderedByCount(keyTerms).slice(5).join(', ') + `... with ${remainingCount} other terms`
+            }else{
+                formattedTerms = getUniqueOrderedByCount(keyTerms).join(', ')
+            }
             let totalCount = 0
             if (resultGroups.length > 0) {
                 totalCount = resultGroups.map(item => item.positions.length).map((sum => value => sum += value)(0))[resultGroups.length - 1]

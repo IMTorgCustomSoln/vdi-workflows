@@ -13,9 +13,9 @@
             id="pdf-js-viewer" title="IFrameViewer" frameborder="0"
             @load="iframeLoaded" 
             :src="getPath"
-            sandbox="allow-same-origin allow-scripts"
+            
             width="100%" height="100%">
-        </iframe>
+        </iframe>    <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
     </div>
 </template>
   

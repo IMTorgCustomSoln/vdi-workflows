@@ -58,17 +58,20 @@ python create_estimation_model.py --input_dir = "./tests/logs/"
 
 __Staging__
 
-* style
-  - ~~sort Score by descending~~
-  - ~~Round Score numbers~~
-  - ~~Add number of hits as count column in Table~~
-  - ~~Search score is updated in column~~
-  - ~~Hit count is updated in column~~
-  - ~~terms used: get key terms~~
-  - ~~READ > text block: enable scrolling~~
-  - ~~READ > improve space efficiency in panels~~
-
 * errors
+  - (vdi errors.png)Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
+  - 'Hits' from Workspace are not appearing in client => ?
+  - 'Terms used' is way too many terms => SearchBar.vue,ln.329
+  - Search > Models
+    - 'Hits' of 0 should be a 'Score' of 0 => fix in `pipelines/`
+    - Table > Score may be high, but there are 0 'hits', sort by 'Hits' then 'Score' => refer above^^^
+  - ~~Load Workspace~~ => need cypress
+  - Save Workspace
+  - Search score notes for definition => maybe not necessary after above^^^ fixed
+  - (vdi errors.png)~~An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing~~
+  - additional errors
+* issues
+    - on page change, get `TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.` => do I have multiple versions of pdfjs???
   - ~~'Add More Files' fails~~ => seems to work
   - ~~READ > text block: try / catch for PdfViewer~~
   - PdfViewer error on: i) first try of port, ii) `Disable cache`  - pdfjs-dist not being loaded???  This is difficult to reproduce.
@@ -82,8 +85,10 @@ __Staging__
     Message: Setting up fake worker failed: "Failed to fetch dynamically imported module: http://localhost:4002/pdfjs-4.0.379-dist/build/pdf.worker.mjs"
     ```
   - [ref](https://stackoverflow.com/questions/45532733/how-to-add-ui-and-toolbar-to-pdf-js-viewer), [ref](https://github.com/mozilla/pdf.js/tree/master/examples/components), [ref](https://github.com/alekswebnet/pdfjs-viewer-element)
-  - TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.
-  - Search score notes => definition
+
+
+
+
 
 * search 
   - ~~dropdown for search type~~

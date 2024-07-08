@@ -17,6 +17,33 @@ export function isEmpty(obj) {
 
 // ProcessData
 
+export function onlyUnique(value, index, array){
+  /*Get unique values from array
+
+  ex, ref: https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates
+    var a = ['a', 1, 'a', 2, '1'];
+    var unique = a.filter(onlyUnique);
+    console.log(unique)    //['a', 1, 2, '1']
+  */
+  return array.indexOf(value) === index;
+}
+
+export function getUniqueOrderedByCount(array){
+  /*Get the unique items of the array ordered by their original count of occurrences.
+  ex, ref: https://stackoverflow.com/questions/22010520/sort-by-number-of-occurrencecount-in-javascript-array
+  var allTypesArray = ["4", "4", "2", "2", "2", "6", "2", "6", "6"];
+  getUniqueOrderedByCount(allTypesArray)    //["2","6","4"]
+  */
+  const mappedArr = array.reduce(function(p, c) {
+    p[c] = (p[c] || 0) + 1;
+    return p;
+  }, {});
+  const newTypesArray = Object.keys(mappedArr).sort(function(a, b) {
+    return mappedArr[b] - mappedArr[a];
+  });
+  return newTypesArray
+}
+
 export function getEstimatedProcessTime(fileCount, fileSizeInBytes){
   /* Get the estimated time to process a file, in human-
   readable minutes or seconds.

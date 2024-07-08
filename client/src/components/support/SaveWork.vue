@@ -8,7 +8,7 @@
         v-b-modal="'save-continue-modal'"
         variant="primary"
         class=""
-        :disabled="true"
+        :disabled="false"
         >
         {{ btnText }}
     </b-button>
