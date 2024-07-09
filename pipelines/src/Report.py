@@ -128,18 +128,18 @@ class MapBatchFilesReport(Report):
     
 
 class ProcessTimeAnalysisReport(Report):
-    """..."""
+    """TODO: what is this for, how does it work???"""
 
     def run(self):
-
         #find most-recent report
         dirpath = self.config['WORKING_DIR'] / 'Reports'
         if not dirpath.is_dir():
             raise Exception(f'no directory: {dirpath}')
         mx = (None, 0)
         for file in dirpath.glob('**/*'):
-            if file.is_file():
-                filename_part = file.stem.split('report-batch_files')[1]
+            if file.is_file() and 'report-batch_files' in file.stem:
+                file_stem_split = file.stem.split('report-batch_files')
+                filename_part = file_stem_split[1]
                 dt_str = filename_part.split('_')[0] 
                 tm_str = f"T{filename_part.split('_')[1].replace('-',':')}"
                 dt = int( datetime.datetime.fromisoformat(dt_str+tm_str).timestamp() )
@@ -147,6 +147,9 @@ class ProcessTimeAnalysisReport(Report):
                     mx = (file, dt)
 
         #get distribution of times
-        df = pd.read_csv(mx[0])
-
+        try:
+            df = pd.read_csv(mx[0])
+        except Exception as e:
+            print(e)
+            return False
         return True

@@ -26,6 +26,15 @@ date_handler = lambda obj: (
 )
 
 
+def remove_all_extensions_from_filename(filename):
+    """Given a filename str, remove all `.*` substrings"""
+    new_filename = filename
+    ptrn = '.'
+    while ptrn in new_filename:
+        new_filename = filename.split(ptrn)[0]
+    return new_filename
+
+
 def get_next_batch_from_list(lst, batch_count):
     """...."""
     if type(lst)==list:

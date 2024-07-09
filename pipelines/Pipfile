@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 setfit = "*"
-transformers = "==4.36.0"
 fpdf = "*"
 pypdf = "*"
 pytest = "*"
@@ -17,7 +16,6 @@ logzero = "*"
 xlsxwriter = "*"
 plotnine = "*"
 scikit-learn = "*"
-numpy = "*"
 tldextract = "*"
 requests-html = "*"
 beautifulsoup4 = "*"
@@ -31,6 +29,8 @@ pdftitle = "*"
 pikepdf = "*"
 pymupdf = "*"
 xhtml2pdf = "*"
+numpy = "*"
+transformers = "*"
 
 [dev-packages]
 

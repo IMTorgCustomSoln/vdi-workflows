@@ -13,7 +13,7 @@ from src.Files import Files
 from src.Task import (
     UnzipTask,
     AsrWithTextClassificationTask,
-    ExportVdiWorkspaceTask
+    ExportAsrToVdiWorkspaceTask
 )
 from src.Report import (
     TaskStatusReport,
@@ -55,9 +55,9 @@ class WorkflowASR(Workflow):
             self.config = CONFIG
             #working dirs
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
-            DIR_UNZIPPED = CONFIG['WORKING_DIR'] / 'UNZIPPED'
-            DIR_PROCESSED = CONFIG['WORKING_DIR'] / 'PROCESSED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / 'OUTPUT'
+            DIR_UNZIPPED = CONFIG['WORKING_DIR'] / '1_UNZIPPED'
+            DIR_PROCESSED = CONFIG['WORKING_DIR'] / '2_PROCESSED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
 
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
@@ -100,7 +100,7 @@ class WorkflowASR(Workflow):
                 output=processed_files,
                 name_diff='.json'
             )
-            output_task = ExportVdiWorkspaceTask(
+            output_task = ExportAsrToVdiWorkspaceTask(
                 config=CONFIG,
                 input=processed_files,
                 output=output_files
@@ -129,7 +129,7 @@ class WorkflowASR(Workflow):
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/test_asr/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema

@@ -15,6 +15,7 @@ __license__ = "AGPL-3.0"
 
 from src.Files import File
 from src.io import export
+from src.io import utils
 
 from pathlib import Path
 import sys
@@ -50,7 +51,9 @@ class Task:
         processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
         remainder_names = list( input_names.difference(processed_names) )
         if len(remainder_names)>0 and Type == 'name_only':
-            remainder_paths = [file for file in self.input_files.get_files() if file.stem in remainder_names]
+            remainder_paths = [file for file in self.input_files.get_files() 
+                               if utils.remove_all_extensions_from_filename(file.stem) in remainder_names    #TODO:possible error for workflow_site_scrape
+                               ]
         else:
             remainder_paths = []
         return remainder_paths
@@ -122,7 +125,7 @@ class AsrWithTextClassificationTask(Task):
         return True
 
 
-class ExportVdiWorkspaceTask(Task):
+class ExportAsrToVdiWorkspaceTask(Task):
     """Export files to a VDI Workspace file."""
 
     def __init__(self, config, input, output):
@@ -147,26 +150,15 @@ class ExportVdiWorkspaceTask(Task):
             batch_span = f'{cnt+idx}-{len(batch)}'
             dt = datetime.datetime.now().isoformat().split('T')[0].replace('-','')
             export_filepath = self.target_folder / f'VDI_ApplicationStateData_v0.2.1_{dt}_{batch_span}.gz'    #v0.2.1_YYYYMMDD_0-100.gz
-            #dialogues
-            if False:
-                documents = [File(file, 'json').load_file(return_content=True)
+            dialogues = [File(file, 'json').load_file(return_content=True)
                          for file in batch
                          ]
-                check = export.export_dialogues_to_output(
-                    schema=self.config['WORKSPACE_SCHEMA'], 
-                    records=documents, 
-                    filepath=export_filepath,
-                    output_type='vdi_workspace'
-                    )
-            #documents
-            if True:
-                file = batch[0]
-                documents = File(file, 'json').load_file(return_content=True)
-                check = export.export_documents_to_vdiworkspace(
-                    schema=self.config['WORKSPACE_SCHEMA'], 
-                    records=documents, 
-                    filepath=export_filepath
-                    )
+            check = export.export_dialogues_to_output(
+                schema=self.config['WORKSPACE_SCHEMA'], 
+                dialogues=dialogues, 
+                filepath=export_filepath, 
+                output_type='vdi_workspace'
+                )
             cnt = len(batch)
             self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")
         return True
@@ -339,3 +331,53 @@ class ApplyModelsTask(Task):
             self.config['LOGGER'].info(f"urls previously validated")
             check=True
         return check
+    
+
+class ExportVdiWorkspaceTask(Task):
+    """Export files to a VDI Workspace file."""
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_folder = output.directory
+
+    def run(self):
+        #load schema
+        workspace_filepath = self.config['WORKING_DIR'] / 'workspace_schema_v0.2.1.json'
+        if workspace_filepath.is_file():
+            self.config['WORKSPACE_SCHEMA'] = File(workspace_filepath, 'schema').load_file(return_content=True)
+            self.config['LOGGER'].info(f"workspace schema loaded")
+        else:
+            self.config['LOGGER'].info(f"run prepare() to load workspace schema")
+            sys.exit()
+
+        #export by batch
+        processed_files = self.get_next_run_files()
+        cnt = 0
+        for idx, batch in enumerate( utils.get_next_batch_from_list(processed_files, self.config['BATCH_COUNT']) ):
+            self.config['LOGGER'].info("begin export")
+            batch_span = f'{cnt+idx}-{len(batch)}'
+            dt = datetime.datetime.now().isoformat().split('T')[0].replace('-','')
+            export_filepath = self.target_folder / f'VDI_ApplicationStateData_v0.2.1_{dt}_{batch_span}.gz'    #v0.2.1_YYYYMMDD_0-100.gz
+            #dialogues
+            if False:
+                documents = [File(file, 'json').load_file(return_content=True)
+                         for file in batch
+                         ]
+                check = export.export_dialogues_to_output(
+                    schema=self.config['WORKSPACE_SCHEMA'], 
+                    records=documents, 
+                    filepath=export_filepath,
+                    output_type='vdi_workspace'
+                    )
+            #documents
+            if True:
+                file = batch[0]
+                documents = File(file, 'json').load_file(return_content=True)
+                check = export.export_documents_to_vdiworkspace(
+                    schema=self.config['WORKSPACE_SCHEMA'], 
+                    records=documents, 
+                    filepath=export_filepath
+                    )
+            cnt = len(batch)
+            self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")
+        return True
