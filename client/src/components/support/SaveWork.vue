@@ -21,14 +21,22 @@
         <br>
         <!-- Explanation TODO:fix-->
         <div v-if="description">
+
             <p>
+                <bold style="font-weight: bold">Without a save file configuration, closing your browser will cause all work to be lost.</bold> <br><br>
+                You must manually save your Workspace to a file if you wish to return to it, in the future.  This can be imported, later, to continue where you last saved.<br><br>
+            
+            <!--TODO:auto-save feature
             For the Workspace to be automatically saved you must configure a save file.  <bold style="font-weight: bold">Without a save file configuration, closing 
             your browser will cause all work to be lost.</bold> This can be imported, later, to continue where you last saved.<br><br> 
-            
+            -->
+            <!--
             The current configuration is:
             <ul class="no-li-dot">
                 <li><label for="fileName">File: &nbsp</label><output id="fileName">{{ config.fileName }}</output></li>
                 <li><div>
+
+                    
                     <label for="autoSave">Autosave: &nbsp</label>
                     <input 
                         type="checkbox"
@@ -37,9 +45,12 @@
                         unchecked-value="false"
                         variant="primary"
                         >
+                    
+
                 </div>
                 </li>
-            </ul>
+            </ul>-->
+            
 
             <div v-if="resultDisplay.error" style="color: red">
                 {{resultDisplay.error}}
