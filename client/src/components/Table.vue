@@ -12,10 +12,18 @@
         <b-row>
             <b-col :cols="this.appDisplayStore.views.attrs.table.colsTable">
                 <b-table hover :items="items" :fields="fields" :filter="tableFilter" :filter-function="onFiltered"
-                    :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :sort-direction="desc"
+                    :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :sort-direction="desc" :head-variant="headVariant"
                     primary-key='id' striped small responsive="sm"
                     sticky-header="1000px" bordered thead-class="tableHead bg-dark text-white"
                     @row-clicked="expandAdditionalInfo">
+
+                    <!-- Custom formatted header cell -->
+                    <template #head(sort_key)="data">
+                        <span class="col-info">{{ data.label.toUpperCase() }} <Guide v-bind="guides.score" /></span>
+                    </template>
+                    <template #head(hit_count)="data">
+                        <span class="col-info">{{ data.label.toUpperCase() }} <Guide v-bind="guides.hit" /></span>
+                    </template>
 
                     <template #cell(show_details)="row">
                         <!-- As `row.showDetails` is one-way, we call the toggleDetails function on @change -->
@@ -184,6 +192,7 @@ export default {
             tableFilter: [],
             sortBy: 'sort_key',
             sortDesc: true,
+            headVariant: 'dark',
 
             totalDocuments: 0,
             activeDetailsTab: 1,
@@ -205,7 +214,28 @@ the text.
 At the end of the snippet of text is a \`Note\` button.  When clicked, the Managed
 Notes sidebar displays and the text snippet appears in the Staging Area.  It is 
 ready to be organized with the note Topics.`
-                }
+                },
+                score:{
+                    id: 'score',
+                    variantCustom: '#a4ff92',
+                    title: '\'Text Classification\' Score Description',
+                    markdown: `Score of how similar some sentences within the document 
+are to pre-determined target phrases.  The higher the score, the more similar the text 
+to what you're targeting.  This is inferred using custom-trained text classification 
+models.  
+
+_Note: models may classify text as being very similar to the targeted text; however, 
+\`Hit\` count may be zero because it looks for specific terms._`
+                },
+                hit:{
+                    id: 'hit',
+                    variantCustom: '#a4ff92',
+                    title: '\'Key Term\' Hit Count Description',
+                    markdown: `Count of exact key terms found within a document.
+
+_Note: \`Hit\` count may be zero because exact terms are not found, but \`Score\` can be
+high because terms are found that are very similar to the exact terms._`
+                },
             }
         }
     },
@@ -489,6 +519,11 @@ ready to be organized with the note Topics.`
 
 
 <style scoped>
+.col-info {
+    color: #a4ff92;
+}
+
+
 .fixed-medium {
     width: 94px !important;
     margin: 5px;

@@ -60,14 +60,14 @@ __Staging__
 
 * errors
   - (vdi errors.png)Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
-  - 'Hits' from Workspace are not appearing in client => ?
+  - 'Hits' from Workspace are not appearing in client => ?maybe none found using current test data.
   - 'Terms used' is way too many terms => SearchBar.vue,ln.329
   - Search > Models
     - ~~'Hits' of 0 should be a 'Score' of 0 => fix in `pipelines/`~~ NO: 'Hits' refers to keywords, 'Score' refers to probability
     - ~~Table > Score may be high, but there are 0 'hits', sort by 'Hits' then 'Score'~~ => refer above^^^
   - ~~Load Workspace~~ => need cypress
-  - Save Workspace
-  - Search score notes for definition => maybe not necessary after above^^^ fixed
+  - ~~Save Workspace with model results~~
+  - ~~Search score notes for definition => maybe not necessary after above^^^~~ => provided Guides
   - (vdi errors.png)~~An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing~~
   - additional errors
 * issues
