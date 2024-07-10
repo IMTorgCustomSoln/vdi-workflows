@@ -324,13 +324,15 @@ export default {
         },
         uploadInput() {
             // Load files into records
-            this.uploadBtn = true
-            uploadFiles.bind(this)(uploadInput.files).then(
-                (recs) => {
-                    this.importedFiles.push(...recs)
-                    this.getResultDisplay()
-                    this.processBtn = false
-                })
+            if(this.preview.fileCount>0){
+                this.uploadBtn = true
+                uploadFiles.bind(this)(uploadInput.files).then(
+                    (recs) => {
+                        this.importedFiles.push(...recs)
+                        this.getResultDisplay()
+                        this.processBtn = false
+                    })
+                }
         },
         processData() {
             // Process files by adding / modifying attributes
@@ -351,29 +353,37 @@ export default {
             //actual process time
             const finalLogItemIdx = this.progressBar.importLogs.length
             const finalLogItem = this.progressBar.importLogs[finalLogItemIdx - 1]
-            const endTime = parseInt(finalLogItem.split(':')[0])
-            const startTime = parseInt(this.progressBar.importLogs[0].split(':')[0])
-            const duration = endTime - startTime    //in milliseconds, index based on performance.now() integer length
-            this.resultDisplay = { ...this.resultDisplay, actualProcessTime: getFormattedMilliseconds(duration) }
+            if(finalLogItem!=undefined){
+                const endTime = parseInt(finalLogItem.split(':')[0])
+                const startTime = parseInt(this.progressBar.importLogs[0].split(':')[0])
+                const duration = endTime - startTime    //in milliseconds, index based on performance.now() integer length
+                this.resultDisplay = { ...this.resultDisplay, actualProcessTime: getFormattedMilliseconds(duration) }
 
-            //check files for searchable text
-            for (const file of this.processedFiles) {
-                check_PageCount = file.bodyArr.filter(pageCharCount => pageCharCount < 1000)
-                if (check_PageCount.length > 0) {
-                    this.resultDisplay.checkFilesUsable.push(file.filepath)
+                //check files for searchable text
+                for (const file of this.processedFiles) {
+                    check_PageCount = file.bodyArr.filter(pageCharCount => pageCharCount < 1000)
+                    if (check_PageCount.length > 0) {
+                        this.resultDisplay.checkFilesUsable.push(file.filepath)
+                    }
                 }
-            }
             this.resultDisplay.display = true
+            }
         },
 
 
         previewWorkspace() {
             // Preview files to upload and process
             const file = uploadAppDataInput.files[0]
-            const fileSize = getFormattedFileSize(file.size)
-            this.preview = { ...this.preview, fileSize: fileSize }
-            this.preview = { ...this.preview, fileName: file.name }
-            this.uploadWorkspaceBtn = false
+            if(file!=undefined){
+                const fileSize = getFormattedFileSize(file.size)
+                this.preview = { ...this.preview, fileSize: fileSize }
+                this.preview = { ...this.preview, fileName: file.name }
+                this.uploadWorkspaceBtn = false
+            }else{
+                this.preview = { ...this.preview, fileSize: '<not applicable>' }
+                this.preview = { ...this.preview, fileName: 'None' }
+                this.uploadWorkspaceBtn = false
+            }
         },
         /*
         previewServer() {
@@ -405,6 +415,7 @@ export default {
             this.btnText = 'Add More Files'
         },*/
         async uploadAppDataInput() {
+            if(uploadAppDataInput.files.length > 0){
             let buffer = ''
             let stream = uploadAppDataInput.files[0].stream()
             //const reader = stream.getReader()
@@ -445,6 +456,7 @@ export default {
             this.disableWorkspaceBtn = true
             this.resetModal()
             this.btnText = 'Add More Files'
+        }
 
         },
         uploadServerInput() {

@@ -63,8 +63,8 @@ __Staging__
   - 'Hits' from Workspace are not appearing in client => ?
   - 'Terms used' is way too many terms => SearchBar.vue,ln.329
   - Search > Models
-    - 'Hits' of 0 should be a 'Score' of 0 => fix in `pipelines/`
-    - Table > Score may be high, but there are 0 'hits', sort by 'Hits' then 'Score' => refer above^^^
+    - ~~'Hits' of 0 should be a 'Score' of 0 => fix in `pipelines/`~~ NO: 'Hits' refers to keywords, 'Score' refers to probability
+    - ~~Table > Score may be high, but there are 0 'hits', sort by 'Hits' then 'Score'~~ => refer above^^^
   - ~~Load Workspace~~ => need cypress
   - Save Workspace
   - Search score notes for definition => maybe not necessary after above^^^ fixed

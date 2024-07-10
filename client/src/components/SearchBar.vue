@@ -326,7 +326,7 @@ The results are ordered by the 'Score' column, which is a weighted formula of th
             //const resultIds = removeDuplicatesUsingSet(resultGroups.filter(item => item.positions.length > 0).map(result => result.ref))
             phrases.push(...removeDuplicatesUsingSet(resultGroups.map(item => item.phrase)))
             const rawKeyTerms = phrases.flat().filter(item => item.trim().split(' ').length == 1)
-            const keyTerms = rawKeyTerms.length > 0 ? rawKeyTerms : ['...no single-key terms used']
+            const keyTerms = rawKeyTerms    //.length > 0 ? rawKeyTerms : ['...no single-key terms used']
             //const formattedTerms = [keyTerms.join('\u00A0 ...\n \u00A0\u00A0\u00A0\u00A0')]
             const uniqueKeyTerms = getUniqueOrderedByCount(keyTerms)
             let formattedTerms = ''

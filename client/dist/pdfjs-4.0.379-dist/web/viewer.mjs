@@ -14381,7 +14381,8 @@ function backtrackBeforeAllVisibleElements(index, views, top) {
   if (index < 2) {
     return index;
   }
-  let elt = views[index].div;
+  let elt = views[index].div;     //REPLACE BY JHB TO FIX PAGE CHANGE ERROR, ref: https://github.com/VadimDez/ng2-pdf-viewer/issues/224
+  //var elt = views[index-1].div;
   let pageTop = elt.offsetTop + elt.clientTop;
   if (pageTop >= top) {
     elt = views[index - 1].div;
