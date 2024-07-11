@@ -11808,10 +11808,9 @@ class PDFViewer {
     this.update();
   }
   #scrollIntoView(pageView, pageSpot = null) {
-    const {
-      div,
-      id
-    } = pageView;
+    if(pageView!=undefined){
+    const {div,id} = pageView;
+    }
     if (this._currentPageNumber !== id) {
       this._setCurrentPageNumber(id);
     }
