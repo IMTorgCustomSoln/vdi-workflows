@@ -78,7 +78,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                 dialogue = json.load(f)
                 dialogues.append(dialogue)
 
-
+    '''
     #run classification models on each: chunk,item
     from src.models.classification import classifier
 
@@ -93,6 +93,7 @@ def run_workflow(config, sound_files, intermediate_save_dir=None, infer_text_cla
                     dialogues[idx]['classifier'].append({})
         dialogues[idx]['time_textmdl'] = time.time() - config['START_TIME']
         config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
+    '''
                
 
     #save

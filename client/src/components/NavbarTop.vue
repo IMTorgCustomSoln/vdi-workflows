@@ -2,7 +2,7 @@
   <div>
     <b-navbar toggleable="lg" type="dark" variant="dark">
 
-      <b-navbar-brand href="#">Logo</b-navbar-brand>
+      <b-navbar-brand ><MyLogo id="logo"/></b-navbar-brand>
 
       <!--TOOD issue: why the warning-->
       <b-navbar-nav class="ml-auto middle">
@@ -23,7 +23,7 @@
         <b-nav-form>
         <!--TODO task: fix profile
         <b-button sz="sm" class="my-2 my-sm-0" @click="modalAccount">-->
-          <b-button @click="modalAccount">
+          <b-button @click="modalAccount" :disabled="true">
           {{ this.userContentStore.name }}
         </b-button>
         <!--<b-nav-item href="#">About</b-nav-item>-->
@@ -54,6 +54,8 @@ import { mapStores } from 'pinia'
 import { useAppDisplay } from '@/stores/AppDisplay'
 import { useUserContent } from '@/stores/UserContent'
 
+import MyLogo from '@/assets/logo.svg?component'
+
 
 export default {
   name: 'NavbarTop',
@@ -61,8 +63,8 @@ export default {
     ImportData,
     Sidebar,
     SaveWork,
-    About
-
+    About,
+    MyLogo
   },
   data() {
     return {
@@ -83,6 +85,10 @@ export default {
 </script>
 
 <style scoped>
+#logo{
+  width: 50px;
+  height: 50px;
+}
 .navbar-brand {
   margin-right: 40px;
   margin-left: 40px;

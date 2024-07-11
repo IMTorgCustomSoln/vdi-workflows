@@ -7,7 +7,7 @@ import { camelize } from '@/components/support/utils.js'
 export const useUserContent = defineStore('userContent', {
     state:() => {
         return{
-            name: 'John Doe',
+            name: '<John Doe>',
 
             //temporary staging
             processedFiles: [],

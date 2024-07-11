@@ -12,7 +12,8 @@ from src.Workflow import Workflow
 from src.Files import Files
 from src.Task import (
     UnzipTask,
-    AsrWithTextClassificationTask,
+    AsrTask,
+    TextClassificationTask,
     ExportAsrToVdiWorkspaceTask
 )
 from src.Report import (
@@ -43,6 +44,7 @@ class WorkflowASR(Workflow):
         try:
             #user input
             CONFIG['INPUT_DIR'] = Path('./tests/test_asr/data/samples/')
+            CONFIG['TRAINING_DATA_DIR'] = Path('./tests/test_asr/data/model_training/')     #Path('./src/data/covid/')
             CONFIG['WORKING_DIR'] = Path('./tests/test_asr/tmp/')
             CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_asr/tmp/OUTPUT')]
 
@@ -57,7 +59,8 @@ class WorkflowASR(Workflow):
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_UNZIPPED = CONFIG['WORKING_DIR'] / '1_UNZIPPED'
             DIR_PROCESSED = CONFIG['WORKING_DIR'] / '2_PROCESSED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
+            DIR_CLASSIFIED = CONFIG['WORKING_DIR'] / '3_CLASSIFIED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '4_OUTPUT'
 
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
@@ -77,6 +80,11 @@ class WorkflowASR(Workflow):
                 directory=DIR_PROCESSED,
                 extension_patterns=['.json']
                 )
+            classified_files = Files(
+                name='classified',
+                directory=DIR_CLASSIFIED,
+                extension_patterns=['.json']
+                )
             output_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
@@ -94,20 +102,27 @@ class WorkflowASR(Workflow):
                 input=input_files,
                 output=unzip_files
                 )
-            models_task = AsrWithTextClassificationTask(
+            models_task = AsrTask(
                 config=CONFIG,
                 input=unzip_files,
                 output=processed_files,
                 name_diff='.json'
             )
-            output_task = ExportAsrToVdiWorkspaceTask(
+            classified_task = TextClassificationTask(
                 config=CONFIG,
                 input=processed_files,
+                output=classified_files,
+                name_diff='.json'
+            )
+            output_task = ExportAsrToVdiWorkspaceTask(
+                config=CONFIG,
+                input=classified_files,
                 output=output_files
             )
             tasks = [
                 unzip_task, 
                 models_task,
+                classified_task,
                 output_task
                 ]
             self.tasks = tasks

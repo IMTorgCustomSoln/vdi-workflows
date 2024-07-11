@@ -60,8 +60,8 @@ __Staging__
 
 * errors
   - (vdi errors.png)Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
-  - 'Hits' from Workspace are not appearing in client => ?maybe none found using current test data.
-  - 'Terms used' is way too many terms => SearchBar.vue,ln.329
+  - ~~'Hits' from Workspace are not appearing in client => ?maybe none found using current test data - YES.~~
+  - ~~'Terms used' is way too many terms => SearchBar.vue,ln.329~~
   - load previous Workspace > load new document > save Workspace > load Workspace > Read single document: `PdfViewer.vue:209, TypeError: Cannot convert undefined or null to object`
   - Search > Models
     - ~~'Hits' of 0 should be a 'Score' of 0 => fix in `pipelines/`~~ NO: 'Hits' refers to keywords, 'Score' refers to probability

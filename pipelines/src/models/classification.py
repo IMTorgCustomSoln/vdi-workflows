@@ -11,6 +11,7 @@ import torch
 from setfit import SetFitModel
 
 from pathlib import Path
+import copy
 
 
 #load models
@@ -21,28 +22,38 @@ model = SetFitModel.from_pretrained(model_path)
 model.to(device)
 
 
-def classifier(chunk):
-    """Importable function to run assigned models."""
-    result = []
-    models = [
-        kw_classifier,
-        phrase_classifier,
-        fs_classifier
-    ]
-    for model in models:
-        result.append( model(chunk) )
-
-    return result
 
 
-def kw_classifier(chunk):
+class Classifier:
     """..."""
+    def __init__(self):
+        pass
+    
+    def config(self, config):
+        self.config = copy.deepcopy(config)
+        self.models = [
+            kw_classifier,
+            phrase_classifier,
+            fs_classifier
+        ]
+        with open(self.config['TRAINING_DATA_DIR'] / 'pos_kw.txt', 'r') as file:
+            kw_lines = file.readlines()
+        self.config['KEYWORDS'] = [ ' ' + word.replace('\n','') + ' ' for word in kw_lines]      #ensure spacing around word
+        
+    def run(self, chunk):
+        """Importable function to run assigned models."""
+        result = []
+        for model in self.models:
+            result.append( model(self.config, chunk) )
+        return result
+    
 
-    data_path = Path('./src/data')
-    with open(data_path / 'pos_kw.txt', 'r') as file:
-        kw_lines = file.readlines()
-    KEYWORDS = [ ' ' + word.replace('\n','') + ' ' for word in kw_lines]      #ensure spacing around word
+TextClassifier = Classifier()
 
+
+
+def kw_classifier(config, chunk):
+    """..."""
     result = {
         'search': 'KW',
         'target': None,
@@ -50,7 +61,7 @@ def kw_classifier(chunk):
         'pred': None
         }
     hits = []
-    for word in KEYWORDS:
+    for word in config['KEYWORDS']:
         if word in chunk['text']:
             hits.append(word)
     #words = word_tokenize(chunk['text'])
@@ -63,12 +74,12 @@ def kw_classifier(chunk):
         return None
     
 
-def phrase_classifier(chunk):
+def phrase_classifier(config, chunk):
     """..."""
     return None
 
 
-def fs_classifier(chunk):
+def fs_classifier(config, chunk):
     """..."""
     result = {
         'search': 'FS',

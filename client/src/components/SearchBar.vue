@@ -14,7 +14,7 @@
                     </b-dropdown>
                 </template>
 
-                <b-form-input type="text" class="form-control" id="search-field" v-model="query" @input="searchQuery"
+                <b-form-input type="search" class="form-control" id="search-field" v-model="query" @input="searchQuery"
                     :disabled="queryOptions[selectedIdx].disablePrompt" placeholder="type search text here..." />
             </b-input-group>
             <div id="results-summary">

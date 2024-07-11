@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { viteSingleFile } from "vite-plugin-singlefile"
+import svgLoader from 'vite-svg-loader'
 import topLevelAwait from "vite-plugin-top-level-await"     //ref: https://github.com/vitejs/vite/issues/6985
 
 import dotenv from 'dotenv'
@@ -29,6 +30,7 @@ export default ({mode}) => {
     plugins: [
       vue(),
       viteSingleFile(),
+      svgLoader({ svgo: false }),
       topLevelAwait({
         // The export name of top-level await promise for each chunk module
         promiseExportName: "__tla",
