@@ -11,6 +11,8 @@ http-server ./dist
 
 ## Develop
 
+Check the latest pdfjs-dist version, `Prebuilt (modern browsers)`, [here](https://mozilla.github.io/pdf.js/getting_started/#download).  Ensure it is added to `client/public/pdfjs-dist`.  
+
 Begin interactive (hot-reload) development with command:
 
 ```

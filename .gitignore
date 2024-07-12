@@ -3,6 +3,8 @@
 #client/tests/data/broken_examples/
 #client/tests/data/profiles/
 client/tests/data/TMP/*
+client/public/pdfjs-dist/*
+
 pipelines/pretrained_models/*
 pipelines/runs/*
 pipelines/tests/tmp/*
