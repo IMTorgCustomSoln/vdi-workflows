@@ -437,6 +437,7 @@ export default {
                     const check2 = await doc_rec.setProcessedFileData()
                 }
                 const check3 = await doc_rec.setDataArray()
+                doc_rec.dataArray = null
                 object.documentsIndex.documents[idx] = doc_rec
             }
             //lunr index

@@ -48,7 +48,6 @@ describe('search across files', () => {
       cy.get(':nth-child(4) > .snippet > div').click();
       cy.get(':nth-child(5) > .snippet > div').click();
       cy.get(':nth-child(6) > .snippet > div').click();
-      /* ==== End Cypress Studio ==== */
     }),
     it('search Models with backend workspace ', () => {
       cy.visit('/')

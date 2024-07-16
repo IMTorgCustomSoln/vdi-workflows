@@ -43,7 +43,12 @@ export default {
                 const app = await this.getApp
                 await this.loadDoc()
                 this.search(tgtText)
-                app.page = pg     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                try{
+                    app.page = pg     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                }catch (error) {
+                    console.log('TODO: this is a known bug in mozilla pdfjs-dist.  It will be solved with a future release')
+                    console.log(error)
+                }
             }
         },
     },
@@ -205,11 +210,13 @@ export default {
             const app = await this.getApp  //document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication
             const doc = this.getDocument
             if (doc.id != this.currentDocumentId) {
-                const dataArray = await toRaw(doc.getDataArray())
-                const tgt = { data: Object.values(dataArray.dataArray) }
                 try{
+                    const dataArray = await toRaw(doc.getDataArray())
+                    const tgt = { data: Object.values(dataArray.dataArray) }
                     await app.open(tgt)
-                }catch{/*
+                }catch (error){
+                    console.log(error)
+                    /*
                     alert(
                         `*** ALERT: Please press 'OK' then reload the page. ***\n\nThis error is caused by an unavailable 'worker' provided by the server.  It will be solved in a future release.
                         `

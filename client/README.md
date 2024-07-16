@@ -72,15 +72,23 @@ npm run cy:open
 
 __Staging__
 
-* errors
-  - (vdi errors.png)Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
-  - load previous Workspace > load new document > save Workspace > load Workspace > Read single document: `PdfViewer.vue:209, TypeError: Cannot convert undefined or null to object`
-  - on page change, get `TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.` => do I have multiple versions of pdfjs???
+* errors, testing, qaqc
+  - (vdi errors.png) Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
+  - new pdfjs-dist
+  - ~~load previous Workspace > load new document > save Workspace > load Workspace > Read single document: `PdfViewer.vue:209, TypeError: Cannot convert undefined or null to object`~~
+  - on page change, get `TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.` 
+    => do I have multiple versions of pdfjs??? 
+    => this may be caused by the `paneling` where the iframe is set
+  - ~~cypress e2e testing~~
+  - ~~ensure compatability of both Workspaces and individual documents~~
+  - remove uncommented / old code
+  - favicon
 
 * search 
   - ~~dropdown for search type~~
   - ~~searchExact() does not work~~
   - ~~fix Guide which no longer uses backticks: `checkBackticks`~~
+  - reduce `DocumentRecord()` size to improve search speed
   - implement concept search
     + [orama client vector search db: full text and vector](https://github.com/askorama/orama)
     + [mediapipe](https://developers.google.com/mediapipe/solutions/text/text_embedder/web_js)
