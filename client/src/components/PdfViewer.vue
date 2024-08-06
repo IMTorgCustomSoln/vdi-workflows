@@ -1,24 +1,23 @@
 <template>
+    <div style="background-color: black; color: white; text-align: center;">
+        <b>{{ this.getCurrendDoc.title }}</b>
+    </div>
     <div style="background-color: black;">
         <b-button-group size="sm">
             <b-button @click="loadDoc">Load Selected Doc</b-button>
             <b-button @click="highlightText">Hightlight Text</b-button>
             <b-button @click="extractTextRadio">Select Text ({{ formatBoolean(this.extractText) }})</b-button>
             <b-button @click="extractImageRadio" :disabled="true">Select Image ({{ formatBoolean(this.extractImage)
-            }})</b-button>
+                }})</b-button>
         </b-button-group>
     </div>
     <div id="pageContainer" @srcData="">
-        <iframe ref="frame" 
-            id="pdf-js-viewer" title="IFrameViewer" frameborder="0"
-            @load="iframeLoaded" 
-            :src="getPath"
-            
+        <iframe ref="frame" id="pdf-js-viewer" title="IFrameViewer" frameborder="0" @load="iframeLoaded" :src="getPath"
             width="100%" height="100%">
-        </iframe>    <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
+        </iframe> <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
     </div>
 </template>
-  
+
 
 <script>
 import { toRaw } from 'vue'
@@ -35,7 +34,7 @@ export default {
             handler: async function (newVal, oldVal) {
                 let pg = 1
                 let tgtText = ''
-                if(newVal.snippet!=''){
+                if (newVal.snippet != '') {
                     const txtPg = parseInt(newVal.snippet.split('<b>pg.')[1].split('|')[0])
                     pg = txtPg <= 1 ? txtPg : txtPg - 1
                     tgtText = newVal.snippet.split('<b style="background-color: yellow">')[1].split('</b>')[0]
@@ -43,9 +42,9 @@ export default {
                 const app = await this.getApp
                 await this.loadDoc()
                 this.search(tgtText)
-                try{
+                try {
                     app.page = pg     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
-                }catch (error) {
+                } catch (error) {
                     console.log('TODO: this is a known bug in mozilla pdfjs-dist.  It will be solved with a future release')
                     console.log(error)
                 }
@@ -68,16 +67,20 @@ export default {
     },
     computed: {
         ...mapStores(useAppDisplay, useUserContent),
-        getPath(){ 
+        getPath() {
             return this.pathViewer + this.query //+ this.pathFile //<<< default pdf
         },
-        async getApp() { 
+        async getApp() {
             const app = await document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication
             return app
         },
         getDocument() {
             const docId = this.userContentStore.getSelectedDocument
-            return this.userContentStore.documentsIndex.documents.filter(item => item.id==docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect
+            return this.userContentStore.documentsIndex.documents.filter(item => item.id == docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect
+        },
+        getCurrendDoc() {
+            const id = this.currentDocumentId ? this.currentDocumentId : 0
+            return this.userContentStore.documentsIndex.documents.filter(item => item.id == id)[0]
         }
     },
     methods: {
@@ -210,11 +213,11 @@ export default {
             const app = await this.getApp  //document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication
             const doc = this.getDocument
             if (doc.id != this.currentDocumentId) {
-                try{
+                try {
                     const dataArray = await toRaw(doc.getDataArray())
                     const tgt = { data: Object.values(dataArray.dataArray) }
                     await app.open(tgt)
-                }catch (error){
+                } catch (error) {
                     console.log(error)
                     /*
                     alert(
@@ -322,7 +325,7 @@ function createRectDiv(boundBox, highlightColor) {
 
 
 </script>
-  
+
 <style>
 #pageContainer {
     /*position: absolute;*/

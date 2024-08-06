@@ -3,7 +3,7 @@
         <b-button size="sm" variant="primary" v-on:click="expandAll" class="fixed-medium">Expand All</b-button>
         <b-button size="sm" variant="primary" v-on:click="collapseAll" class="fixed-medium">Collapse All</b-button>
     </div>
-    <div  v-if="this.userContentStore.documentsIndex.documents">
+    <div v-if="this.userContentStore.documentsIndex.documents">
         <!--refs
             * showDetails: https://stackoverflow.com/questions/52327549/bootstrap-vue-table-show-details-when-row-clicked
             * reactivity: https://github.com/bootstrap-vue/bootstrap-vue/issues/2960
@@ -13,16 +13,20 @@
             <b-col :cols="this.appDisplayStore.views.attrs.table.colsTable">
                 <b-table hover :items="items" :fields="fields" :filter="tableFilter" :filter-function="onFiltered"
                     :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :sort-direction="desc" :head-variant="headVariant"
-                    primary-key='id' striped small responsive="sm"
-                    sticky-header="1000px" bordered thead-class="tableHead bg-dark text-white"
+                    primary-key='id' striped small responsive="sm" sticky-header="1000px" bordered
+                    thead-class="tableHead bg-dark text-white" select-mode="single" selectable
                     @row-clicked="expandAdditionalInfo">
 
                     <!-- Custom formatted header cell -->
                     <template #head(sort_key)="data">
-                        <span class="col-info">{{ data.label.toUpperCase() }} <Guide v-bind="guides.score" /></span>
+                        <span class="col-info">{{ data.label.toUpperCase() }}
+                            <Guide v-bind="guides.score" />
+                        </span>
                     </template>
                     <template #head(hit_count)="data">
-                        <span class="col-info">{{ data.label.toUpperCase() }} <Guide v-bind="guides.hit" /></span>
+                        <span class="col-info">{{ data.label.toUpperCase() }}
+                            <Guide v-bind="guides.hit" />
+                        </span>
                     </template>
 
                     <template #cell(show_details)="row">
@@ -85,7 +89,7 @@
             </b-col>
 
 
-            <b-col ><!--:cols="this.appDisplayStore.views.attrs.table.collsSnippets">-->
+            <b-col><!--:cols="this.appDisplayStore.views.attrs.table.collsSnippets">-->
                 <!-- TODO: 
                     * create Search Snippets component
                     * keep guide with snippets
@@ -95,15 +99,21 @@
                 <div
                     v-if="appDisplayStore.views.viewSelection == 'read' && userContentStore.documentsIndex.documents.length > 0">
                     <div class="itemconfiguration snippet_container">
-                        <h3>Search Results</h3>
-                        <div>
+                        <div style="color: black; text-align: center;">
+                            <b>{{ this.getDocument.title }}</b>
+                        </div>
+                        <!--<h3>Search Results</h3>-->
+                        <div class="snippet-header">
                             <b>Search results in {{ getSearchSnippets.length }} text-block hits: </b>
                             <Guide v-bind="guides.snippet" />
-                        </div>    
-                            <div v-if="getSearchSnippets.length < 1" @click="selectSnippetPage(this.userContentStore.getSelectedDocument, '')">
-                                Select a document from the table or `PRESS` to view document pages.
-                            </div>
-                            <div v-else id="search-results" v-for="(snippet, index) in getSearchSnippets">
+                        </div>
+                        <div v-if="getSearchSnippets.length < 1"
+                            @click="selectSnippetPage(this.userContentStore.getSelectedDocument, '')">
+                            Select a document from the table or `PRESS` to display document pages.
+                        </div>
+                        <div v-else id="search-results">
+                            <!--<div v-else id="search-results" v-for="(snippet, index) in getSearchSnippets">-->
+                            <div v-for="(snippet, index) in getSearchSnippets">
                                 <div class="snippet" @click="selectSnippetPage(index, snippet)">
                                     <div v-html="snippet"></div>
                                     <!--
@@ -111,8 +121,9 @@
                                         <b-button size="sm" v-on:click="postNote($event)">Note
                                         </b-button>-->
                                 </div>
-                                <br />
+                                <!--<br />-->
                             </div>
+                        </div>
                     </div>
                 </div>
             </b-col>
@@ -215,7 +226,7 @@ At the end of the snippet of text is a \`Note\` button.  When clicked, the Manag
 Notes sidebar displays and the text snippet appears in the Staging Area.  It is 
 ready to be organized with the note Topics.`
                 },
-                score:{
+                score: {
                     id: 'score',
                     variantCustom: '#a4ff92',
                     title: '\'Text Classification\' Score Description',
@@ -227,7 +238,7 @@ models.
 _Note: models may classify text as being very similar to the targeted text; however, 
 \`Hit\` count may be zero because it looks for specific terms._`
                 },
-                hit:{
+                hit: {
                     id: 'hit',
                     variantCustom: '#a4ff92',
                     title: '\'Key Term\' Hit Count Description',
@@ -239,7 +250,7 @@ high because terms are found that are very similar to the exact terms._`
             }
         }
     },
-    mounted(){
+    mounted() {
         this.createTable()
 
     },
@@ -247,7 +258,11 @@ high because terms are found that are very similar to the exact terms._`
         ...mapStores(useUserContent, useAppDisplay),
         getSearchSnippets() {
             const selected = this.userContentStore.getSelectedDocument.toString()
-            return this.items.filter(item => item.id==selected)[0].snippets
+            return this.items.filter(item => item.id == selected)[0].snippets
+        },
+        getDocument() {
+            const docId = this.userContentStore.getSelectedDocument
+            return this.userContentStore.documentsIndex.documents.filter(item => item.id == docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect
         }
     },
     methods: {
@@ -283,7 +298,7 @@ high because terms are found that are very similar to the exact terms._`
                         if (idx <= -1) {
                             //empty search
                             this.resetItem(item)
-                        } else if(resultFile.score == 'NaN'){
+                        } else if (resultFile.score == 'NaN') {
                             //this.searchModel()
                             const record = this.$props.records.filter(rec => rec.id == item.id)[0]
                             item.sort_key = record.sort_key
@@ -346,64 +361,64 @@ high because terms are found that are very similar to the exact terms._`
                         console.log(positionGroups)
 
                         //create array of snippts
-                        if(positionGroups.length == 0){
+                        if (positionGroups.length == 0) {
                             //item.snippets.push(null)          //TODO:this effects whether a snippet is displayed in Table!!!
-                        }else{
-                        for (let grp of positionGroups) {
-                            const snippet = []
-                            /*
-                            item.body_chars - object of each page's length indexed from pageNum (unordered)
-                            item.accumPageChars - array of each page's length indexed from first (zero-indexed) page (ordered)
-
-                            Document Snippets
-                            * resultGrps - array of all hits within a doc
-                            * positionGroups - array (snippets) of arrays (hits)
-                            * grp - snippet of targets
-
-                            Starting Header references the position from which the snippet starts
-                            * pageNum - page (human, 1-indexed) the snippet begins
-                            * startFromPage - starting character for snippet on that page
-                            * endPage - count of characters for that page
-                            */
-                            for (let [index, pos] of grp.entries()) {
-                                //initial target
-                                if (index == 0) {
-                                    const start = pos[0] - MARGIN > 0 ? pos[0] - MARGIN : 0
-                                    const pageIdx = item.accumPageChars.map(val => { return start < val }).indexOf(true)
-                                    //starting header
-                                    const pageNum = parseInt(pageIdx) + 1
-                                    const startFromPage = pageIdx == 0 ? start : start - item.accumPageChars[pageIdx - 1]
-                                    const endPage = item.body_chars[pageNum]
-                                    //target
-                                    const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
-                                    const hdr = `<b>pg.${pageNum.toString()}| char.${startFromPage}/${endPage})</b>  `
-                                    const startText = item.html_body.slice(start, pos[0])
-                                    const middleText = `<b style="background-color: yellow">${hightlight}</b>`
-                                    //const startText = `<b>pg.${pageNum.toString()}| char.${startFromPage}/${endPage})</b>  ${item.html_body.slice(start, pos[0])}<b style="background-color: yellow">${hightlight}</b>`
-                                    const endText = grp.length == 1 ? item.html_body.slice(pos[0] + pos[1], pos[0] + pos[1] + MARGIN) : ''
-                                    //const text = startText + endText
-                                    const text = hdr + startText + middleText + endText
-                                    if (endPage < startFromPage) {
-                                        console.log('stopped')
+                        } else {
+                            for (let grp of positionGroups) {
+                                const snippet = []
+                                /*
+                                item.body_chars - object of each page's length indexed from pageNum (unordered)
+                                item.accumPageChars - array of each page's length indexed from first (zero-indexed) page (ordered)
+    
+                                Document Snippets
+                                * resultGrps - array of all hits within a doc
+                                * positionGroups - array (snippets) of arrays (hits)
+                                * grp - snippet of targets
+    
+                                Starting Header references the position from which the snippet starts
+                                * pageNum - page (human, 1-indexed) the snippet begins
+                                * startFromPage - starting character for snippet on that page
+                                * endPage - count of characters for that page
+                                */
+                                for (let [index, pos] of grp.entries()) {
+                                    //initial target
+                                    if (index == 0) {
+                                        const start = pos[0] - MARGIN > 0 ? pos[0] - MARGIN : 0
+                                        const pageIdx = item.accumPageChars.map(val => { return start < val }).indexOf(true)
+                                        //starting header
+                                        const pageNum = parseInt(pageIdx) + 1
+                                        const startFromPage = pageIdx == 0 ? start : start - item.accumPageChars[pageIdx - 1]
+                                        const endPage = item.body_chars[pageNum]
+                                        //target
+                                        const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
+                                        const hdr = `<b>pg.${pageNum.toString()}| char.${startFromPage}/${endPage})</b>  `
+                                        const startText = item.html_body.slice(start, pos[0])
+                                        const middleText = `<b style="background-color: yellow">${hightlight}</b>`
+                                        //const startText = `<b>pg.${pageNum.toString()}| char.${startFromPage}/${endPage})</b>  ${item.html_body.slice(start, pos[0])}<b style="background-color: yellow">${hightlight}</b>`
+                                        const endText = grp.length == 1 ? item.html_body.slice(pos[0] + pos[1], pos[0] + pos[1] + MARGIN) : ''
+                                        //const text = startText + endText
+                                        const text = hdr + startText + middleText + endText
+                                        if (endPage < startFromPage) {
+                                            console.log('stopped')
+                                        }
+                                        snippet.push(text)
+                                        //middle targets
+                                    } else if (index == grp.length - 1) {
+                                        const middleStart = item.html_body.slice(grp[index - 1][0] + grp[index - 1][1], pos[0])
+                                        const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
+                                        const end = pos[0] + pos[1] + MARGIN < item.html_body.length ? pos[0] + pos[1] + MARGIN : item.html_body.length
+                                        const text = `${middleStart} <b style="background-color: yellow">${hightlight}</b> ${item.html_body.slice(pos[0] + pos[1], end)}`
+                                        snippet.push(text)
+                                        //end targets
+                                    } else {
+                                        const middleStart = item.html_body.slice(grp[index - 1][0] + grp[index - 1][1], pos[0])
+                                        const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
+                                        const text = `${middleStart} <b style="background-color: yellow">${hightlight}</b>`
+                                        snippet.push(text)
                                     }
-                                    snippet.push(text)
-                                    //middle targets
-                                } else if (index == grp.length - 1) {
-                                    const middleStart = item.html_body.slice(grp[index - 1][0] + grp[index - 1][1], pos[0])
-                                    const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
-                                    const end = pos[0] + pos[1] + MARGIN < item.html_body.length ? pos[0] + pos[1] + MARGIN : item.html_body.length
-                                    const text = `${middleStart} <b style="background-color: yellow">${hightlight}</b> ${item.html_body.slice(pos[0] + pos[1], end)}`
-                                    snippet.push(text)
-                                    //end targets
-                                } else {
-                                    const middleStart = item.html_body.slice(grp[index - 1][0] + grp[index - 1][1], pos[0])
-                                    const hightlight = item.html_body.slice(pos[0], pos[0] + pos[1])
-                                    const text = `${middleStart} <b style="background-color: yellow">${hightlight}</b>`
-                                    snippet.push(text)
                                 }
+                                item.snippets.push(snippet.join(''))
                             }
-                            item.snippets.push(snippet.join(''))
-                        }
                         }
                         //END
 
@@ -470,10 +485,10 @@ high because terms are found that are very similar to the exact terms._`
         },
         formatDateAssigned(value) {
             let dt = null
-            if(Number.isInteger(value)){
+            if (Number.isInteger(value)) {
                 //???
                 dt = getDateFromJsNumber(value)
-            }else if(typeof value === 'string' || value instanceof String){
+            } else if (typeof value === 'string' || value instanceof String) {
                 //iso format from python
                 dt = value.split('T')[0]
             }
@@ -482,7 +497,7 @@ high because terms are found that are very similar to the exact terms._`
         getFormattedFileSize(value) {
             return getFormattedFileSize(value, 'unit')
         },
-        getFormattedScore(value){
+        getFormattedScore(value) {
             const decimal = Math.round(parseFloat(value) * 1000) / 1000
             return decimal
         },
@@ -576,6 +591,14 @@ high because terms are found that are very similar to the exact terms._`
 
 .snippet:hover {
     background: #ffeecf;
+}
+
+.snippet-header {
+    padding-bottom: 15px;
+}
+
+.snippet {
+    padding-bottom: 10px;
 }
 
 .snippet_container {

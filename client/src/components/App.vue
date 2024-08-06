@@ -114,6 +114,7 @@ export default {
     max-width: 2200px;
 }
 .viewer {
-    margin: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 </style>
