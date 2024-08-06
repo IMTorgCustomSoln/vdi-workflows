@@ -1,6 +1,6 @@
 <template>
     <div style="background-color: black; color: white; text-align: center;">
-        <b>{{ this.getCurrendDoc.title }}</b>
+        <b>{{ this.getCurrentDoc ? this.getCurrentDoc.title : '<no document displayed>' }}</b>
     </div>
     <div style="background-color: black;">
         <b-button-group size="sm">
@@ -11,10 +11,11 @@
                 }})</b-button>
         </b-button-group>
     </div>
+    
     <div id="pageContainer" @srcData="">
         <iframe ref="frame" id="pdf-js-viewer" title="IFrameViewer" frameborder="0" @load="iframeLoaded" :src="getPath"
             width="100%" height="100%">
-        </iframe> <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
+        </iframe> these do not appear necessary: sandbox="allow-same-origin allow-scripts"   
     </div>
 </template>
 
@@ -60,7 +61,7 @@ export default {
             pathFile: null,     //'./compressed.tracemonkey-pldi-09.pdf',      //'../../../tests/data/10469527483063392000-cs_nlp_2301.09640.pdf',    //must be relative to `viewer.html` location
 
             newNote: null,
-            currentDocumentId: null,
+            currentDocumentId: 0,
             extractText: false,
             extractImage: false
         }
@@ -78,7 +79,7 @@ export default {
             const docId = this.userContentStore.getSelectedDocument
             return this.userContentStore.documentsIndex.documents.filter(item => item.id == docId)[0]         //TODO:must use the Table array that is sorted on Score o/w incorrect
         },
-        getCurrendDoc() {
+        getCurrentDoc() {
             const id = this.currentDocumentId ? this.currentDocumentId : 0
             return this.userContentStore.documentsIndex.documents.filter(item => item.id == id)[0]
         }
