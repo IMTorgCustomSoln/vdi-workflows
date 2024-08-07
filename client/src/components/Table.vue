@@ -104,25 +104,15 @@
                         </div>
                         <!--<h3>Search Results</h3>-->
                         <div class="snippet-header">
-                            <b>Search results in {{ getSearchSnippets.length }} text-block hits: </b>
+                            <b>Search results in {{ getSearchSnippetsLength }} text-block hits: </b>
                             <Guide v-bind="guides.snippet" />
                         </div>
-                        <div v-if="getSearchSnippets.length < 1"
+                        <div v-if="getSearchSnippetsLength < 1"
                             @click="selectSnippetPage(this.userContentStore.getSelectedDocument, '')">
                             Select a document from the table or `PRESS` to display document pages.
                         </div>
                         <div v-else id="search-results">
-                            <!--<div v-else id="search-results" v-for="(snippet, index) in getSearchSnippets">-->
-                            <div v-for="(snippet, index) in getSearchSnippets">
-                                <div class="snippet" @click="selectSnippetPage(index, snippet)">
-                                    <div v-html="snippet"></div>
-                                    <!--
-                                        <span :id="row.item.filepath + '-index_' + index" v-html="snippet"></span>
-                                        <b-button size="sm" v-on:click="postNote($event)">Note
-                                        </b-button>-->
-                                </div>
-                                <!--<br />-->
-                            </div>
+                            <SnippetsScroll :snippets="getSearchSnippets"/>
                         </div>
                     </div>
                 </div>
@@ -138,6 +128,7 @@
 <script>
 import { getDateFromJsNumber, getFormattedFileSize } from '@/components/support/utils.js'
 import Guide from '@/components/support/Guide.vue'
+import SnippetsScroll from '@/components/support/Snippets.vue'
 
 import { mapStores } from 'pinia'
 import { useAppDisplay } from '@/stores/AppDisplay'
@@ -189,7 +180,8 @@ export default {
     },
     //emits: ['send-note'],
     components: {
-        Guide
+        Guide,
+        SnippetsScroll
     },
     data() {
         return {
@@ -259,6 +251,9 @@ high because terms are found that are very similar to the exact terms._`
         getSearchSnippets() {
             const selected = this.userContentStore.getSelectedDocument.toString()
             return this.items.filter(item => item.id == selected)[0].snippets
+        },
+        getSearchSnippetsLength() {
+            return this.getSearchSnippets.length
         },
         getDocument() {
             const docId = this.userContentStore.getSelectedDocument
@@ -504,7 +499,7 @@ high because terms are found that are very similar to the exact terms._`
         getFormattedPath(path) {
             return path ? path : './'
         },
-
+        /*
         // Row details 
         selectSnippetPage(id, snippet) {
             //const mouseOverSnippet = `${id}-${snippet}`
@@ -512,7 +507,7 @@ high because terms are found that are very similar to the exact terms._`
             //this.searchResults = {...this.searchResults, mouseOverSnippet: mouseOverSnippet}
             this.mouseOverSnippet = mouseOverSnippet
             this.userContentStore.selectedSnippet = mouseOverSnippet
-        },/*
+        },
         postNote(event) {
             const element = event.target.parentElement.children[0]
             //TODO: fix the code below which should use `new NoteRecord()`, but from within Draggable - not here
