@@ -74,11 +74,11 @@ __Staging__
 
 * issues with large Workspace files
   - (perf)selecting 'Models' is slow
-  - snippets should be displayed and removed to reduce latency
-  - snippet page can be too long - must be limited to a maximum length for both individual snippet and combeind snippets
+  - ~~snippets should be displayed and removed to reduce latency~~
+  - ~~snippet page can be too long - must be limited to a maximum length for both individual snippet and combeind snippets~~
   - reduce DocumentRecord attributes (or move to method) to minimize latency from browser memory usage
   - ~~identify which document is selected and identify what appears in the Viewer~~
-  - ???'update' with new document by pressing a button top of snippets
+  - ~~???'update' with new document by pressing a button top of snippets~~
 
 * errors, testing, qaqc
   - (vdi errors.png) Deploy to IIS must allow `.ftl` extension to fix error `pdfjs-dist/.../viewer.ftl not found`
