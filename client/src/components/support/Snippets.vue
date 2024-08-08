@@ -1,6 +1,6 @@
 <template>
     <div id="loader">
-        <div class="result" v-for="(snippet, index) in loaded_snippets">
+        <div class="result" v-for="(snippet, index) in loaded.loaded_snippets">
             <div class="snippet" @click="selectSnippetPage(index, snippet)">
                 <div v-html="snippet"></div>
             </div>
@@ -9,9 +9,6 @@
         <infinite-loading target="#loader" @infinite="load"></infinite-loading>
     </div>
 </template>
-
-
-
 
 <script>
 import { toRaw } from "vue";
@@ -32,8 +29,10 @@ export default {
     },
     data() {
         return {
-            loaded_snippets: [],
-            batch: 1
+            loaded: {
+                loaded_snippets: [],
+                batch: 1
+            }
         }
     },
     computed: {
@@ -46,8 +45,7 @@ export default {
             const arr = toRaw(this.snippets)
             const results = []
             for (const [index, snippet] of arr.entries()) {
-                if (index < page) {
-                //if (index < page && index >= page - 10) {
+                if (index < page && index >= page - 10) {
                     results.push(snippet)
                 }
             }
@@ -56,15 +54,13 @@ export default {
         load($state) {
             console.log("loading...");
             try {
-                const snippets = this.getSnippets(this.batch)
-                if (snippets.length < 10) $state.complete();
-                else if(this.loaded_snippets.length >= this.snippets.length) $state.loaded();
+                const snippets = this.getSnippets(this.loaded.batch)
+                if (this.loaded.loaded_snippets.length >= this.snippets.length) $state.complete();
                 else {
-                    this.loaded_snippets.length = 0
-                    this.loaded_snippets.push(...snippets);
+                    this.loaded.loaded_snippets.push(...snippets);
+                    this.loaded.batch++;
                     $state.loaded();
                 }
-                this.batch++;
             } catch (error) {
                 $state.error();
             }
@@ -81,7 +77,6 @@ export default {
 </script>
 
 <style>
-
 #loader {
     /*
     display: flex;
@@ -95,6 +90,7 @@ export default {
     max-height: calc(100vh - 50px - 200px);
     overflow-y: scroll;
 }
+
 /*
 .result {
     font-weight: 300;

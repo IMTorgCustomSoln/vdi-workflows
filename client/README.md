@@ -76,6 +76,8 @@ __Staging__
   - (perf)selecting 'Models' is slow
   - ~~snippets should be displayed and removed to reduce latency~~
   - ~~snippet page can be too long - must be limited to a maximum length for both individual snippet and combeind snippets~~
+  - on click of snippet, the page is changed and the page number (x of N), but the `X (x of N) is not`
+  - snippets are added to `loaded.loaded_snippets`, but not removed - it should only include those that are displayed
   - reduce DocumentRecord attributes (or move to method) to minimize latency from browser memory usage
   - ~~identify which document is selected and identify what appears in the Viewer~~
   - ~~???'update' with new document by pressing a button top of snippets~~
