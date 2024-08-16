@@ -1,19 +1,20 @@
 <template>
-    <div id="loader">
-        <div class="result" v-for="(snippet, index) in loaded.loaded_snippets">
-            <div class="snippet" @click="selectSnippetPage(index, snippet)">
-                <div v-html="snippet"></div>
+    <div style="height: 100%" >
+        <VList :data="getSnippets()" :style="{ height: '100%', padding: '10px' }" #default="item">
+            <div 
+                v-html="item.indexed_snippet" 
+                class="snippet" 
+                @click="selectSnippetPage(item.idx, item.snippet)" 
+                style="padding-bottom: 15px;"
+                >
             </div>
-            <br />
-        </div>
-        <infinite-loading target="#loader" @infinite="load"></infinite-loading>
+        </VList>
     </div>
 </template>
 
 <script>
 import { toRaw } from "vue";
-import InfiniteLoading from "v3-infinite-loading";
-import "v3-infinite-loading/lib/style.css";
+import { VList } from "virtua/vue";
 
 import { mapStores } from 'pinia'
 import { useUserContent } from '@/stores/UserContent'
@@ -22,72 +23,64 @@ import { useUserContent } from '@/stores/UserContent'
 export default {
     name: 'SnippetsScroll',
     components: {
-        InfiniteLoading
+        VList
     },
     props: {
         snippets: Array
     },
     data() {
-        return {
-            loaded: {
-                loaded_snippets: [],
-                batch: 1
-            }
-        }
+        return {}
     },
     computed: {
         ...mapStores(useUserContent),
-
     },
     methods: {
-        getSnippets(batch) {
-            const page = batch * 10
+        addIndexToSnippetHtml(html, index) {
+            return `${html.slice(0, 3)}${index + 1} - ${html.slice(3)}`
+        },
+        getSnippets() {
             const arr = toRaw(this.snippets)
             const results = []
             for (const [index, snippet] of arr.entries()) {
-                if (index < page && index >= page - 10) {
-                    results.push(snippet)
+                const modified_snippet = this.addIndexToSnippetHtml(snippet, index)
+                const record = { 
+                    idx: index, 
+                    snippet: snippet,
+                    indexed_snippet: modified_snippet
                 }
+                results.push(record)
             }
             return results
-        },
-        load($state) {
-            console.log("loading...");
-            try {
-                const snippets = this.getSnippets(this.loaded.batch)
-                if (this.loaded.loaded_snippets.length >= this.snippets.length) $state.complete();
-                else {
-                    this.loaded.loaded_snippets.push(...snippets);
-                    this.loaded.batch++;
-                    $state.loaded();
-                }
-            } catch (error) {
-                $state.error();
-            }
         },
         selectSnippetPage(id, snippet) {
             //const mouseOverSnippet = `${id}-${snippet}`
             const mouseOverSnippet = { id: id, snippet: snippet }
             //this.searchResults = {...this.searchResults, mouseOverSnippet: mouseOverSnippet}
             this.mouseOverSnippet = mouseOverSnippet
-            this.userContentStore.selectedSnippet = mouseOverSnippet
+            this.userContentStore.selectedSnippet = mouseOverSnippet        //TODO:change to object and move data extraction from PdfViewer to here: tgtPage, tgtText
         },
     }
 }
 </script>
 
-<style>
+<style scoped>
+#index {
+    padding-right: 7px;
+    font-weight: bold;
+}
+
 #loader {
-    /*
+    /* 
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
     gap: 10px;
     padding: 20px;
     margin: 20px auto 20px auto;
-    max-width: 400px;
-    */
+    max-width: 400px;*/
+
     max-height: calc(100vh - 50px - 200px);
+    /*TODO:make more accurate*/
     overflow-y: scroll;
 }
 

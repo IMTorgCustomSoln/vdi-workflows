@@ -549,6 +549,7 @@ high because terms are found that are very similar to the exact terms._`
 
 #search-results {
     font-size: 12px;
+    height: calc(100vh - 50px - 200px)
 }
 
 .errorMsg {

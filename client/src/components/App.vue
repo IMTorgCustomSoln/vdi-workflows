@@ -15,7 +15,7 @@
             <div>
                 <b-row>
                     <b-col cols="12">
-                        <splitpanes class="default-theme" vertical style="height: 100%; width:100%;">
+                        <splitpanes class="default-theme" vertical style="height: 100%; width:100%;">   <!--TODO: `height: calc(100vh - 130px)` works for 'Read' tab but not 'Search'-->
                             <pane :size="this.appDisplayStore.views.attrs.table.size">
                                 <Table :records="userContentStore.documentsIndex.documents" :search="searchTableResults"
                                     :tableFields="this.appDisplayStore.views.attrs.table.fields"
@@ -26,6 +26,7 @@
                             <pane :size="this.appDisplayStore.views.attrs.pdfViewer.size">
                                 <div
                                     v-if="appDisplayStore.views.viewSelection == 'read' && userContentStore.documentsIndex.documents.length > 0">
+                                    
                                     <div class="viewer">
                                         <div v-if="appDisplayStore.pdfViewerAvailable">
                                             <PdfViewer />
@@ -116,5 +117,6 @@ export default {
 .viewer {
     margin-left: 5px;
     margin-right: 5px;
+    height: calc(100vh - 50px - 200px);
 }
 </style>
