@@ -80,7 +80,7 @@ __Staging__
   - (perf)selecting 'Models' is slow
   - `PDFViewer` on click of snippet, the page is changed and the page number (x of N), but the `X (x of N) is not`
   - reduce DocumentRecord attributes (or move to method) to minimize latency from browser memory usage
-  - prevent page from going too far below: App.vue,ln.18
+  - ~~prevent page from going too far below: App.vue,ln.18~~
   - ~~identify which document is selected and identify what appears in the Viewer~~
   - ~~???'update' with new document by pressing a button top of snippets~~
 
