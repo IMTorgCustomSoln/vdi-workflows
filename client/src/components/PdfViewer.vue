@@ -11,11 +11,16 @@
                 }})</b-button>
         </b-button-group>
     </div>
-    
+
     <div id="pageContainer" @srcData="">
+        <b-embed type="iframe" aspect="4by5" allowfullscreen ref="frame" id="pdf-js-viewer" title="IFrameViewer"
+            frameborder="0" @load="iframeLoaded" :src="getPath" class="object-fit-none border rounded">
+        </b-embed>
+        <!--
         <iframe ref="frame" id="pdf-js-viewer" title="IFrameViewer" frameborder="0" @load="iframeLoaded" :src="getPath"
+            class="object-fit-none border rounded"
             width="100%" height="100%">
-        </iframe> <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
+        </iframe> --> <!--these do not appear necessary: sandbox="allow-same-origin allow-scripts"   -->
     </div>
 </template>
 
@@ -36,15 +41,18 @@ export default {
                 let pg = 1
                 let tgtText = ''
                 if (newVal.snippet != '') {
-                    const txtPg = parseInt(newVal.snippet.split('<b>pg.')[1].split('|')[0])
+                    /*
+                    //const txtPg = parseInt(newVal.snippet.split('<b>pg.')[1].split('|')[0])
+                    const txtPg = newVal.tgtPage
                     pg = txtPg <= 1 ? txtPg : txtPg - 1
-                    tgtText = newVal.snippet.split('<b style="background-color: yellow">')[1].split('</b>')[0]
+                    //tgtText = newVal.snippet.split('<b style="background-color: yellow">')[1].split('</b>')[0]
+                    tgtText = newVal.tgtText*/
                 }
                 const app = await this.getApp
                 await this.loadDoc()
-                this.search(tgtText)
+                this.search(newVal.tgtText)
                 try {
-                    app.page = pg     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                    app.page = newVal.tgtPage     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
                 } catch (error) {
                     console.log('TODO: this is a known bug in mozilla pdfjs-dist.  It will be solved with a future release')
                     console.log(error)
@@ -272,7 +280,7 @@ export default {
             const viewport = _page.viewport
 
             coordinates.forEach(function (rect) {
-                let highlightColor = 'ff9900'   //generateColor()
+                let highlightColor = 'ff990080'   //generateColor();    transparency of 80%
                 let bounds = viewport.convertToViewportRectangle(rect);
 
                 var x1 = Math.min(bounds[0], bounds[2]);
@@ -327,15 +335,29 @@ function createRectDiv(boundBox, highlightColor) {
 
 </script>
 
-<style>
+<style scoped>
+/*
 #pageContainer {
-    /*position: absolute;*/
+    /*position: absolute;
     height: 90vh;
+    height: 100%;
+}*/
+#pdf-js-viewer {
+    max-width: 100%;
 }
 
 #div {
     border: 1px dotted #000;
     position: absolute;
+}
+
+
+/*
+NOTE: this changes the sizing based on aspect-ratio
+ref: https://stackoverflow.com/questions/78324211/how-to-create-custom-video-embed-ratios-in-bootstrap
+*/
+.embed-responsive-4by5 {
+    padding-top: 115%;
 }
 
 /*

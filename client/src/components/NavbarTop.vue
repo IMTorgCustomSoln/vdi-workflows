@@ -2,32 +2,34 @@
   <div>
     <b-navbar toggleable="lg" type="dark" variant="dark">
 
-      <b-navbar-brand ><MyLogo id="logo"/></b-navbar-brand>
+      <b-navbar-brand>
+        <MyLogo id="logo" />
+      </b-navbar-brand>
 
       <!--TOOD issue: why the warning-->
       <b-navbar-nav class="ml-auto middle">
         <!--<ImportData />-->
 
         <!--<b-button-group>-->
-          <b-nav-form>
-            <ImportData />
-            <Sidebar :note="note" />
-            <SaveWork />
-            
-          </b-nav-form>
+        <b-nav-form>
+          <ImportData />
+          <Sidebar :note="note" />
+          <SaveWork />
+
+        </b-nav-form>
         <!--</b-button-group>-->
       </b-navbar-nav>
 
       <!-- Right aligned nav items-->
       <b-navbar-nav class="ml-auto" right>
         <b-nav-form>
-        <!--TODO task: fix profile
+          <!--TODO task: fix profile
         <b-button sz="sm" class="my-2 my-sm-0" @click="modalAccount">-->
           <b-button @click="modalAccount" :disabled="true">
-          {{ this.userContentStore.name }}
-        </b-button>
-        <!--<b-nav-item href="#">About</b-nav-item>-->
-        <About />
+            {{ this.userContentStore.name }}
+          </b-button>
+          <!--<b-nav-item href="#">About</b-nav-item>-->
+          <About />
         </b-nav-form>
       </b-navbar-nav>
 
@@ -85,10 +87,11 @@ export default {
 </script>
 
 <style scoped>
-#logo{
+#logo {
   width: 50px;
   height: 50px;
 }
+
 .navbar-brand {
   margin-right: 40px;
   margin-left: 40px;

@@ -112,7 +112,7 @@
                             Select a document from the table or `PRESS` to display document pages.
                         </div>
                         <div v-else id="search-results">
-                            <SnippetsScroll :snippets="getSearchSnippets"/>
+                            <SnippetsScroll :snippets="getSearchSnippets" />
                         </div>
                     </div>
                 </div>
@@ -585,20 +585,25 @@ high because terms are found that are very similar to the exact terms._`
     border-right: 1px #f8f7f3 solid;
 }
 
+
+
+/*TODO:remove
 .snippet:hover {
     background: #ffeecf;
-}
+}*/
 
 .snippet-header {
     padding-bottom: 15px;
 }
 
+/*
 .snippet {
     padding-bottom: 10px;
 }
 
+
 .snippet_container {
     height: 90vh;
     overflow-y: auto;
-}
+}*/
 </style>
