@@ -10,7 +10,6 @@
     "python.testing.pytestPath": "/home/node/.local/share/virtualenvs/pipelines-ENKfgRKv/bin/pytest",
     "python.pipenvPath": "/home/node/.local/share/virtualenvs/pipelines-ENKfgRKv/bin/python",
 
-
     "python.linting.pylintPath": "/home/node/.local/share/virtualenvs/pipelines-ENKfgRKv/bin/python",
     "python.autoComplete.extraPaths": ["/home/node/.local/share/virtualenvs/pipelines-ENKfgRKv/bin/python"],
     "python.defaultInterpreterPath": "/home/node/.local/share/virtualenvs/pipelines-ENKfgRKv/bin/python",
