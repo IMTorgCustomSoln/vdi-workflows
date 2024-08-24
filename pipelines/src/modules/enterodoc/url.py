@@ -79,7 +79,7 @@ class UniformResourceLocator:
         self.applyRequestsRenderJs = applyRequestsRenderJs
 
         if type(url) == str:
-            self.url = url.lower()
+            self.url = url  #url.lower()
         elif type(url) == UniformResourceLocator:
             self.logger.error(f'url is already of type {UniformResourceLocator}')
             raise Exception
@@ -444,7 +444,7 @@ class UniformResourceLocator:
 
             #anchors
             anchors = soup.find_all('a')
-            """
+            """TODO: should this be implement??? , but it is very time-consuming
             anchors_with_hrefs = [anchor for anchor in anchors if anchor.has_attr('href')]
             anchors_with_www_hrefs = [anchor for anchor in anchors_with_hrefs if 'https://' in anchor['href']]
             anchors_without_removed = [anchor for anchor in anchors_with_www_hrefs 

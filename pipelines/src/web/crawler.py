@@ -5,6 +5,22 @@ URL to PDF Workflow
 
 TODO-remove: generalize so 'jpmorgan' references is added to scenario
 TODO-remove: generalize so scenario, 'list_of_search_terms', can be changed
+
+TODO: use framework for the following
+* frameworks
+  - [crawlee](https://crawlee.dev/python/)
+  - [scrapy](https://scrapy.org/)
+* concurrent requests, retries, 
+* remove duplicate urls => cache all read urls, even across roots
+* improve speed => only limit speed to same domain
+* limit depth crawl => collect branches up to limit, prevent from running forever
+* prevent blocks => 
+  - rotate `User-Agent`
+  - run during off-peak hours
+  - respect robots.txt
+  - avoid honeypot urls
+* prioritize urls
+* frequency control => read `crawl-delay` in `robots.txt`
 """
 
 __author__ = "Jason Beach"
@@ -37,8 +53,9 @@ class BaseLogger:
 
 class BaseSearchScenario:
     """Base class for the Crawler's search scenario conditions."""
-    def __init__(self, url, list_of_search_terms):
-        self.url = url
+    def __init__(self, base_url, urls, list_of_search_terms):
+        self.base_url = base_url
+        self.urls = urls
         self.list_of_search_terms = list_of_search_terms
 
 
@@ -52,10 +69,11 @@ class BaseExporter:
 
 
 
-
-scenario = BaseSearchScenario(url='',
+#TODO: generalize `list_of_search_terms`
+scenario = BaseSearchScenario(base_url=None,
+                              urls=[],
                               list_of_search_terms=['creditcard`, `fees', 'terms conditions', 'overdraft', 'non insufficient funds']
-                                )
+                            )
 
 
 
@@ -74,61 +92,95 @@ class Crawler:
     """
 
     def __init__(self, scenario, logger, exporter):
-        self.logger = logger
+        if not logger:
+            self.logger = BaseLogger()
+        else:
+            self.logger = logger
         self.exporter = exporter
         self.url_factory = UrlFactory()
-        self.scenario = scenario
-        self.scenario.url = self._ensure_url_class(scenario.url)
-
+        self.scenario = self.add_scenario(scenario)
+        
     def __repr__(self):
-        return self.scenario.url
+        return f'Crawler with scenario: depth - {self.scenario.depth}, urls ({len(self.scenario.urls)}) - {self.scenario.urls}'
     
     def _ensure_url_class(self, url):
         """Provide url of class UniformResourceLocator if not one already."""
         result = url if type(url) == UniformResourceLocator else self.url_factory.build(url)
         return result
     
-    def check_urls_are_valid(self, url_list, base_url=''):
+    def add_scenario(self, scenario):
+        """Add scenario to Crawler if it meets requirements."""
+        if scenario.base_url:
+            scenario.base_url = self._ensure_url_class(scenario.base_url)
+        if type(scenario.urls) == list:
+            url_list = list(set(scenario.urls))
+            scenario.urls = [self._ensure_url_class(url) for url in url_list]
+        for term in scenario.list_of_search_terms:
+            assert type(term) == str
+            term_permutations = list(itertools.permutations(scenario.list_of_search_terms, r=2))
+            search_terms_list = []
+            for tup in term_permutations:
+                tmp = list(tup)
+                search_terms_list.append(tmp)
+            stringified_lists = [' '.join(terms) for terms in search_terms_list]
+            scenario.stringified_lists = stringified_lists
+        #self.scenario.valid_urls = []
+        return scenario
+
+    def check_urls_are_valid(self, url_list=None, base_url=None):
         """Basic checks of urls in a list
         * ensure proper url formatting
         * consistent domain owner (if base_domain provided)
         """
+        if not url_list:
+            url_list = self.scenario.urls
+        if not base_url:
+            base_url = self.scenario.base_url
         validated_urls = []
-        BaseUrl = self._ensure_url_class(base_url)
+        #BaseUrl = self._ensure_url_class(base_url)
         if base_url:
-            BaseUrl.check_valid_format()
-        url_list = list(set(url_list))
-        for url in url_list:  
-            Url = self._ensure_url_class(url)
-            check_scheme = Url.check_scheme()
-            check_owner = Url.has_same_url_owner_(BaseUrl) if base_url else True
-            if check_scheme and check_owner:
-                validated_urls.append(Url)
-            else:
-                pass
-        self.logger.info(f'validated urls: {validated_urls}')
+            base_url.check_valid_format()
+        for url in url_list:
+            try: 
+                Url = self._ensure_url_class(url)
+                check_scheme = Url.check_scheme()
+                if base_url:
+                    check_owner = Url.has_same_url_owner_(base_url) 
+                else:
+                    check_owner = True
+                if check_scheme and check_owner:
+                    validated_urls.append(Url)
+                else:
+                    pass
+            except Exception as e:
+                print(f'the {url} failed')
+        self.logger.info(f'validated {len(validated_urls)} urls: {validated_urls}')
         return validated_urls
 
     def generate_href_chain(self):
         """Given a domain name, collects the appropriate
         href links."""
         result_urls = {}
-        
-        initial_list = self.get_initial_url_list(self.scenario.url, self.scenario.list_of_search_terms)
-        hrefs = self.get_hrefs_within_depth(base_url = self.scenario.url, 
-                                           depth = 0, 
-                                           initial_url_list = initial_list
-                                           )
-        result_urls[self.scenario.url] = hrefs
-        self.logger.info(f"result_urls: {result_urls}")
+        for url in self.scenario.urls:
+            initial_list = self.get_initial_url_list(base_url = self.scenario.base_url,
+                                                     url = url, 
+                                                     stringified_lists = self.scenario.stringified_lists
+                                                     )
+            hrefs = self.get_hrefs_within_depth(base_url = self.scenario.base_url,
+                                                depth = self.scenario.depth,
+                                                initial_url_list = initial_list
+                                                )
+            result_urls[url] = hrefs
+            self.logger.info(f"result of `generate_href_chain()` is {len(hrefs)} result_urls for root {url} listed as: {hrefs}")
         return result_urls
 
-    def get_initial_url_list(self, url, list_of_search_terms=[]):
+    def get_initial_url_list(self, base_url, url, stringified_lists):
         """Get initial list of urls from google given search terms."""
         NumberOfSearchResults = 5
-        BaseUrl = self.url_factory.build('https://www.jpmorgan.com')
+        #BaseUrl = self.url_factory.build('https://www.jpmorgan.com')
+        #BaseUrl = url
+        '''
         domain = url.get_domain()
-
         term_permutations = list(itertools.permutations(list_of_search_terms, r=2))
         search_terms_list = []
         for tup in term_permutations:
@@ -136,9 +188,11 @@ class Crawler:
             tmp.append(domain)
             search_terms_list.append(tmp)
         stringified_lists = [' '.join(terms) for terms in search_terms_list]
-
+        '''
+        domain = url.get_domain()
         result_url_list = []
         for terms in stringified_lists:
+            terms = terms.replace('`','').replace(',','') + ' ' + domain
             try:
                 search_results = googlesearch.search(term = terms, 
                                                      num_results = NumberOfSearchResults,
@@ -146,24 +200,27 @@ class Crawler:
                                                      )
                 unique_urls = [url for url in search_results if url not in result_url_list]
                 SearchUrls = [self.url_factory.build(result) for result in unique_urls]
-                ValidUrls = self.check_urls_are_valid(url_list = SearchUrls, 
-                                                 base_url = BaseUrl
-                                                 )
-                result_url_list.extend(ValidUrls)
+                result_url_list.extend(SearchUrls)
             except:
                 self.logger.error('ERROR: there was a problem making the request to google.com.')
-        return result_url_list
+        result_url_list = list(set(result_url_list))
+        ValidUrls = self.check_urls_are_valid(url_list = result_url_list, 
+                                              base_url = base_url
+                                              )
+        return ValidUrls
 
 
-    def get_hrefs_within_depth(self, base_url, depth=1, initial_url_list=[]):
+    def get_hrefs_within_depth(self, base_url=None, depth=1, initial_url_list=[]):
         """Get all hrefs from a page, within a depth, and certain criteria.
 
         This is similar to `wget --recursive http://site.com`, but it removes 
         links that are out of scope.
         """
-        BaseUrl_JPM = self.url_factory.build('https://www.jpmorgan.com')
+        #BaseUrl_JPM = self.url_factory.build('https://www.jpmorgan.com')
         searched_hrefs = set()
-        BaseUrl = self._ensure_url_class(base_url)
+        BaseUrl = None
+        if base_url:
+            BaseUrl = self._ensure_url_class(base_url)
         #if len(initial_url_list) == 0:
         #    hrefs = BaseUrl.get_hrefs_within_hostname_(searched_hrefs = searched_hrefs)
         #    #searched_hrefs = add_list_to_set(searched_hrefs, hrefs)
@@ -175,11 +232,14 @@ class Crawler:
             for url in hrefs:
                 try:
                     Url = self._ensure_url_class(url)
-                    check_owner = Url.has_same_url_owner_(BaseUrl)
-                    if not (Url in searched_hrefs) and not check_owner:
+                    check_owner = True
+                    if BaseUrl:
+                        check_owner = Url.has_same_url_owner_(BaseUrl)
+                    if not (Url in searched_hrefs) and check_owner:
                         new_hrefs = Url.get_hrefs_within_hostname_(searched_hrefs = searched_hrefs)
                         valid_hrefs = self.check_urls_are_valid(url_list = new_hrefs, 
-                                                           base_url = BaseUrl_JPM
+                                                                base_url = BaseUrl
+                                                                #base_url = BaseUrl_JPM
                                                            )
                         searched_hrefs.add(Url)
                         level_hrefs.extend(valid_hrefs)

@@ -242,7 +242,7 @@ from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 from .web.crawler import Crawler, scenario
 
 class ValidateUrlsTask(Task):
-    """..."""
+    """Import initial root URL list and validate they exist."""
 
     def run(self):
         """
@@ -277,7 +277,7 @@ class ValidateUrlsTask(Task):
 
 
 class CrawlUrlsTask(Task):
-    """..."""
+    """Collect branch-and-leaf URLs from initial roots."""
 
     def run(self):
         """
@@ -298,6 +298,7 @@ class CrawlUrlsTask(Task):
             for Url in url_list:
                 #UrlCrawl = crawler(Url, self.config['LOGGER'])
                 scenario.url = Url
+                scenario.depth = 0
                 UrlCrawl = Crawler(
                     scenario=scenario,
                     logger=self.config['LOGGER'],
