@@ -61,6 +61,8 @@ python main.py workflow_asr prepare_workspace
 * mod Crawler
   - `scenario.url` conflicts with crawler.check_urls_are_valid(url_list)
   - use consistent naming across tasks: ValidateUrlsTask, CrawlUrlsTask
+  -remove: ~~generalize so 'jpmorgan' references is added to scenario~~
+  -remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
   - ...
 * add new workflow-scraping
 * generalize classes for extensibility of workflows

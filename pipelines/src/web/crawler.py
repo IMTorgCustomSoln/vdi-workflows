@@ -3,8 +3,8 @@
 URL to PDF Workflow
 
 
-TODO-remove: generalize so 'jpmorgan' references is added to scenario
-TODO-remove: generalize so scenario, 'list_of_search_terms', can be changed
+TODO-remove: ~~generalize so 'jpmorgan' references is added to scenario~~
+TODO-remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
 
 TODO: use framework for the following
 * frameworks
@@ -40,7 +40,9 @@ import itertools
 
 #argument templates
 class BaseLogger:
-    """Base class for the Crawler's logger."""
+    """Base class for the Crawler's logger.
+    Use for non-production purposes.
+    """
     def __init__(self):
         pass
 
@@ -52,7 +54,11 @@ class BaseLogger:
 
 
 class BaseSearchScenario:
-    """Base class for the Crawler's search scenario conditions."""
+    """Base class for the Crawler's search scenario conditions.
+    The following are added by the Crawler:
+        * self._stringified_lists
+        * self._valid_urls
+    """
     def __init__(self, base_url, urls, list_of_search_terms):
         self.base_url = base_url
         self.urls = urls
@@ -69,19 +75,20 @@ class BaseExporter:
 
 
 
-#TODO: generalize `list_of_search_terms`
-scenario = BaseSearchScenario(base_url=None,
-                              urls=[],
-                              list_of_search_terms=['creditcard`, `fees', 'terms conditions', 'overdraft', 'non insufficient funds']
-                            )
+example_udap_search_terms = ['creditcard`, `fees', 'terms conditions', 'overdraft', 'non insufficient funds']
+empty_scenario = BaseSearchScenario(base_url=None,
+                                    urls=[],
+                                    list_of_search_terms=[]
+                                    )
 
 
 
 
 #primary class
 class Crawler:
-    """Crawl sites specific to a url and search terms to
-    produce a list of urls which can be exported.
+    """Crawl sites specific to a Scenario's urls and search
+    terms to produce a list of url references that meet the
+    Scenario criteria.
 
     This is an 'opportunistic' crawler in that it only 
     accepts an initial domain and search scenario, then
@@ -99,6 +106,7 @@ class Crawler:
         self.exporter = exporter
         self.url_factory = UrlFactory()
         self.scenario = self.add_scenario(scenario)
+        self._prepare_search_terms()
         
     def __repr__(self):
         return f'Crawler with scenario: depth - {self.scenario.depth}, urls ({len(self.scenario.urls)}) - {self.scenario.urls}'
@@ -108,6 +116,21 @@ class Crawler:
         result = url if type(url) == UniformResourceLocator else self.url_factory.build(url)
         return result
     
+    def _prepare_search_terms(self):
+        """Transform the provided `list_of_search_terms` which is necessary, 
+        but not sufficient, input for google search.
+        """
+        for term in empty_scenario.list_of_search_terms:
+            assert type(term) == str
+            term_permutations = list(itertools.permutations(empty_scenario.list_of_search_terms, r=2))
+            search_terms_list = []
+            for tup in term_permutations:
+                tmp = list(tup)
+                search_terms_list.append(tmp)
+            stringified_lists = [' '.join(terms) for terms in search_terms_list]
+            empty_scenario._stringified_lists = stringified_lists
+        return True
+    
     def add_scenario(self, scenario):
         """Add scenario to Crawler if it meets requirements."""
         if scenario.base_url:
@@ -115,20 +138,12 @@ class Crawler:
         if type(scenario.urls) == list:
             url_list = list(set(scenario.urls))
             scenario.urls = [self._ensure_url_class(url) for url in url_list]
-        for term in scenario.list_of_search_terms:
-            assert type(term) == str
-            term_permutations = list(itertools.permutations(scenario.list_of_search_terms, r=2))
-            search_terms_list = []
-            for tup in term_permutations:
-                tmp = list(tup)
-                search_terms_list.append(tmp)
-            stringified_lists = [' '.join(terms) for terms in search_terms_list]
-            scenario.stringified_lists = stringified_lists
-        #self.scenario.valid_urls = []
+        scenario._stringified_lists = []
+        scenario._valid_urls = []
         return scenario
 
     def check_urls_are_valid(self, url_list=None, base_url=None):
-        """Basic checks of urls in a list
+        """Basic checks on list of targeted urls
         * ensure proper url formatting
         * consistent domain owner (if base_domain provided)
         """
@@ -155,16 +170,21 @@ class Crawler:
             except Exception as e:
                 print(f'the {url} failed')
         self.logger.info(f'validated {len(validated_urls)} urls: {validated_urls}')
+        self.scenario._valid_urls = validated_urls
         return validated_urls
 
     def generate_href_chain(self):
         """Given a domain name, collects the appropriate
         href links."""
+        if empty_scenario._stringified_lists.__len__() < 1:
+            raise Exception('cannot `generate_href_chain()` because `scenario._stringified_lists` is not populated')
+        if self.scenario._valid_urls.__len__() < 1:
+            raise Exception('cannot `generate_href_chain()` because `scenario._valid_urls` is not populated')
         result_urls = {}
-        for url in self.scenario.urls:
+        for url in self.scenario._valid_urls:
             initial_list = self.get_initial_url_list(base_url = self.scenario.base_url,
                                                      url = url, 
-                                                     stringified_lists = self.scenario.stringified_lists
+                                                     stringified_lists = self.scenario._stringified_lists
                                                      )
             hrefs = self.get_hrefs_within_depth(base_url = self.scenario.base_url,
                                                 depth = self.scenario.depth,

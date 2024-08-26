@@ -239,7 +239,7 @@ class ExportAsrToVdiWorkspaceTask(Task):
 
 from .Files import File
 from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
-from .web.crawler import Crawler, scenario
+from .web.crawler import Crawler, empty_scenario
 
 class ValidateUrlsTask(Task):
     """Import initial root URL list and validate they exist."""
@@ -257,9 +257,9 @@ class ValidateUrlsTask(Task):
             input_file = input_files[0]
             urls = File(filepath=input_file, type='txt').load_file(return_content=True)
             url_list = [URL.build(url) for url in urls]
-            scenario.url = urls[0]
+            empty_scenario.url = urls[0]
             crawler = Crawler(
-                scenario=scenario,
+                scenario=empty_scenario,
                 logger=self.config['LOGGER'],
                 exporter=''
             )
@@ -297,10 +297,10 @@ class CrawlUrlsTask(Task):
             results = {}
             for Url in url_list:
                 #UrlCrawl = crawler(Url, self.config['LOGGER'])
-                scenario.url = Url
-                scenario.depth = 0
+                empty_scenario.url = Url
+                empty_scenario.depth = 0
                 UrlCrawl = Crawler(
-                    scenario=scenario,
+                    scenario=empty_scenario,
                     logger=self.config['LOGGER'],
                     exporter=''
                     )

@@ -430,7 +430,7 @@ class UniformResourceLocator:
         time.sleep(1)
         return result
     
-    def get_hrefs_under_criteria_(self):
+    def get_hrefs_under_criteria_(self, detailed_data=False):
         """Get all anchors from a `resp.text` html file under 
         specific criterion.
         """
@@ -439,20 +439,22 @@ class UniformResourceLocator:
         anchors_with_stem = None
         if self.file_document and self.url_type == 'html':
             tmp =  self.get_hostname()     #urllib.parse.urlparse(resp.url).hostname    #Path(resp.url).stem.split('.')
-            #stem = tmp[len(tmp)-1] if len(tmp) > 1 else tmp[0]
+            stem = tmp[len(tmp)-1] if len(tmp) > 1 else tmp[0]
             soup = self.file_document
 
             #anchors
             anchors = soup.find_all('a')
-            """TODO: should this be implement??? , but it is very time-consuming
-            anchors_with_hrefs = [anchor for anchor in anchors if anchor.has_attr('href')]
-            anchors_with_www_hrefs = [anchor for anchor in anchors_with_hrefs if 'https://' in anchor['href']]
-            anchors_without_removed = [anchor for anchor in anchors_with_www_hrefs 
-                                       if not any(x in anchor['href'].lower() for x in REMOVE)
-                                       ]
-            anchors_with_stem = list(set([anchor['href'] for anchor in anchors_without_removed if stem in anchor['href']]))
-            """
-        return anchors    #_with_stem
+            if detailed_data:
+                """TODO: should this be implement??? , if so, then improve performance"""
+                anchors_with_hrefs = [anchor for anchor in anchors if anchor.has_attr('href')]
+                anchors_with_www_hrefs = [anchor for anchor in anchors_with_hrefs if 'https://' in anchor['href']]
+                anchors_without_removed = [anchor for anchor in anchors_with_www_hrefs 
+                                           if not any(x in anchor['href'].lower() for x in REMOVE)
+                                           ]
+                anchors_with_stem = list(set([anchor['href'] for anchor in anchors_without_removed if stem in anchor['href']]))
+            else:
+                anchors_with_stem = anchors
+        return anchors_with_stem
 
     def get_hrefs_within_hostname_(self, searched_hrefs=set(), additional_scope=[]):
         """Get hrefs from html document that are within the scope of target hostnames.
@@ -466,7 +468,7 @@ class UniformResourceLocator:
 
         #checks
         if (self.file_document and self.file_format == 'html'):
-            tmp_hrefs = self.get_hrefs_under_criteria_()
+            tmp_hrefs = self.get_hrefs_under_criteria_(detailed_data=False)
             hrefs = [href for href in tmp_hrefs if href not in searched_hrefs]
 
         return hrefs
