@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """
-URL to PDF Workflow
+Crawler class to discover web sites that meet criteria.
 
-
-TODO-remove: ~~generalize so 'jpmorgan' references is added to scenario~~
-TODO-remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
 
 TODO: use framework for the following
 * frameworks

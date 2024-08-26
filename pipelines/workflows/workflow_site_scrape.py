@@ -15,7 +15,7 @@ from src.Workflow import Workflow
 from src.Files import Files
 
 from src.Task import (
-    ValidateUrlsTask,
+    ImportAndValidateUrlsTask,
     CrawlUrlsTask,
     ConvertUrlDocToPdf,
     ApplyModelsTask,
@@ -111,7 +111,7 @@ class WorkflowSiteScrape(Workflow):
                 'output_files': output_files
             }
             #tasks
-            validate_task = ValidateUrlsTask(
+            validate_task = ImportAndValidateUrlsTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files

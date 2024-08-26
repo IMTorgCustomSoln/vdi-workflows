@@ -34,6 +34,9 @@ python main.py workflow_asr prepare_workspace
 
 ## TODO:
 
+* create separate `workflow-text_classify` and remove from ASR, Site_Scrape
+* ...
+
 ### ASR
 
 * ~~create .csv list of files that are in each batch .gz
@@ -54,15 +57,15 @@ python main.py workflow_asr prepare_workspace
   - EnteroDoc
   - ~~URL~~
 * mod  `urls.txt` and ValidateUrlsTask
-  - ValidateUrlsTask => ImportAndValidateUrlsTask
+  - ~~ValidateUrlsTask => ImportAndValidateUrlsTask~~
   - each line of `urls.txt`: 'bank_name': [url1,url2, ...]
   - `tmp/1_VALIDATED/urls.txt` to `valid_urls.json`
   - ...
 * mod Crawler
-  - `scenario.url` conflicts with crawler.check_urls_are_valid(url_list)
+  - ~~`scenario.url` conflicts with crawler.check_urls_are_valid(url_list)~~
   - use consistent naming across tasks: ValidateUrlsTask, CrawlUrlsTask
-  -remove: ~~generalize so 'jpmorgan' references is added to scenario~~
-  -remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
+  - remove: ~~generalize so 'jpmorgan' references is added to scenario~~
+  - remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
   - ...
 * add new workflow-scraping
 * generalize classes for extensibility of workflows

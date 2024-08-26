@@ -241,7 +241,7 @@ from .Files import File
 from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 from .web.crawler import Crawler, empty_scenario
 
-class ValidateUrlsTask(Task):
+class ImportAndValidateUrlsTask(Task):
     """Import initial root URL list and validate they exist."""
 
     def run(self):
