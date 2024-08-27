@@ -61,6 +61,13 @@ class BaseSearchScenario:
         self.urls = urls
         self.list_of_search_terms = list_of_search_terms
 
+    #the following is necessary to perform copy.deepcopy(), 
+    # ref: https://stackoverflow.com/questions/10618956/copy-deepcopy-raises-typeerror-on-objects-with-self-defined-new-method
+    def __copy__(self):
+        return self
+    def __deepcopy__(self, memo):
+        return self
+
 
 class BaseExporter:
     """Base class for the Crawler's exporter."""
@@ -215,6 +222,7 @@ class Crawler:
                                                      num_results = NumberOfSearchResults,
                                                      sleep_interval = 1 
                                                      )
+                self.logger.info(f'request made to google using terms: {terms}')
                 unique_urls = [url for url in search_results if url not in result_url_list]
                 SearchUrls = [self.url_factory.build(result) for result in unique_urls]
                 result_url_list.extend(SearchUrls)

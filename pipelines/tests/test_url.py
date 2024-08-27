@@ -25,6 +25,12 @@ urls = [URL.build(url) for url in hrefs]
 
 
 
+def test_tojson_mixin_nested_dict():
+    nested_dict = {}
+    nested_dict['key'] = urls[0]
+    result = nested_dict.toJSON()
+    assert True == False
+
 def test_check_scheme():
     result = [url.check_scheme() for url in urls]
     schemes = [url.scheme for url in urls]
@@ -87,7 +93,8 @@ def test_get_subdomain():
     assert result == ['www', '', 'www', 'www', '', 'domain']
 
 def test_get_owner_():
-    BaseUrl = UniformResourceLocator('https://www.jpmorgan.com')
+    URL = UrlFactory()
+    BaseUrl = URL.build(url='https://www.jpmorgan.com')
     owner = BaseUrl.get_owner_()
     assert owner == 'JPMorgan Chase & Co.'
 
@@ -110,10 +117,11 @@ def test_has_same_url_owner_():
     ]
 
     #test-1
-    BaseUrl = UniformResourceLocator(base_url)
+    URL = UrlFactory()
+    BaseUrl = URL.build(base_url)
     check_owners_1 = []
     for url in urls:
-        Url = UniformResourceLocator(url)
+        Url = URL.build(url)
         result = Url.has_same_url_owner_(BaseUrl)
         check_owners_1.append(result)
     check_owners_1 == [True, True, False, False, False]
@@ -121,7 +129,7 @@ def test_has_same_url_owner_():
     #test-2
     check_owners_2 = []
     for url in urls:
-        result = UniformResourceLocator(url).has_same_url_owner_(UniformResourceLocator(base_url))
+        result = URL.build(url).has_same_url_owner_(URL.build(base_url))
         check_owners_2.append(result) 
     check_owners_2 == [True, True, False, False, False]
 

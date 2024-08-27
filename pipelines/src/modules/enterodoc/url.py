@@ -7,7 +7,8 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
-from .config import ConfigObj 
+from .config import ConfigObj
+#from src.io.jsonable import JSONAble
 
 import tldextract
 import whois
@@ -20,6 +21,17 @@ from pathlib import Path
 import io
 import time
 import sys
+#import json
+
+
+
+'''
+class UrlEncoder(json.JSONDecoder):
+    """Used in json.dumps()."""
+    def default(self, obj):
+            return obj.__repr__()
+'''
+
 
 
 class UrlFactory:
@@ -42,15 +54,20 @@ class UrlFactory:
         """Build UniformResourceLocator objects from 
         url strings and the EnteroConfig.
         """
-        return UniformResourceLocator(
-            url,
-            self.config.logger,
-            self.config.applyRequestsRenderJs
-            )
+        if type(url) == UniformResourceLocator:
+            return url
+        elif url in [None, '', False]:
+            return None
+        else:
+            return UniformResourceLocator(
+                url,
+                self.config.logger,
+                self.config.applyRequestsRenderJs
+                )
 
 
 
-class UniformResourceLocator:
+class UniformResourceLocator():
     """Describe class
 
     The URL could point to one of many options:
@@ -285,6 +302,7 @@ class UniformResourceLocator:
         def request_iteration():
             try:
                 self.whois_account = whois.whois(self.url)
+                self.logger.info(f'request made to whois for url {self.url}')
                 self.owner = self.whois_account.text.split('Organization:')[1].split('\n')[0].strip()
             except:
                 self.logger.error(f'ICANN WHOIS gave no response for url: `{self.url}`')
@@ -351,6 +369,7 @@ class UniformResourceLocator:
             try:
                 session = HTMLSession()
                 resp = session.get(self.url)
+                self.logger.info(f'request made to url {self.url}')
                 if resp.status_code == 200:
                     content_type = resp.headers.get('content-type')
                     self.file_type = content_type

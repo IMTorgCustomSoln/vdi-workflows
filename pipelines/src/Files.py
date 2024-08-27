@@ -14,11 +14,12 @@ from pathlib import Path
 import json
 import gzip
 import pickle
+import yaml
 
 
 class File:
     """..."""
-    types = ['txt','json','pickle','schema','workspace']#TODO:,'archive']
+    types = ['txt','json','yaml','pickle','schema','workspace']#TODO:,'archive']
 
     def __init__(self, filepath, type):
         filepath = Path(filepath).resolve()
@@ -45,6 +46,11 @@ class File:
                 json_content = json.load(f)
             return json_content
         
+        def import_yaml(filepath):
+            with open(filepath, 'r') as f:
+                yaml_content = yaml.safe_load(f)
+            return yaml_content
+        
         def import_pickle(filepath):
             with open(filepath, 'rb') as f:
                 content = pickle.load(f)
@@ -59,6 +65,8 @@ class File:
             'txt-.txt': import_text,
             'text-.txt': import_text,
             'json-.json': import_json,
+            'yaml-.yaml': import_yaml,
+            'yaml-.yml': import_yaml,
             'pickle-.pickle': import_pickle,
             'schema-.json': import_json,
             'workspace-.gz': import_workspace

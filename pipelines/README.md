@@ -58,7 +58,15 @@ python main.py workflow_asr prepare_workspace
   - ~~URL~~
 * mod  `urls.txt` and ValidateUrlsTask
   - ~~ValidateUrlsTask => ImportAndValidateUrlsTask~~
-  - each line of `urls.txt`: 'bank_name': [url1,url2, ...]
+  - change `urls.txt` to `urls.json`:
+  ```urls.json
+  {
+  'bank_name': {
+    'root_url: 'https://www...',
+    'given_urls: [url1,url2, ...],
+    }
+  }
+  ```
   - `tmp/1_VALIDATED/urls.txt` to `valid_urls.json`
   - ...
 * mod Crawler
@@ -69,10 +77,6 @@ python main.py workflow_asr prepare_workspace
   - ...
 * add new workflow-scraping
 * generalize classes for extensibility of workflows
-* ~~urls are case-sensitive~~
-  - "https://www.chase.com/content/feed/public/creditcards/cma/chase/col00095.pdf": https://www.chase.com/content/feed/public/creditcards/cma/Chase/COL00095.pdf
-  - "https://www.chase.com/content/dam/chasecom/en/legacy/ccpmweb/shared/document/chase_consumer_a9_english_web.pdf": https://www.chase.com/content/dam/chasecom/en/legacy/ccpmweb/shared/document/chase_consumer_A9_english_web.pdf,
-* ~~log results for ease of review~~
 * documentation
   - explain configuration adjustments
 * Workspace export

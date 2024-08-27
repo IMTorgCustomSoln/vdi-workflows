@@ -75,12 +75,12 @@ class WorkflowSiteScrape(Workflow):
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
-                extension_patterns=['.txt']
+                extension_patterns=['.yaml']
                 )
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.txt']
+                extension_patterns=['.json']
                 )
             crawled_files = Files(
                 name='crawled',

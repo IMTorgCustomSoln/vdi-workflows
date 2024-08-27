@@ -32,6 +32,7 @@ xhtml2pdf = "*"
 numpy = "*"
 transformers = "*"
 huggingface-hub = "==0.23.5"
+pyyaml = "*"
 
 [dev-packages]
 

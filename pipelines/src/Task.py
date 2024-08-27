@@ -16,6 +16,7 @@ __license__ = "AGPL-3.0"
 from src.Files import File
 from src.io import export
 from src.io import utils
+from src.modules.enterodoc.url import UrlFactory#, UrlEncoder
 
 from pathlib import Path
 import sys
@@ -241,35 +242,38 @@ from .Files import File
 from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
 from .web.crawler import Crawler, empty_scenario
 
+import copy
+
+
 class ImportAndValidateUrlsTask(Task):
     """Import initial root URL list and validate they exist."""
 
     def run(self):
-        """
-        input_files = [file for file in self.input_files.get_files()]
-        if len(input_files) < 1:
-            self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
-        input_file = input_files[0]
-        """
         URL = UrlFactory()
+        crawler = Crawler(
+                scenario=empty_scenario,
+                logger=self.config['LOGGER'],
+                exporter=None
+            )
         input_files = self.get_next_run_files()
         if len(input_files) == 1:
             input_file = input_files[0]
-            urls = File(filepath=input_file, type='txt').load_file(return_content=True)
-            url_list = [URL.build(url) for url in urls]
-            empty_scenario.url = urls[0]
-            crawler = Crawler(
-                scenario=empty_scenario,
-                logger=self.config['LOGGER'],
-                exporter=''
-            )
-            ValidatedUrls = crawler.check_urls_are_valid(url_list)
-            outfile = self.output_files.directory / 'urls.txt'
-            out_file = File(filepath=outfile, type='txt')
-            out_file.content = ValidatedUrls
+            urls = File(filepath=input_file, type='yaml').load_file(return_content=True)
+            for key, item in urls.items():
+                item['given_urls'].insert(0, item['root_url'])
+                url_list = [URL.build(url) for url in item['given_urls'] if URL.build(url) != None]
+                new_scenario = copy.deepcopy(empty_scenario)
+                new_scenario.urls = url_list
+                crawler.add_scenario(new_scenario)
+                valid_urls = crawler.check_urls_are_valid(url_list)
+                valid_urls_str = [url.__repr__() for url in valid_urls]
+                item['_valid_urls'] = valid_urls_str
+                self.config['LOGGER'].info(f"validated {len(valid_urls)} urls and saved to location {key} ")
+            outfile = self.output_files.directory / 'urls.json'
+            out_file = File(filepath=outfile, type='json')
+            out_file.content = urls
             check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-            self.config['LOGGER'].info(f"validated {len(ValidatedUrls)} urls and saved to location {self.output_files.directory.__str__()} ")
         else:
             self.config['LOGGER'].info(f"urls previously validated")
             check=True
