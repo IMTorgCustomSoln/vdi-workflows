@@ -194,7 +194,9 @@ class Crawler:
                                                 depth = self.scenario.depth,
                                                 initial_url_list = initial_list
                                                 )
-            result_urls[url] = hrefs
+            url_str = url.url
+            hrefs_str = [href.url for href in hrefs]
+            result_urls[url] = hrefs_str
             self.logger.info(f"result of `generate_href_chain()` is {len(hrefs)} result_urls for root {url} listed as: {hrefs}")
         return result_urls
 

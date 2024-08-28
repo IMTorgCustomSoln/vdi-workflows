@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Test crawler
+
+TODO: add keys for:
+* urls found by google, but not useful
+* urls found to be useful, but not part of base_url
+TODO: export as string or URL-class
+
 """
 
 __author__ = "Jason Beach"

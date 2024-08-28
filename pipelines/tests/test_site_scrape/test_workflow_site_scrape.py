@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test workflow
+Test site_scrape workflow
 """
 
 __author__ = "Jason Beach"

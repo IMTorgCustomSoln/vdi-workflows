@@ -240,7 +240,7 @@ class ExportAsrToVdiWorkspaceTask(Task):
 
 from .Files import File
 from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
-from .web.crawler import Crawler, empty_scenario
+from .web.crawler import Crawler, empty_scenario, example_udap_search_terms
 
 import copy
 
@@ -256,10 +256,10 @@ class ImportAndValidateUrlsTask(Task):
                 exporter=None
             )
         input_files = self.get_next_run_files()
-        if len(input_files) == 1:
+        if len(input_files) == 1:   #only one input file
             input_file = input_files[0]
-            urls = File(filepath=input_file, type='yaml').load_file(return_content=True)
-            for key, item in urls.items():
+            records = File(filepath=input_file, type='yaml').load_file(return_content=True)
+            for key, item in records.items():
                 item['given_urls'].insert(0, item['root_url'])
                 url_list = [URL.build(url) for url in item['given_urls'] if URL.build(url) != None]
                 new_scenario = copy.deepcopy(empty_scenario)
@@ -268,10 +268,11 @@ class ImportAndValidateUrlsTask(Task):
                 valid_urls = crawler.check_urls_are_valid(url_list)
                 valid_urls_str = [url.__repr__() for url in valid_urls]
                 item['_valid_urls'] = valid_urls_str
-                self.config['LOGGER'].info(f"validated {len(valid_urls)} urls and saved to location {key} ")
+                self.config['LOGGER'].info(f"validated {len(valid_urls)} urls and saved to target {key} ")
+            #output
             outfile = self.output_files.directory / 'urls.json'
             out_file = File(filepath=outfile, type='json')
-            out_file.content = urls
+            out_file.content = records
             check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
         else:
@@ -284,44 +285,42 @@ class CrawlUrlsTask(Task):
     """Collect branch-and-leaf URLs from initial roots."""
 
     def run(self):
-        """
-        #input
-        input_files = [file for file in self.input_files.get_files()]
-        if len(input_files) > 1:
-            self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
-        input_file = input_files[0]
-        """
+        def flatten_extend(nested):
+            flat_list = []
+            for row in nested:
+                flat_list.extend(row)
+            return flat_list
+    
         URL = UrlFactory()
         input_files = self.get_next_run_files()
         if len(input_files) == 1:
             input_file = input_files[0]
-            urls = File(filepath=input_file, type='txt').load_file(return_content=True)
-            url_list = [URL.build(url) for url in urls]
-            #process
-            results = {}
-            for Url in url_list:
-                #UrlCrawl = crawler(Url, self.config['LOGGER'])
-                empty_scenario.url = Url
-                empty_scenario.depth = 0
-                UrlCrawl = Crawler(
-                    scenario=empty_scenario,
+            records = File(filepath=input_file, type='json').load_file(return_content=True)
+            for key, item in records.items():
+                valid_urls = [URL.build(url) for url in copy.deepcopy(item['_valid_urls'])]
+                new_scenario = copy.deepcopy(empty_scenario)
+                new_scenario.base_url = URL.build(item['root_url'])
+                new_scenario.urls = valid_urls
+                new_scenario.list_of_search_terms = example_udap_search_terms
+                new_scenario.depth = 0
+                crawler = Crawler(
+                    scenario=new_scenario,
                     logger=self.config['LOGGER'],
-                    exporter=''
+                    exporter=None
                     )
-                result_urls = UrlCrawl.generate_href_chain()
-                #results.append(result_urls)
-                k = str( list(result_urls.keys())[0] )
-                v = [str(item) for item in result_urls[Url]]
-                results[k] = v
+                crawler.scenario._valid_urls = valid_urls
+                result_urls = crawler.generate_href_chain()
+                combined_urls = flatten_extend(list(result_urls.values()) )
+                records[key]['_result_urls'] = combined_urls
+                self.config['LOGGER'].info(f"searched { len(list(result_urls.keys())) } root urls to find leaf results of {len(combined_urls)} urls and saved to target {key} ")
             #output
             outfile = self.output_files.directory / 'urls.json'
             out_file = File(filepath=outfile, type='json')
-            out_file.content = results
+            out_file.content = records
             check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
         else:
-            self.config['LOGGER'].info(f"urls previously validated")
+            self.config['LOGGER'].info(f"urls previously searched")
             check=True
         return check
 
