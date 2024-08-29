@@ -46,16 +46,29 @@ class ExtractsSuite:
         return result_record
 
     def extract_from_html(self, record):
+        """..."""
+        #get html_str
         html_str = ''
-        with open(record.filepath, 'r') as f:
-            html_str = f.read()
+        if record.file_str:
+            html_str = record.file_str
+        else:
+            with open(record.filepath, 'r') as f:
+                html_str = f.read()
+        #html_string to pdf
         record_from_context, pdf_bytes = self.Html.html_string_to_pdf(html_str=html_str, 
                                                               url_path=None, 
                                                               record=record
                                                               )
+        if not pdf_bytes:
+            #extract text
+            #create pdf from text: src.export text_to_pdf
+            pass
+
+        #get record attributes from pdf
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes, 
                                                          record=record_from_context
                                                          )
+
         return result_record
 
 

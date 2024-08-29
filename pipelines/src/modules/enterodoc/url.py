@@ -364,7 +364,7 @@ class UniformResourceLocator():
         over empty string ('') to document that parsing was attempted.
         """
         def _get_artifact():
-            """Get url artifact and verify self.url_type is correct."""
+            """Get url artifact and verify self.url_type is correct, then populate self.file_str if possible."""
             resp = None
             try:
                 session = HTMLSession()

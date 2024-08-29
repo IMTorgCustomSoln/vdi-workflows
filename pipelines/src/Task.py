@@ -35,7 +35,7 @@ class Task:
             raise Exception(f'target_folder not found: {output}')
         self.name_diff = name_diff
     
-    def get_next_run_files(self):
+    def get_next_run_files(self, type='same'):
         """Get the remaining files that should be provided to run()
         Each record is an file and they are processed, individually, as opposed
         to multiple records within a file.
@@ -47,17 +47,27 @@ class Task:
 
         TODO:add as function to Files.py and ensure appropriate attr: .name, .stem, etc.
         """
-        Type = 'name_only'
-        input_names = set(self.input_files.get_files(type=Type))
-        processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
-        remainder_names = list( input_names.difference(processed_names) )
-        if len(remainder_names)>0 and Type == 'name_only':
-            remainder_paths = [file for file in self.input_files.get_files() 
-                               if utils.remove_all_extensions_from_filename(file.stem) in remainder_names    #TODO:possible error for workflow_site_scrape
-                               ]
-        else:
-            remainder_paths = []
-        return remainder_paths
+        if type == 'same':
+            Type = 'name_only'
+            input_names = set(self.input_files.get_files(type=Type))
+            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
+            remainder_names = list( input_names.difference(processed_names) )
+            if len(remainder_names)>0 and Type == 'name_only':
+                remainder_paths = [file for file in self.input_files.get_files() 
+                                   if utils.remove_all_extensions_from_filename(file.stem) in remainder_names    #TODO:possible error for workflow_site_scrape
+                                   ]
+            else:
+                remainder_paths = []
+            return remainder_paths
+        
+        elif type == 'update':      #TODO:improve this idea
+            Type = 'name_only'
+            input_names = set(self.input_files.get_files(type=Type))
+            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
+            if len(processed_names) > len(input_names):
+                remainder_paths = []
+            return remainder_paths
+
 
     def run(self):
         """Run processing steps on input files"""
@@ -292,11 +302,11 @@ class CrawlUrlsTask(Task):
             return flat_list
     
         URL = UrlFactory()
-        input_files = self.get_next_run_files()
+        input_files = self.get_next_run_files(type='update')
         if len(input_files) == 1:
             input_file = input_files[0]
             records = File(filepath=input_file, type='json').load_file(return_content=True)
-            for key, item in records.items():
+            for idx, (key, item) in enumerate(records.items()):
                 valid_urls = [URL.build(url) for url in copy.deepcopy(item['_valid_urls'])]
                 new_scenario = copy.deepcopy(empty_scenario)
                 new_scenario.base_url = URL.build(item['root_url'])
@@ -311,14 +321,16 @@ class CrawlUrlsTask(Task):
                 crawler.scenario._valid_urls = valid_urls
                 result_urls = crawler.generate_href_chain()
                 combined_urls = flatten_extend(list(result_urls.values()) )
-                records[key]['_result_urls'] = combined_urls
+                record = {}
+                record[key] = item
+                record[key]['_result_urls'] = combined_urls
                 self.config['LOGGER'].info(f"searched { len(list(result_urls.keys())) } root urls to find leaf results of {len(combined_urls)} urls and saved to target {key} ")
-            #output
-            outfile = self.output_files.directory / 'urls.json'
-            out_file = File(filepath=outfile, type='json')
-            out_file.content = records
-            check = out_file.export_to_file()
-            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+                #output
+                outfile = self.output_files.directory / f'urls{idx}-{key}.json'
+                out_file = File(filepath=outfile, type='json')
+                out_file.content = record
+                check = out_file.export_to_file()
+                self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
         else:
             self.config['LOGGER'].info(f"urls previously searched")
             check=True
@@ -335,34 +347,30 @@ class ConvertUrlDocToPdf(Task):
 
     def run(self):
         #input
-        """
-        input_files = [file for file in self.input_files.get_files()]
-        if len(input_files) > 1:
-            self.config['LOGGER'].error(f'ERROR: there should be 1 file, but there are {len(input_files)}')
-        input_file = input_files[0]
-        """
         URL = UrlFactory()
-        input_files = self.get_next_run_files()
-        if len(input_files) == 1:
-            input_file = input_files[0]
-            root_urls = File(filepath=input_file, type='json').load_file(return_content=True)
+        ConfigObj.set_logger(self.config['LOGGER'])
+        Doc = DocumentFactory(ConfigObj)
+        docrec = DocumentRecord()
+        #input_files = self.get_next_run_files()
+        #if len(input_files) == 1:
+        for file_idx, file in enumerate(self.get_next_run_files()):
+            record = File(filepath=file, type='json').load_file(return_content=True)
             #process
-            ConfigObj.set_logger(self.config['LOGGER'])
-            Doc = DocumentFactory(ConfigObj)
-            results = []
-            for root, urls in root_urls.items():
-                for url_str in urls:
+            #results = []
+            for key, item in record.items():
+                #record['_result_urls']
+                for url_idx, url_str in enumerate(item['_result_urls']):
                     url = URL.build(url_str)
-                    url.run_data_requests_()
+                    check = url.run_data_requests_()
+                    if not check: 
+                        raise Exception('there was an error')
                     doc = Doc.build(url)
-                    docrec = DocumentRecord()
                     try:
                         check = docrec.validate_object_attrs(doc)
                     except Exception as e:
                         self.config['LOGGER'].info(f"DocumentRecord attribute validation error with url: {url_str}")
                         self.config['LOGGER'].info(e)
                         continue
-
                     #format
                     #TODO:use pickle to keep all data
                     #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
@@ -371,18 +379,19 @@ class ConvertUrlDocToPdf(Task):
                     doc.record['date'] = str(doc.record['date'])
                     del doc.record['file_document']
                     #end changes
-                    results.append(doc.record)
-        
-            #output
-            outfile = self.output_files.directory / 'urls.json'
-            out_file = File(filepath=outfile, type='json')
-            out_file.content = results
-            check = out_file.export_to_file()
-            self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
-        else:
-            self.config['LOGGER'].info(f"urls previously validated")
-            check=True
+                    #results.append(doc.record)
+
+                    #output
+                    outfile = self.output_files.directory / f'doc{file_idx}-{key}.json'
+                    out_file = File(filepath=outfile, type='json')
+                    out_file.content = doc.record
+                    check = out_file.export_to_file()
+                    #log url
+                #log file: self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+        #log Task: self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+        #else:
+        #self.config['LOGGER'].info(f"urls previously validated")
+        #check=True
         return check
 
 

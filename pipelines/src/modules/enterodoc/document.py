@@ -163,7 +163,7 @@ class Document:
         """
         result = {}
         check0 = self.record.filetype in self._useable_suffixes.keys()
-        check1 = self._useable_suffixes[self.record.filetype] if check0 else None
+        check1 = True if self._useable_suffixes[self.record.filetype] and check0 else None
         if check1:
             fun_call = self._useable_suffixes[self.record.filetype]
             result = (fun_call)(self.record)
