@@ -43,7 +43,9 @@ class ExtractsSuite:
         else:
             pdf_stream = record.file_str
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream)
+        result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
         return result_record
+
 
     def extract_from_html(self, record):
         """..."""
@@ -55,20 +57,23 @@ class ExtractsSuite:
             with open(record.filepath, 'r') as f:
                 html_str = f.read()
         #html_string to pdf
-        record_from_context, pdf_bytes = self.Html.html_string_to_pdf(html_str=html_str, 
+        pdf_bytes = self.Html.html_string_to_pdf_bytes(html_str=html_str, 
                                                               url_path=None, 
                                                               record=record
                                                               )
         if not pdf_bytes:
-            #extract text
-            #create pdf from text: src.export text_to_pdf
-            pass
+            from src.io.export import text_to_pdf
+            pdf_bytes = text_to_pdf(record.file_document.text)
 
         #get record attributes from pdf
-        result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes, 
-                                                         record=record_from_context
-                                                         )
-
+        # = pdf_bytes
+        result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes)
+                                                     #record=record_from_context
+                                                     #)
+        #tmp = str.encode( result_record["file_pdf_bytes"] )
+        #result_record["file_uint8arr"] = [x for x in tmp]
+        result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
+        #result_record["file_text"] = record["file_document"].text
         return result_record
 
 

@@ -36,11 +36,15 @@ record_attrs = [
         "filename_original",
         "filename_modified",
 
-        #raw
+        #raw / meta
         "file_extension",
-        "filetype",
-        "file_str",
-        "file_document",
+        "filetype",           #- '.html','.pdf'
+        "file_str",           #- raw string
+        "file_document",      #- bs4, pdf
+        #"file_text",          #- visible text => 'body_pages' is same
+        "file_pdf_bytes",     #-converted to pdf, then bytes
+        "file_uint8arr",      #-pdf_bytes to js uInt8Array
+
         "page_nos",
         "length_lines",
         "file_size_mb",
@@ -53,6 +57,7 @@ record_attrs = [
         "toc",
         "pp_toc",
 
+        "body_pages",
         "body",
         "clean_body",
         "readability_score",

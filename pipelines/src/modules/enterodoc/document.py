@@ -84,9 +84,9 @@ class Document:
             self.record.file_document = None
             self.record.filetype, self.record.file_size_mb = self.determine_file_info()
 
+        # process inferred metadata
         self.set_filename_modified()
 
-        # process inferred metadata
         record_extracts = self.run_extraction_pipeline()
         self.update_record_attrs(record_extracts, replace=False)
 
@@ -167,6 +167,9 @@ class Document:
         if check1:
             fun_call = self._useable_suffixes[self.record.filetype]
             result = (fun_call)(self.record)
+            #result["file_text"] = self.record["file_document"].text
+            #result["page_nos"] = len(rdr.pages)
+            #result["body_pages"] = [rdr.pages[idx].extract_text() for idx in range(len(rdr.pages))]
             result['pp_toc'] = self.pretty_print_toc( result['toc'] )
         else:
             self._logger.info("filetype (extension) is not one of the supported suffixes")
@@ -200,15 +203,44 @@ class Document:
                 missing.append(attr)
         return missing
     
-    def get_record(self, map_output=False):
-        """TODO: get record as DocumentRecord"""
+    def get_record(self, map_output=False, json_ready=True):
+        """Get record as DocumentRecord or (json-ready) dict
+        
+        Notes:
+        * filetype - '.html','.pdf'
+        * file_str - raw string
+        * file_document - bs4, pdf
+        * file_text - visible text
+        * file_pdf_bytes - converted to pdf, then bytes
+        * file_uint8arr - pdf_bytes to js uInt8Array
+        """
+        #create dict
         output = {}
         for k,v in self.record.items():
             if map_output and self._output_mapping:
-                newKey = self._output_mapping[k]
+                newKey = self._output_mapping[k]        #TODO:need mapping
                 output[newKey] = v
             else:
                 output[k] = v
+        #pdf-related
+        """
+        if output['filetype']=='.pdf':
+            output['file_uint8arr'] = [x for x in output['file_pdf_bytes']]    #convert bytes to uInt8Array for json
+            #output['file_uint8arr'] = [x for x in output['file_str']]    #convert bytes to uInt8Array for json
+        elif output['filetype']=='.html':
+            tmp = str.encode( output['file_pdf_bytes'] )
+            #tmp = str.encode( output['file_str'] )
+            output['file_uint8arr'] = [x for x in tmp]
+        else:
+            raise Exception(f'not expected filetype')
+        """
+        #prepare for json
+        if json_ready==True:
+            output['filepath'] = str(output['filepath'])
+            output['date'] = str(output['date'])
+            output["file_str"] = str(output["file_str"])
+            del output['file_document']
+            del output['file_pdf_bytes'] 
         return output
 
     def save_modified_file(self, filepath_modified):

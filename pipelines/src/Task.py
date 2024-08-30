@@ -66,6 +66,8 @@ class Task:
             processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
             if len(processed_names) > len(input_names):
                 remainder_paths = []
+            else:
+                remainder_paths = list( self.input_files.get_files() )
             return remainder_paths
 
 
@@ -332,7 +334,7 @@ class CrawlUrlsTask(Task):
                 check = out_file.export_to_file()
                 self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
         else:
-            self.config['LOGGER'].info(f"urls previously searched")
+            self.config['LOGGER'].info(f"urls previously crawled")
             check=True
         return check
 
@@ -347,51 +349,56 @@ class ConvertUrlDocToPdf(Task):
 
     def run(self):
         #input
+        check = None
         URL = UrlFactory()
         ConfigObj.set_logger(self.config['LOGGER'])
         Doc = DocumentFactory(ConfigObj)
         docrec = DocumentRecord()
-        #input_files = self.get_next_run_files()
-        #if len(input_files) == 1:
-        for file_idx, file in enumerate(self.get_next_run_files()):
-            record = File(filepath=file, type='json').load_file(return_content=True)
-            #process
-            #results = []
-            for key, item in record.items():
-                #record['_result_urls']
-                for url_idx, url_str in enumerate(item['_result_urls']):
-                    url = URL.build(url_str)
-                    check = url.run_data_requests_()
-                    if not check: 
-                        raise Exception('there was an error')
-                    doc = Doc.build(url)
-                    try:
-                        check = docrec.validate_object_attrs(doc)
-                    except Exception as e:
-                        self.config['LOGGER'].info(f"DocumentRecord attribute validation error with url: {url_str}")
-                        self.config['LOGGER'].info(e)
-                        continue
-                    #format
-                    #TODO:use pickle to keep all data
-                    #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
-                    doc.record['filepath'] = str(doc.record['filepath'])
-                    doc.record['file_str'] = [x for x in doc.record['file_str']]    #convert bytes to uInt8Array for json
-                    doc.record['date'] = str(doc.record['date'])
-                    del doc.record['file_document']
-                    #end changes
-                    #results.append(doc.record)
-
-                    #output
-                    outfile = self.output_files.directory / f'doc{file_idx}-{key}.json'
-                    out_file = File(filepath=outfile, type='json')
-                    out_file.content = doc.record
-                    check = out_file.export_to_file()
-                    #log url
-                #log file: self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-        #log Task: self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
-        #else:
-        #self.config['LOGGER'].info(f"urls previously validated")
-        #check=True
+        input_files = self.get_next_run_files(type='update')
+        if len(input_files) > 0:
+            for file_idx, file in enumerate(input_files):
+                record = File(filepath=file, type='json').load_file(return_content=True)
+                #process
+                for key, item in record.items():
+                    for url_idx, url_str in enumerate(item['_result_urls'][:3]   ):     #<<< TODO:remove slice [:3]
+                        url = URL.build(url_str)
+                        check = url.run_data_requests_()
+                        if not check: 
+                            raise Exception('there was an error')
+                        doc = Doc.build(url)
+                        try:
+                            check = docrec.validate_object_attrs(doc)
+                            record_dict = doc.get_record()
+                            #format
+                            #TODO:use pickle to keep all data
+                            #TODO:make DocumenRecord able to be pickled, ref: https://stackoverflow.com/questions/2049849/why-cant-i-pickle-this-object
+                        except Exception as e:
+                            self.config['LOGGER'].info(f"DocumentRecord attribute validation error with url: {url_str}")
+                            self.config['LOGGER'].info(e)
+                            continue
+                        """
+                        doc.record['filepath'] = str(doc.record['filepath'])
+                        if doc.record['filetype']=='.pdf':
+                            doc.record['file_str'] = [x for x in doc.record['file_str']]    #convert bytes to uInt8Array for json
+                        elif doc.record['filetype']=='.html':
+                            tmp = str.encode( doc.record['file_str'] )
+                            doc.record['file_str'] = [x for x in tmp]
+                        else:
+                            raise Exception(f'not expected filetype')                       #convert uInt8Array to bytes: arr = np.array( doc.record['file_str'], dtype=np.uint8); arr.view(f'S{arr.shape[0]}')
+                        doc.record['date'] = str(doc.record['date'])
+                        del doc.record['file_document']
+                        """
+                        #output
+                        outfile = self.output_files.directory / f'doc-{key}-{url_idx}.json'
+                        out_file = File(filepath=outfile, type='json')
+                        out_file.content = record_dict
+                        check = out_file.export_to_file()
+                        #log url
+                        #log file: self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
+                        #log Task: self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+        else:
+            self.config['LOGGER'].info(f"urls previously converted")
+            check = True
         return check
 
 
@@ -400,19 +407,18 @@ class ApplyModelsTask(Task):
 
     def run(self):
         input_files = self.get_next_run_files()
-        if len(input_files) == 1:
-            input_file = input_files[0]
-            docs = File(filepath=input_file, type='json').load_file(return_content=True)
-            results = []
-            for doc in docs:
-                results.append(doc)
-            #output
-            outfile = self.output_files.directory / 'urls.json'
-            out_file = File(filepath=outfile, type='json')
-            out_file.content = results
-            check = out_file.export_to_file()
+        if len(input_files) > 0:
+            for file in input_files:
+                record = File(filepath=file, type='json').load_file(return_content=True)
+                #process
+                #TODO: process record
+                #output
+                outfile = self.output_files.directory / file.name
+                out_file = File(filepath=outfile, type='json')
+                out_file.content = record
+                check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
-            self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
+            #self.config['LOGGER'].info(f"validated {len(results)} urls and saved to location {self.output_files.directory.__str__()} ")
         else:
             self.config['LOGGER'].info(f"urls previously validated")
             check=True
@@ -456,13 +462,24 @@ class ExportVdiWorkspaceTask(Task):
                     output_type='vdi_workspace'
                     )
             #documents
-            if True:
+            if False:
                 file = batch[0]
                 documents = File(file, 'json').load_file(return_content=True)
                 check = export.export_documents_to_vdiworkspace(
                     schema=self.config['WORKSPACE_SCHEMA'], 
                     records=documents, 
                     filepath=export_filepath
+                    )
+            #document batch
+            if True:
+                documents = [File(file, 'json').load_file(return_content=True)
+                             for file in batch
+                             ]
+                check = export.new_export(
+                    schema=self.config['WORKSPACE_SCHEMA'], 
+                    documents=documents, 
+                    filepath=export_filepath,
+                    output_type='vdi_workspace'
                     )
             cnt = len(batch)
             self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")

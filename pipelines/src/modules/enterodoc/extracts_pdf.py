@@ -68,44 +68,52 @@ class PdfExtracts:
                 record[key] = None
 
         #pymupdf
-        with fitz.open(stream = pdf_stream) as ingest:
-            if not record['author']:
-                meta = ingest.metadata
-                record['title'] = meta['title']
-                record['author'] = meta['author']
-                record['subject'] = meta['subject']
-                record['keywords'] = meta['keywords']
-                record['page_nos'] = len(ingest)
-                Ymd = meta['creationDate'].split('D:')[1][:8]
-                record['date'] = datetime.datetime.strptime(Ymd, "%Y%m%d").date()
-            #pdf.miner
-            if not record['title']:
-                record['title'] = self.get_pdf_title(pdf_stream)
-            if not record['toc']:
-                record['toc'] = ingest.get_toc()
+        try:
+            with fitz.open(stream = pdf_stream) as ingest:
+                if not record['author']:
+                    meta = ingest.metadata
+                    record['title'] = meta['title']
+                    record['author'] = meta['author']
+                    record['subject'] = meta['subject']
+                    record['keywords'] = meta['keywords']
+                    record['page_nos'] = len(ingest)
+                    if 'D:' in meta['creationDate']:
+                        Ymd = meta['creationDate'].split('D:')[1][:8] 
+                        record['date'] = datetime.datetime.strptime(Ymd, "%Y%m%d").date()
+                    else:
+                        record['date'] = None
+                #pdf.miner
+                if not record['title']:
+                    record['title'] = self.get_pdf_title(pdf_stream)
+                if not record['toc']:
+                    record['toc'] = ingest.get_toc()
 
-            page_list_length = record['page_nos'] - 1
-            if self.config.MAX_PAGE_EXTRACT:
-                if page_list_length <= self.config.MAX_PAGE_EXTRACT: 
+                page_list_length = record['page_nos'] - 1
+                if self.config.MAX_PAGE_EXTRACT:
+                    if page_list_length <= self.config.MAX_PAGE_EXTRACT: 
+                        number_of_pages_to_extract_text = page_list_length
+                    else: 
+                        number_of_pages_to_extract_text = self.config.MAX_PAGE_EXTRACT 
+                else:
                     number_of_pages_to_extract_text = page_list_length
-                else: 
-                    number_of_pages_to_extract_text = self.config.MAX_PAGE_EXTRACT 
-            else:
-                number_of_pages_to_extract_text = page_list_length
 
-            if not record['body']:
-                record['body'] = self.get_pdf_raw_text(pdf_stream=ingest, 
-                                                        mode='pymupdf', 
-                                                        number_of_pages_to_extract_text=number_of_pages_to_extract_text, 
-                                                        )
-            #pdf.miner
-            if not record['body']:
-                record['body'] = self.get_pdf_raw_text(pdf_stream=pdf_stream, 
-                                                        mode='pdf.miner', 
-                                                        number_of_pages_to_extract_text=number_of_pages_to_extract_text,  
-                                                        )
-        record['clean_body'] = get_clean_text(record['body'])
-
+                
+                record["file_pdf_bytes"] = pdf_stream
+                if not record['body']:
+                    record['body'], record["body_pages"] = self.get_pdf_raw_text(pdf_stream=ingest, 
+                                                            mode='pymupdf', 
+                                                            number_of_pages_to_extract_text=number_of_pages_to_extract_text, 
+                                                            )
+                #pdf.miner
+                if not record['body']:
+                    record['body'], record["body_pages"] = self.get_pdf_raw_text(pdf_stream=pdf_stream, 
+                                                            mode='pdf.miner', 
+                                                            number_of_pages_to_extract_text=number_of_pages_to_extract_text,  
+                                                            )
+            record['clean_body'] = get_clean_text(record['body'])
+        except:
+            self.config.logger.info('there was an error extract_from_pdf_string()')
+            
         self.config.logger.info(f'Convert html to pdf took: {time.time() - time0} secs')
         return record
 
@@ -140,6 +148,7 @@ class PdfExtracts:
         Ensure only a limited number of pages are extracted.
         """
         raw_text = ''
+        body_pages = []
 
         #pymupdf
         if mode == 'pymupdf':
@@ -149,7 +158,9 @@ class PdfExtracts:
                 pg_idx = 0
                 for page in ingest:
                     if pg_idx <= number_of_pages_to_extract_text:
-                        raw_text += page.get_text()
+                        page_text = page.get_text()
+                        raw_text += page_text
+                        body_pages.insert(pg_idx, page_text)
                         pg_idx += 1
             except Exception:
                 pass    
@@ -162,10 +173,11 @@ class PdfExtracts:
                     raw_text = pdf_extract_text(pdf_file=tmp,
                                                 maxpages=number_of_pages_to_extract_text
                                                 )
+                    #TODO: body_pages = ???
             except Exception:
                 self.config.logger.info(f'It took more than {self.config.MAX_TIME_SEC}sec to extract text')
             if not raw_text=='':
                 raw_text = pdf_extract_text(pdf_file=tmp,
                                             maxpages=1
                                             )
-        return raw_text        
+        return raw_text, body_pages        

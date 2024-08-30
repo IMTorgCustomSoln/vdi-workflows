@@ -57,7 +57,7 @@ class WorkflowSiteScrape(Workflow):
             #system input
             CONFIG['START_TIME'] = None
             CONFIG['LOGGER'] = logger
-            CONFIG['BATCH_COUNT'] = 1
+            CONFIG['BATCH_COUNT'] = 50
             CONFIG['WORKSPACE_SCHEMA'] = None
             #CONFIG['REGEX_INPUT_FILES_NAMES'] = '_Calls_'
             self.config = CONFIG

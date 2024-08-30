@@ -58,7 +58,7 @@ python main.py workflow_asr prepare_workspace
   - ~~URL~~
 * mod  `urls.txt` and ValidateUrlsTask
   - ~~ValidateUrlsTask => ImportAndValidateUrlsTask~~
-  - change `urls.txt` to `urls.json`:
+  - ~~change `urls.txt` to `urls.json`:~~
   ```urls.json
   {
   'bank_name': {
