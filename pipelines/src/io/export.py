@@ -524,81 +524,67 @@ def new_export(schema, documents, filepath, output_type='vdi_workspace'):
     documents_schema = workspace_schema['documentsIndex']['documents']
 
     if output_type == 'vdi_workspace':
-        #to string
-        pdfs = []
-        for document in documents:
-            """
-            document['formatted'] = format_dialogue_timestamps(document)
-            pdf = output_to_pdf(
-                dialogue=document,
-                results=document['formatted'],
-                output_type='str'
-            )"""
-            if pdf!=None:
-                pdfs.append(document[''])
         #load documents
-        documents = []
-        for idx, pdf in enumerate(pdfs):
+        document_records = []
+        for idx, document in enumerate(documents):
             document_record = copy.deepcopy(documents_schema)
+            '''
             pdf_pages = {}
-            with io.BytesIO(pdf['byte_string']) as open_pdf_file:
+            with io.BytesIO(document['byte_string']) as open_pdf_file:
                 reader = PdfReader(open_pdf_file)
                 for page in range( len(reader.pages) ):
                     text = reader.pages[page].extract_text()
                     pdf_pages[page+1] = text
+            '''
+            document["dialogue"] = {'time_asr': None, 'time_textmdl': None}
             #raw
             document_record['id'] = str(idx)
-            document_record['body_chars'] = {idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
-            document_record['body_pages'] = pdf_pages                                                                           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
+            document_record['body_chars'] = {page: len(text) for idx, (page, text) in enumerate(document['body_pages'].items())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
+            document_record['body_pages'] = document['body_pages']                                                                           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
             document_record['date_created'] = None
             #document_record['length_lines'] = None    #0
             #document_record['length_lines_array'] = None    #[26, 26, 7, 
-            document_record['page_nos'] = pdf['object'].pages.__len__()
-            document_record['length_lines'] = pdf['dialogue']['formatted'].__len__() if pdf['dialogue']['formatted']!=None else 0
-            data_array = {idx: val for idx,val in enumerate(list( pdf['byte_string'] ))}        #new list of integers that are the ascii values of the byte string
-            document_record['dataArray'] = data_array
-            document_record['toc'] = []
-            document_record['pp_toc'] = ''
-            document_record['clean_body'] = ' '.join( list(pdf_pages.values()) )
+            document_record['page_nos'] = document["page_nos"]
+            document_record['length_lines'] = 0    #document['dialogue']['formatted'].__len__() if document['dialogue']['formatted']!=None else 0
+            #data_array = {idx: val for idx,val in enumerate(list( document['byte_string'] ))}        #new list of integers that are the ascii values of the byte string
+            document_record['dataArray'] = document["file_uint8arr"]
+            document_record['toc'] = document['toc'] 
+            document_record['pp_toc'] = document['pp_toc'] 
+            document_record['clean_body'] = ' '.join(document['clean_body'])
             #file info
-            record_path = Path(pdf['dialogue']['file_path'])
-            document_record['file_extension'] = record_path.suffix
-            document_record['file_size_mb'] = record_path.stat().st_size
-            document_record['filename_original'] = record_path.name
-            document_record['title'] = record_path.name
-            document_record['filepath'] = str(record_path)
-            document_record['filetype'] = 'audio'
-            dt_group1 = record_path.stem.split('_')
-            dt_group2 = record_path.stem.split('.')
-            if len(dt_group1)>1:
-                dt = dt_group1[1]
-            elif len(dt_group2)>1:
-                dt = dt_group2[3]
-            else:
-                raise Exception(f'neither dt_group format is acceptable to extract from name: {record_path.stem}')
-            document_record['date'] = (datetime(int(dt[0:4]), int(dt[4:6]), int(dt[6:8]) )).isoformat()
-            document_record['reference_number'] = record_path.stem.split('_')[0]
-            if 'classifier' in pdf['dialogue'].keys():
-                highest_pred_target = max(pdf['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
-                hit_count = len([model for model in pdf['dialogue']['classifier'] if model!={}])
-                models = pdf['dialogue']['classifier']
+            document_record['file_extension'] = document["file_extension"]
+            document_record['file_size_mb'] = document["file_size_mb"]
+            document_record['filename_original'] = document["filename_original"]
+            document_record['title'] = document["title"]
+            document_record['filepath'] = document["filepath"]
+            document_record['filetype'] = document["filetype"]
+            
+            document_record['date'] = document["date"]
+            document_record['reference_number'] = document["reference_number"]
+
+            if 'classifier' in document['dialogue'].keys():
+                highest_pred_target = max(document['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+                hit_count = len([model for model in document['dialogue']['classifier'] if model!={}])
+                models = document['dialogue']['classifier']
             else:
                 highest_pred_target = {}
                 hit_count = None
                 models = None
+            
             document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
             document_record['hit_count'] = hit_count
-            document_record['time_asr'] = pdf['dialogue']['time_asr']
-            document_record['time_textmdl'] = pdf['dialogue']['time_textmdl']
+            document_record['time_asr'] = document['dialogue']['time_asr']
+            document_record['time_textmdl'] = document['dialogue']['time_textmdl']
 
             document_record['snippets'] = []
             document_record['summary'] = "TODO:summary"
             document_record['_showDetails'] = False
             document_record['_activeDetailsTab'] = 0
             document_record['models'] = models
-            documents.append(document_record)
+
+            document_records.append(document_record)
         #validate
-        workspace_schema['documentsIndex']['documents'] = documents
+        workspace_schema['documentsIndex']['documents'] = document_records
         #export
         #filepath_export_wksp_gzip = Path('./tests/results/VDI_ApplicationStateData_vTEST.gz')
         filepath_export_wksp_gzip = filepath

@@ -13,9 +13,9 @@ from .record import record_attrs, DocumentTemplate
 
 #html
 import bs4
-from xhtml2pdf import pisa 
+#from xhtml2pdf import pisa 
 import weasyprint
-import pypdf
+#import pypdf
 
 import io
 import time

@@ -376,18 +376,6 @@ class ConvertUrlDocToPdf(Task):
                             self.config['LOGGER'].info(f"DocumentRecord attribute validation error with url: {url_str}")
                             self.config['LOGGER'].info(e)
                             continue
-                        """
-                        doc.record['filepath'] = str(doc.record['filepath'])
-                        if doc.record['filetype']=='.pdf':
-                            doc.record['file_str'] = [x for x in doc.record['file_str']]    #convert bytes to uInt8Array for json
-                        elif doc.record['filetype']=='.html':
-                            tmp = str.encode( doc.record['file_str'] )
-                            doc.record['file_str'] = [x for x in tmp]
-                        else:
-                            raise Exception(f'not expected filetype')                       #convert uInt8Array to bytes: arr = np.array( doc.record['file_str'], dtype=np.uint8); arr.view(f'S{arr.shape[0]}')
-                        doc.record['date'] = str(doc.record['date'])
-                        del doc.record['file_document']
-                        """
                         #output
                         outfile = self.output_files.directory / f'doc-{key}-{url_idx}.json'
                         out_file = File(filepath=outfile, type='json')
@@ -444,6 +432,7 @@ class ExportVdiWorkspaceTask(Task):
 
         #export by batch
         processed_files = self.get_next_run_files()
+        processed_files.sort()
         cnt = 0
         for idx, batch in enumerate( utils.get_next_batch_from_list(processed_files, self.config['BATCH_COUNT']) ):
             self.config['LOGGER'].info("begin export")

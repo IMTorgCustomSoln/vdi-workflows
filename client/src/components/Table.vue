@@ -499,7 +499,7 @@ high because terms are found that are very similar to the exact terms._`
         getFormattedPath(path) {
             return path ? path : './'
         },
-        /*
+        
         // Row details 
         selectSnippetPage(id, snippet) {
             //const mouseOverSnippet = `${id}-${snippet}`
@@ -507,7 +507,7 @@ high because terms are found that are very similar to the exact terms._`
             //this.searchResults = {...this.searchResults, mouseOverSnippet: mouseOverSnippet}
             this.mouseOverSnippet = mouseOverSnippet
             this.userContentStore.selectedSnippet = mouseOverSnippet
-        },
+        },/* NOTE:this was used for an earlier button on the snippets
         postNote(event) {
             const element = event.target.parentElement.children[0]
             //TODO: fix the code below which should use `new NoteRecord()`, but from within Draggable - not here

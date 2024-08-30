@@ -59,10 +59,11 @@ class PdfExtracts:
     def __init__(self, config):
         self.config = config
 
-    def extract_from_pdf_string(self, pdf_stream, record=DocumentTemplate()):
+    def extract_from_pdf_string(self, pdf_stream):
         """TODO"""
         time0 = time.time()
 
+        record = DocumentTemplate()
         if len(record.keys())==0:
             for key in record_attrs:
                 record[key] = None
@@ -148,7 +149,7 @@ class PdfExtracts:
         Ensure only a limited number of pages are extracted.
         """
         raw_text = ''
-        body_pages = []
+        body_pages = {}
 
         #pymupdf
         if mode == 'pymupdf':
@@ -160,7 +161,7 @@ class PdfExtracts:
                     if pg_idx <= number_of_pages_to_extract_text:
                         page_text = page.get_text()
                         raw_text += page_text
-                        body_pages.insert(pg_idx, page_text)
+                        body_pages[pg_idx + 1] = page_text
                         pg_idx += 1
             except Exception:
                 pass    

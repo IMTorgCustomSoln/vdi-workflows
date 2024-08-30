@@ -222,18 +222,6 @@ class Document:
                 output[newKey] = v
             else:
                 output[k] = v
-        #pdf-related
-        """
-        if output['filetype']=='.pdf':
-            output['file_uint8arr'] = [x for x in output['file_pdf_bytes']]    #convert bytes to uInt8Array for json
-            #output['file_uint8arr'] = [x for x in output['file_str']]    #convert bytes to uInt8Array for json
-        elif output['filetype']=='.html':
-            tmp = str.encode( output['file_pdf_bytes'] )
-            #tmp = str.encode( output['file_str'] )
-            output['file_uint8arr'] = [x for x in tmp]
-        else:
-            raise Exception(f'not expected filetype')
-        """
         #prepare for json
         if json_ready==True:
             output['filepath'] = str(output['filepath'])

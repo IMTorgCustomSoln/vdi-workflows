@@ -58,22 +58,16 @@ class ExtractsSuite:
                 html_str = f.read()
         #html_string to pdf
         pdf_bytes = self.Html.html_string_to_pdf_bytes(html_str=html_str, 
-                                                              url_path=None, 
-                                                              record=record
-                                                              )
+                                                        url_path=None, 
+                                                        record=record
+                                                        )
         if not pdf_bytes:
             from src.io.export import text_to_pdf
             pdf_bytes = text_to_pdf(record.file_document.text)
 
         #get record attributes from pdf
-        # = pdf_bytes
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes)
-                                                     #record=record_from_context
-                                                     #)
-        #tmp = str.encode( result_record["file_pdf_bytes"] )
-        #result_record["file_uint8arr"] = [x for x in tmp]
         result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
-        #result_record["file_text"] = record["file_document"].text
         return result_record
 
 
