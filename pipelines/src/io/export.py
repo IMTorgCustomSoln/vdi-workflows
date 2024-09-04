@@ -117,6 +117,23 @@ def text_to_pdf(text):
     return pdf
 
 
+import numpy as np
+
+def uint8array_to_pdf_file(doc):
+    """..."""
+    arr = np.array( doc, dtype=np.uint8)
+    pdf_bytes = arr.view(f'S{arr.shape[0]}').item()
+    #pdf_str = html_bytes.decode()
+    return pdf_bytes
+
+
+
+
+
+
+
+
+
 
 
 
@@ -515,7 +532,7 @@ def export_documents_to_vdiworkspace(schema, records, filepath):
     return True
 
 
-def new_export(schema, documents, filepath, output_type='vdi_workspace'):
+def new_site_scrape_export(schema, documents, filepath, output_type='vdi_workspace'):
     """...
     
     TODO: separate excel from vdi_workspace

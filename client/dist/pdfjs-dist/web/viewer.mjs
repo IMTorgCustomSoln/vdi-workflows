@@ -13973,7 +13973,11 @@ function webViewerTouchMove(evt) {
     touch1X: pTouch1X,
     touch1Y: pTouch1Y
   } = _touchInfo;
-  if (Math.abs(pTouch0X - page0X) <= 1 && Math.abs(pTouch0Y - page0Y) <= 1 && Math.abs(pTouch1X - page1X) <= 1 && Math.abs(pTouch1Y - page1Y) <= 1) {
+  if (
+    (Math.abs(pTouch0X - page0X) <= 1) && 
+    (Math.abs(pTouch0Y - page0Y) <= 1) && 
+    (Math.abs(pTouch1X - page1X) <= 1) && 
+    (Math.abs(pTouch1Y - page1Y) <= 1)) {
     return;
   }
   _touchInfo.touch0X = page0X;

@@ -19,7 +19,8 @@ from src.Task import (
     CrawlUrlsTask,
     ConvertUrlDocToPdf,
     ApplyModelsTask,
-    ExportVdiWorkspaceTask
+    ExportVdiWorkspaceTask,
+    ExportIndividualPdfTask
 )
 """
 from src.Report import (
@@ -102,13 +103,19 @@ class WorkflowSiteScrape(Workflow):
                 directory=DIR_OUTPUT,
                 extension_patterns=['.gz']
                 )
+            output_individual_files = Files(
+                name='output',
+                directory=DIR_OUTPUT,
+                extension_patterns=['.pdf']
+                )
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
                 'crawled_files': crawled_files,
                 'converted_files': converted_files,
                 'models_applied_files': models_applied_files,
-                'output_files': output_files
+                'output_files': output_files,
+                'output_individual_files': output_individual_files
             }
             #tasks
             validate_task = ImportAndValidateUrlsTask(
@@ -131,7 +138,14 @@ class WorkflowSiteScrape(Workflow):
                 input=converted_files,
                 output=models_applied_files
             )
+            '''
             output_task = ExportVdiWorkspaceTask(
+                config=CONFIG,
+                input=models_applied_files,
+                output=output_files
+            )
+            '''
+            output_files_task = ExportIndividualPdfTask(
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
@@ -141,7 +155,8 @@ class WorkflowSiteScrape(Workflow):
                 crawl_task,
                 convert_task,
                 apply_models_task,
-                output_task
+                #output_task
+                output_files_task
                 ]
             self.tasks = tasks
         except Exception as e:

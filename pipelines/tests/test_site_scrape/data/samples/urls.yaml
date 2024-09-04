@@ -1,11 +1,3 @@
-jpmorgan:
-  root_url: https://www.jpmorgan.com
-  given_urls:
-    - https://www.chase.com
-  _valid_urls:
-    - 
-  _result_urls:
-    - 
 umb:
   root_url: https://www.umb.com
   given_urls:

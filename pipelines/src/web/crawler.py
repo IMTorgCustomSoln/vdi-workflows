@@ -60,6 +60,8 @@ class BaseSearchScenario:
         self.base_url = base_url
         self.urls = urls
         self.list_of_search_terms = list_of_search_terms
+        self.depth = 0
+        self.number_of_search_results = 5
 
     #the following is necessary to perform copy.deepcopy(), 
     # ref: https://stackoverflow.com/questions/10618956/copy-deepcopy-raises-typeerror-on-objects-with-self-defined-new-method
@@ -82,7 +84,7 @@ class BaseExporter:
 example_udap_search_terms = ['creditcard`, `fees', 'terms conditions', 'overdraft', 'non insufficient funds']
 empty_scenario = BaseSearchScenario(base_url=None,
                                     urls=[],
-                                    list_of_search_terms=[]
+                                    list_of_search_terms=[],
                                     )
 
 
@@ -188,7 +190,8 @@ class Crawler:
         for url in self.scenario._valid_urls:
             initial_list = self.get_initial_url_list(base_url = self.scenario.base_url,
                                                      url = url, 
-                                                     stringified_lists = self.scenario._stringified_lists
+                                                     stringified_lists = self.scenario._stringified_lists,
+                                                     number_of_search_results = self.scenario.number_of_search_results
                                                      )
             hrefs = self.get_hrefs_within_depth(base_url = self.scenario.base_url,
                                                 depth = self.scenario.depth,
@@ -200,9 +203,9 @@ class Crawler:
             self.logger.info(f"result of `generate_href_chain()` is {len(hrefs)} result_urls for root {url} listed as: {hrefs}")
         return result_urls
 
-    def get_initial_url_list(self, base_url, url, stringified_lists):
+    def get_initial_url_list(self, base_url, url, stringified_lists, number_of_search_results):
         """Get initial list of urls from google given search terms."""
-        NumberOfSearchResults = 5
+        NumberOfSearchResults = number_of_search_results
         #BaseUrl = self.url_factory.build('https://www.jpmorgan.com')
         #BaseUrl = url
         '''

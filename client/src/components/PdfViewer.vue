@@ -52,7 +52,8 @@ export default {
                 await this.loadDoc()
                 this.search(newVal.tgtText)
                 try {
-                    app.page = newVal.tgtPage     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                    console.log(newVal.tgtPage)
+                    app.page = parseInt(newVal.tgtPage)     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
                 } catch (error) {
                     console.log('TODO: this is a known bug in mozilla pdfjs-dist.  It will be solved with a future release')
                     console.log(error)

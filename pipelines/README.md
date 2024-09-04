@@ -59,14 +59,14 @@ python main.py workflow_asr prepare_workspace
 * mod  `urls.txt` and ValidateUrlsTask
   - ~~ValidateUrlsTask => ImportAndValidateUrlsTask~~
   - ~~change `urls.txt` to `urls.json`:~~
-  ```urls.json
+  ~~```urls.json
   {
   'bank_name': {
     'root_url: 'https://www...',
     'given_urls: [url1,url2, ...],
     }
   }
-  ```
+  ```~~
   - `tmp/1_VALIDATED/urls.txt` to `valid_urls.json`
   - ...
 * mod Crawler
@@ -75,13 +75,13 @@ python main.py workflow_asr prepare_workspace
   - remove: ~~generalize so 'jpmorgan' references is added to scenario~~
   - remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
   - ...
-* add new workflow-scraping
-* generalize classes for extensibility of workflows
+* ~~add new workflow-scraping~~
+* ~~generalize classes for extensibility of workflows~~
 * documentation
   - explain configuration adjustments
-* Workspace export
-  - no models applied
-  - record objects are not populated - only the first is repeated
+* ~~Workspace export~~
+  - ~~no models applied~~
+  - ~~record objects are not populated - only the first is repeated~~
 * create reports
   - urls collected, validated, selected(reason)
   - document text results: hits, counts, snippets => VDI b-table export to excel, [ref](https://stackoverflow.com/questions/71465593/exporting-bootstrap-table-to-excel-or-pdf)

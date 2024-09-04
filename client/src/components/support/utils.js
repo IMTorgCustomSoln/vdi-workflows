@@ -275,7 +275,7 @@ function serializeObject(obj){
 }
 
 
-
+/*
 function deserializeObject(str){
   // implement JSON.parse de-serialization
   JSON.parse = JSON.parse || function (str) {
@@ -284,6 +284,7 @@ function deserializeObject(str){
   	return p;
   }
 }
+*/
 
 
 export function camelize(str) {

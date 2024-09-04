@@ -64,7 +64,7 @@ class Task:
             Type = 'name_only'
             input_names = set(self.input_files.get_files(type=Type))
             processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
-            if len(processed_names) > len(input_names):
+            if len(processed_names) >= len(input_names):
                 remainder_paths = []
             else:
                 remainder_paths = list( self.input_files.get_files() )
@@ -314,7 +314,8 @@ class CrawlUrlsTask(Task):
                 new_scenario.base_url = URL.build(item['root_url'])
                 new_scenario.urls = valid_urls
                 new_scenario.list_of_search_terms = example_udap_search_terms
-                new_scenario.depth = 0
+                new_scenario.number_of_search_results = 15
+                new_scenario.depth = 1
                 crawler = Crawler(
                     scenario=new_scenario,
                     logger=self.config['LOGGER'],
@@ -322,7 +323,8 @@ class CrawlUrlsTask(Task):
                     )
                 crawler.scenario._valid_urls = valid_urls
                 result_urls = crawler.generate_href_chain()
-                combined_urls = flatten_extend(list(result_urls.values()) )
+                flat_urls = flatten_extend(list(result_urls.values()) )
+                combined_urls = list(set(flat_urls))
                 record = {}
                 record[key] = item
                 record[key]['_result_urls'] = combined_urls
@@ -360,7 +362,7 @@ class ConvertUrlDocToPdf(Task):
                 record = File(filepath=file, type='json').load_file(return_content=True)
                 #process
                 for key, item in record.items():
-                    for url_idx, url_str in enumerate(item['_result_urls'][:3]   ):     #<<< TODO:remove slice [:3]
+                    for url_idx, url_str in enumerate(item['_result_urls']   ):     #<<< TODO:remove slice [:3]
                         url = URL.build(url_str)
                         check = url.run_data_requests_()
                         if not check: 
@@ -390,10 +392,14 @@ class ConvertUrlDocToPdf(Task):
         return check
 
 
+
+from src.models.classification import TextClassifier
+
 class ApplyModelsTask(Task):
     """Apply models to each doc record text."""
 
     def run(self):
+        #TextClassifier.config(self.config)
         input_files = self.get_next_run_files()
         if len(input_files) > 0:
             for file in input_files:
@@ -464,7 +470,7 @@ class ExportVdiWorkspaceTask(Task):
                 documents = [File(file, 'json').load_file(return_content=True)
                              for file in batch
                              ]
-                check = export.new_export(
+                check = export.new_site_scrape_export(
                     schema=self.config['WORKSPACE_SCHEMA'], 
                     documents=documents, 
                     filepath=export_filepath,
@@ -472,4 +478,48 @@ class ExportVdiWorkspaceTask(Task):
                     )
             cnt = len(batch)
             self.config['LOGGER'].info(f"Data processed for batch-{idx+1}: {check}")
+        return True
+    
+
+from src.io.export import uint8array_to_pdf_file
+import pandas as pd
+
+class ExportIndividualPdfTask(Task):
+    """Export files to individual PDF files."""
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_folder = output.directory
+
+    def run(self):
+        #export by batch
+        processed_files = self.get_next_run_files()
+        processed_files.sort()
+        export_fields = ['id', 'date', 'page_nos', 'filetype', 'file_extension', 'file_size_mb', 'title', 'filename_original', 'filepath', 'pp_toc']
+        report_records = []
+        cnt = 0
+        for file in processed_files:
+            #import and convert
+            self.config['LOGGER'].info("begin export")
+            record = File(filepath=file, type='json').load_file(return_content=True)
+            pdf_bytes = uint8array_to_pdf_file(record["file_uint8arr"])
+            #export
+            outfile = self.output_files.directory / f'{file.stem}.pdf'
+            #out_file = File(filepath=outfile, type='pdf')
+            #out_file.content = pdf_bytes
+            #check = out_file.export_to_file()
+            with open(outfile, 'wb') as f:
+                f.write(pdf_bytes)
+            check = True
+            if check:
+                cnt = cnt + 1
+                record['printed'] = True
+            else:
+                record['printed'] = False
+            report_records.append(record)
+        df = pd.DataFrame(report_records)
+        report = df[export_fields]
+        reportfile = self.output_files.directory / 'report.csv'
+        report.to_csv(reportfile)
+        self.config['LOGGER'].info(f"end export {cnt} of {len(processed_files)} files")
         return True
