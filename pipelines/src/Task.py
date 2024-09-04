@@ -205,12 +205,6 @@ class TextClassificationTask(Task):
         return save_json_paths
 
 
-
-
-
-        return True
-
-
 class ExportAsrToVdiWorkspaceTask(Task):
     """Export files to a VDI Workspace file."""
 

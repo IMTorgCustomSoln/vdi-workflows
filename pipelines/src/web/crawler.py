@@ -157,6 +157,7 @@ class Crawler:
             url_list = self.scenario.urls
         if not base_url:
             base_url = self.scenario.base_url
+        failed_urls = []
         validated_urls = []
         #BaseUrl = self._ensure_url_class(base_url)
         if base_url:
@@ -172,9 +173,11 @@ class Crawler:
                 if check_scheme and check_owner:
                     validated_urls.append(Url)
                 else:
-                    pass
+                    failed_urls.append(url)
+                    print(f'errored url: {url}')
             except Exception as e:
-                print(f'the {url} failed')
+                failed_urls.append(url)
+                print(f'failed url: {url}')
         self.logger.info(f'validated {len(validated_urls)} urls: {validated_urls}')
         self.scenario._valid_urls = validated_urls
         return validated_urls
