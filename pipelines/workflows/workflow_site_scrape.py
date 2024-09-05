@@ -52,6 +52,7 @@ class WorkflowSiteScrape(Workflow):
         try:
             #user input
             CONFIG['INPUT_DIR'] = Path('./tests/test_site_scrape/data/samples/')
+            CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/overdraft/') 
             CONFIG['WORKING_DIR'] = Path('./tests/test_site_scrape/tmp/')
             CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_site_scrape/tmp/OUTPUT')]
 
@@ -138,13 +139,11 @@ class WorkflowSiteScrape(Workflow):
                 input=converted_files,
                 output=models_applied_files
             )
-            '''
             output_task = ExportVdiWorkspaceTask(
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
             )
-            '''
             output_files_task = ExportIndividualPdfTask(
                 config=CONFIG,
                 input=models_applied_files,
@@ -155,8 +154,8 @@ class WorkflowSiteScrape(Workflow):
                 crawl_task,
                 convert_task,
                 apply_models_task,
-                #output_task
-                output_files_task
+                output_task
+                #output_files_task
                 ]
             self.tasks = tasks
         except Exception as e:

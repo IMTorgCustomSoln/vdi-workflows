@@ -34,7 +34,7 @@ class Classifier:
         self.models = [
             kw_classifier,
             phrase_classifier,
-            fs_classifier
+            #fs_classifier
         ]
         with open(self.config['TRAINING_DATA_DIR'] / 'pos_kw.txt', 'r') as file:
             kw_lines = file.readlines()
@@ -62,13 +62,14 @@ def kw_classifier(config, chunk):
         }
     hits = []
     for word in config['KEYWORDS']:
-        if word in chunk['text']:
+        if word in chunk['text'].lower():
             hits.append(word)
     #words = word_tokenize(chunk['text'])
     if len(hits)>0:
             result['target'] = ' '.join(hits)       #TODO: provide formatted chunk['text']
-            result['timestamp'] = chunk['timestamp']
             result['pred'] = len(hits) / len(chunk['text'])
+            if 'timestamp' in chunk.keys():
+                result['timestamp'] = chunk['timestamp']
             return result
     else:
         return None
@@ -93,7 +94,8 @@ def fs_classifier(config, chunk):
         prob_positive = probs.tolist()[pos_idx]
         if prob_positive > .5:
             result['target'] = chunk['text']
-            result['timestamp'] = chunk['timestamp']
             result['pred'] = prob_positive
+            if 'timestamp' in chunk.keys():
+                result['timestamp'] = chunk['timestamp']
             return result
     return None

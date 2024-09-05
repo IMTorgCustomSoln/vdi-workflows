@@ -55,8 +55,8 @@ python main.py workflow_asr prepare_workspace
 
 * make modules
   - EnteroDoc
-  - ~~URL~~
-* mod  `urls.txt` and ValidateUrlsTask
+  - URL
+* ~~mod  `urls.txt` and ValidateUrlsTask~~
   - ~~ValidateUrlsTask => ImportAndValidateUrlsTask~~
   - ~~change `urls.txt` to `urls.json`:~~
   ~~```urls.json
@@ -67,14 +67,16 @@ python main.py workflow_asr prepare_workspace
     }
   }
   ```~~
-  - `tmp/1_VALIDATED/urls.txt` to `valid_urls.json`
-  - ...
+  - ~~`tmp/1_VALIDATED/urls.txt` to `valid_urls.json`~~
 * mod Crawler
   - ~~`scenario.url` conflicts with crawler.check_urls_are_valid(url_list)~~
   - use consistent naming across tasks: ValidateUrlsTask, CrawlUrlsTask
   - remove: ~~generalize so 'jpmorgan' references is added to scenario~~
   - remove: ~~generalize so scenario, 'list_of_search_terms', can be changed~~
-  - ...
+  - check why following are validated:
+    + https://www.cardcenterdirect.com/
+    + https://www.umb.edu/media/umassboston/editor-uploads/research/research-amp-sponsored-programs/Cost-Transfer-Policy--Procedures.pdf
+* apply models
 * ~~add new workflow-scraping~~
 * ~~generalize classes for extensibility of workflows~~
 * documentation

@@ -579,10 +579,10 @@ def new_site_scrape_export(schema, documents, filepath, output_type='vdi_workspa
             document_record['date'] = document["date"]
             document_record['reference_number'] = document["reference_number"]
 
-            if 'classifier' in document['dialogue'].keys():
-                highest_pred_target = max(document['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
-                hit_count = len([model for model in document['dialogue']['classifier'] if model!={}])
-                models = document['dialogue']['classifier']
+            if 'classifier' in document.keys():
+                highest_pred_target = max(document['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+                hit_count = len([model for model in document['classifier'] if model!={}])
+                models = document['classifier']
             else:
                 highest_pred_target = {}
                 hit_count = None
@@ -590,8 +590,8 @@ def new_site_scrape_export(schema, documents, filepath, output_type='vdi_workspa
             
             document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
             document_record['hit_count'] = hit_count
-            document_record['time_asr'] = document['dialogue']['time_asr']
-            document_record['time_textmdl'] = document['dialogue']['time_textmdl']
+            #document_record['time_asr'] = document['time_asr']
+            document_record['time_textmdl'] = document['time_textmdl']
 
             document_record['snippets'] = []
             document_record['summary'] = "TODO:summary"

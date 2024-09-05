@@ -304,12 +304,14 @@ class CrawlUrlsTask(Task):
             records = File(filepath=input_file, type='json').load_file(return_content=True)
             for idx, (key, item) in enumerate(records.items()):
                 valid_urls = [URL.build(url) for url in copy.deepcopy(item['_valid_urls'])]
+                #prepare scenario
                 new_scenario = copy.deepcopy(empty_scenario)
                 new_scenario.base_url = URL.build(item['root_url'])
                 new_scenario.urls = valid_urls
                 new_scenario.list_of_search_terms = example_udap_search_terms
-                new_scenario.number_of_search_results = 15
-                new_scenario.depth = 1
+                new_scenario.number_of_search_results = 10
+                new_scenario.depth = 0
+                #use crawler
                 crawler = Crawler(
                     scenario=new_scenario,
                     logger=self.config['LOGGER'],
@@ -393,13 +395,27 @@ class ApplyModelsTask(Task):
     """Apply models to each doc record text."""
 
     def run(self):
-        #TextClassifier.config(self.config)
+        TextClassifier.config(self.config)
         input_files = self.get_next_run_files()
         if len(input_files) > 0:
             for file in input_files:
                 record = File(filepath=file, type='json').load_file(return_content=True)
+                record['classifier'] = []
                 #process
-                #TODO: process record
+                chunks = []
+                for idx, (page, text) in enumerate(record['body_pages'].items()):
+                    str_utf8 = text.encode('ascii', 'ignore').decode('utf-8').replace('\n',' ')
+                    str_clean = ' '.join(str_utf8.split())
+                    sentences = [{'text': item} for item in str_clean.split('.')]
+                    chunks.extend(sentences)
+                for chunk in chunks:
+                    results = TextClassifier.run(chunk)
+                    for result in results:
+                        if result != None:
+                            record['classifier'].append(result)
+                        else:
+                            record['classifier'].append({})
+                record['time_textmdl'] = time.time() - self.config['START_TIME']
                 #output
                 outfile = self.output_files.directory / file.name
                 out_file = File(filepath=outfile, type='json')
