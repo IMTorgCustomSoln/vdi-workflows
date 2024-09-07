@@ -49,11 +49,19 @@ export default {
                     tgtText = newVal.tgtText*/
                 }
                 const app = await this.getApp
-                await this.loadDoc()
+                const currentDoc = this.getCurrentDoc
+                if( parseInt(currentDoc.id) != JSON.parse(JSON.stringify(newVal)).id ){
+                    await this.loadDoc()
+                    //await this.chgToPg3()
+                }
                 this.search(newVal.tgtText)
                 try {
                     console.log(newVal.tgtPage)
-                    app.page = parseInt(newVal.tgtPage)     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                    if (Number.isInteger(newVal.tgtPage)){
+                        app.page = parseInt(newVal.tgtPage)     //TODO:TypeError: Cannot destructure property 'div' of 'pageView' as it is undefined.  ans) https://github.com/VadimDez/ng2-pdf-viewer/issues/224#issuecomment-485322711
+                    } /*else {
+                        app.page = 1
+                    }*/
                 } catch (error) {
                     console.log('TODO: this is a known bug in mozilla pdfjs-dist.  It will be solved with a future release')
                     console.log(error)
@@ -227,6 +235,7 @@ export default {
                     const dataArray = await toRaw(doc.getDataArray())
                     const tgt = { data: Object.values(dataArray.dataArray) }
                     await app.open(tgt)
+                    app.page = 1
                 } catch (error) {
                     console.log(error)
                     /*
@@ -238,9 +247,10 @@ export default {
                 this.currentDocumentId = doc.id
             }
         },
-        chgToPg3() {
+        async chgToPg3() {
             const app = document.getElementById('pdf-js-viewer').contentWindow.PDFViewerApplication
             app.page = 3
+            await app.page
             //app.zoomIn(5)
         },
 

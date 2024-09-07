@@ -309,8 +309,8 @@ class CrawlUrlsTask(Task):
                 new_scenario.base_url = URL.build(item['root_url'])
                 new_scenario.urls = valid_urls
                 new_scenario.list_of_search_terms = example_udap_search_terms
-                new_scenario.number_of_search_results = 10
-                new_scenario.depth = 0
+                new_scenario.number_of_search_results = 20
+                new_scenario.depth = 2
                 #use crawler
                 crawler = Crawler(
                     scenario=new_scenario,

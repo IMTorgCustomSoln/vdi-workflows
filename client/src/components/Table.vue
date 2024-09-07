@@ -128,7 +128,7 @@
 <script>
 import { getDateFromJsNumber, getFormattedFileSize } from '@/components/support/utils.js'
 import Guide from '@/components/support/Guide.vue'
-import SnippetsScroll from '@/components/support/Snippets.vue'
+import SnippetsScroll from '@/components/support/SnippetsInfinite.vue'
 
 import { mapStores } from 'pinia'
 import { useAppDisplay } from '@/stores/AppDisplay'

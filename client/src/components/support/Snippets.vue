@@ -1,16 +1,32 @@
 <template>
+    <!--
     <div style="height: 100%">
         <VList :data="getSnippets()" :style="{ height: '100%', padding: '10px' }" #default="item">
             <div v-html="item.indexed_snippet" class="snippet" @click="selectSnippetPage(item.idx, item.snippet)"
                 style="padding-bottom: 15px;">
             </div>
         </VList>
+    </div>-->
+
+
+    <div v-if="getSnippets.length < 1" @click="selectSnippetPage(this.userContentStore.getSelectedDocument, '')">
+        Select a document from the table or `PRESS` to view document pages.
+    </div>
+    <div v-else id="search-results" v-for="(snippet, index) in getSnippets">
+        <div class="snippet" @click="selectSnippetPage(index, snippet)">
+            <div v-html="snippet"></div>
+            <!--
+                                        <span :id="row.item.filepath + '-index_' + index" v-html="snippet"></span>
+                                        <b-button size="sm" v-on:click="postNote($event)">Note
+                                        </b-button>-->
+        </div>
+        <br />
     </div>
 </template>
 
 <script>
 import { toRaw } from "vue";
-import { VList } from "virtua/vue";
+//import { VList } from "virtua/vue";
 
 import { mapStores } from 'pinia'
 import { useUserContent } from '@/stores/UserContent'
@@ -19,7 +35,7 @@ import { useUserContent } from '@/stores/UserContent'
 export default {
     name: 'SnippetsScroll',
     components: {
-        VList
+        //VList
     },
     props: {
         snippets: Array
