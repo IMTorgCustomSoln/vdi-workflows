@@ -19,16 +19,32 @@
 * register it in the `main.py` file at `#register here`
 
 ```
-python main.py workflow_asr prepare_workspace
+python main.py workflow_* prepare_workspace
+python main.py workflow_* run
 ```
 
-### ASR
+
+### Automatic speech recognition, `-asr`
+
+...
 
 
-### Site_Scrape
+### Identifying and scraping websites, `-site_scrape`
 
 * delete `tests/test_site_scrape/tmp/`
 * set list of initial urls (one for each bank) in: `urls.txt`
+
+
+### eComms discovery, `-ecomms`
+
+...
+
+
+### Text classification, `-text_classify`
+
+...
+
+
 
 
 
