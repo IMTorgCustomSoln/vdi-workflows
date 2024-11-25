@@ -11,12 +11,21 @@ from src.modules.parse_emails.parse_emails import EmailParser
 def test_parse_emails():
     import os
     print(os.getcwd())
-    test_path = 'tests/test_ecomms/data_email/eml_contains_base64_eml.eml'
+    test_eml_path = 'tests/test_ecomms/data_email/eml_contains_base64_eml.eml'
+    test_msg_path = 'tests/test_ecomms/data_email/utf_subject.msg'
+    test_path = [test_eml_path, test_msg_path]
 
-    email_parser = EmailParser(file_path=test_path, max_depth=2)
+    email_parser = EmailParser(file_path=test_path[0], max_depth=2)
     results = email_parser.parse()
+    assert type(results) == list
     assert len(results) == 2
     assert results[0]['Subject'] == 'Fwd: test - inner attachment eml (base64)'
+
+    email_parser = EmailParser(file_path=test_path[1], max_depth=2)
+    results = email_parser.parse()
+    assert type(results) == dict
+    assert len(results.keys()) == 13
+    assert results['From'] == ' <mobi777@gmail.com>'
 
 
 def test_msg_html_with_attachments():

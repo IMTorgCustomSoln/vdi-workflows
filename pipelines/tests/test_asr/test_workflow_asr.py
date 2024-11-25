@@ -7,6 +7,8 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
+import pytest
+
 from workflows.workflow_asr import workflow_asr
 
 
@@ -18,6 +20,7 @@ def test_workflow_asr_prepare_workspace():
     check = workflow_asr.prepare_workspace()
     assert check == True
 
+@pytest.mark.skip(reason='TODO:fix soundfile, [ref](https://github.com/bastibe/python-soundfile/issues/324)')
 def test_workflow_asr_run():
     check = workflow_asr.run()
     assert check == True

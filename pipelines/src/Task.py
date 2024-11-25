@@ -139,7 +139,7 @@ class AsrTask(Task):
     
 
 #from src.models.classification import classifier
-from src.models.classification import TextClassifier
+#from src.models.classification import TextClassifier
 import time
 import json
 
@@ -389,7 +389,7 @@ class ConvertUrlDocToPdf(Task):
 
 
 
-from src.models.classification import TextClassifier
+#from src.models.classification import TextClassifier
 
 class ApplyModelsTask(Task):
     """Apply models to each doc record text."""
@@ -533,3 +533,40 @@ class ExportIndividualPdfTask(Task):
         report.to_csv(reportfile)
         self.config['LOGGER'].info(f"end export {cnt} of {len(processed_files)} files")
         return True
+    
+
+
+
+
+
+from src.modules.parse_emails.parse_emails import EmailParser
+
+class ImportAndValidateEcommsTask(Task):
+    """Import variety of e-communication files and validate they exist."""
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_folder = output.directory
+        self.target_extension=['.eml','.msg']
+
+    def run(self):
+        ecomms_files_list = []
+        for file in self.get_next_run_files():
+            try:
+                email_parser = EmailParser(file_path=file, max_depth=2)
+                results = email_parser.parse()
+                if type(results) == list:
+                    ecomms_files_list.extend(results)
+                elif type(results) == dict:
+                    ecomms_files_list.append(results)
+            except:
+                pass
+        ecomms_validated_files_list = [file for file in ecomms_files_list if file!=None]
+        #output
+        for file in ecomms_validated_files_list:
+            outfile = self.output_files.directory / f"{file['FileName']}.pickle"
+            out_file = File(filepath=outfile, type='pickle')
+            out_file.content = file
+            check = out_file.export_to_file()
+        self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(ecomms_validated_files_list)} files matching {self.target_extension}")
+        return check

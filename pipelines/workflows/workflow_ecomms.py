@@ -16,7 +16,7 @@ from src.Files import Files
 
 from src.Task import (
     ImportAndValidateEcommsTask,
-    ConvertEcommsToDoc,
+    #ConvertEcommsToDoc,
     #ApplyModelsTask,
     #ExportVdiWorkspaceTask,
     #ExportIndividualPdfTask
@@ -50,10 +50,10 @@ class WorkflowEcomms(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_site_scrape/data/samples/')
-            CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/overdraft/') 
-            CONFIG['WORKING_DIR'] = Path('./tests/test_site_scrape/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_site_scrape/tmp/OUTPUT')]
+            CONFIG['INPUT_DIR'] = Path('./tests/test_ecomms/data_email/')
+            CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/account/') 
+            CONFIG['WORKING_DIR'] = Path('./tests/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -65,10 +65,12 @@ class WorkflowEcomms(Workflow):
             #working dirs
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
+            '''
             DIR_CRAWLED = CONFIG['WORKING_DIR'] / '2_CRAWLED'
             DIR_CONVERTED = CONFIG['WORKING_DIR'] / '3_CONVERTED'
             DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '4_MODELS_APPLIED'
             DIR_OUTPUT = CONFIG['WORKING_DIR'] / '5_OUTPUT'
+            '''
 
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
@@ -76,13 +78,14 @@ class WorkflowEcomms(Workflow):
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
-                extension_patterns=['.yaml']
+                extension_patterns=['.eml', '.msg']
                 )
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.json']
+                extension_patterns=['.pickle']
                 )
+            '''
             crawled_files = Files(
                 name='crawled',
                 directory=DIR_CRAWLED,
@@ -108,21 +111,23 @@ class WorkflowEcomms(Workflow):
                 directory=DIR_OUTPUT,
                 extension_patterns=['.pdf']
                 )
+            '''
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
-                'crawled_files': crawled_files,
-                'converted_files': converted_files,
-                'models_applied_files': models_applied_files,
-                'output_files': output_files,
-                'output_individual_files': output_individual_files
+                #'crawled_files': crawled_files,
+                #'converted_files': converted_files,
+                #'models_applied_files': models_applied_files,
+                #'output_files': output_files,
+                #'output_individual_files': output_individual_files
             }
             #tasks
-            validate_task = ImportAndValidateUrlsTask(
+            validate_task = ImportAndValidateEcommsTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files
             )
+            '''
             crawl_task = CrawlUrlsTask(
                 config=CONFIG,
                 input=validated_files,
@@ -147,13 +152,13 @@ class WorkflowEcomms(Workflow):
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
-            )
+            )'''
             tasks = [
                 validate_task,
-                crawl_task,
-                convert_task,
-                apply_models_task,
-                output_task
+                #crawl_task,
+                #convert_task,
+                #apply_models_task,
+                #output_task
                 #output_files_task
                 ]
             self.tasks = tasks
@@ -161,7 +166,7 @@ class WorkflowEcomms(Workflow):
             print(e)
             sys.exit()
         
-
+    '''
     def prepare_models(self):
         """Prepare by loading train,test data and refine models
         self.config['LOGGER'].info("Begin prepare_models")
@@ -171,11 +176,12 @@ class WorkflowEcomms(Workflow):
             exit()
         self.config['LOGGER'].info("End prepare_models")"""
         return True
+    '''
 
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/test_site_scrape/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/data') / 'VDI_ApplicationStateData_v0.2.1.gz'
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema
@@ -194,6 +200,7 @@ class WorkflowEcomms(Workflow):
         self.config['LOGGER'].info(f"end process, execution took: {round(time.time() - self.config['START_TIME'], 3)}sec")
         return True
 
+    '''
     def report_task_status(self):
         """
         TODO:
@@ -228,8 +235,8 @@ class WorkflowEcomms(Workflow):
             config=self.config
         ).run()"""
         return True
-
+    '''
         
 
 
-workflow_site_scrape = WorkflowSiteScrape()
+workflow_ecomms = WorkflowEcomms()

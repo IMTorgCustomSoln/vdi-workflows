@@ -10,7 +10,7 @@ pipelines/runs/*
 pipelines/tests/tmp/*
 pipelines/tests/test_asr/tmp/*
 pipelines/tests/test_site_scrape/tmp/*
-
+pipelines/tests/test_ecomms/tmp/*
 
 
 

@@ -40,3 +40,4 @@
 ](https://goldfynch.com/blog/2023/08/24/the-expert-approved-ediscovery-production-checklist.html)
 * [ediscovery steps of data load](https://www.reddit.com/r/ediscovery/comments/1ajedos/what_are_the_steps_of_a_data_load/)
 * [docs: relativity](https://help.relativity.com/RelativityOne/Content/Relativity/Import_Export/Import_Workflows/Document_load_file_import.htm)
+* [useful parsers for common datatypes in eDiscovery workflows (Concordance, Opticon, IDX)](https://github.com/alexemorris/ED-Tools/tree/master)
