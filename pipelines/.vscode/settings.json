@@ -1,7 +1,8 @@
 {
     "python.terminal.activateEnvironment": false,
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "src/modules/enterodoc/tests"
     ],
     "python.experiments.optInto": ["All"],
 
