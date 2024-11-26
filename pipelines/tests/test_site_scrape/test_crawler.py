@@ -13,7 +13,7 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
-from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
+from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 from src.web.crawler import Crawler, empty_scenario, example_udap_search_terms
 
 import time

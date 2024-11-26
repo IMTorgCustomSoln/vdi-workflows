@@ -15,8 +15,8 @@ from src.Workflow import Workflow
 from src.Files import Files
 
 from src.Task import (
-    ImportAndValidateEcommsTask,
-    #ConvertEcommsToDoc,
+    ImportValidateCombineEcommsTask,
+    ConvertEcommsToDocTask,
     #ApplyModelsTask,
     #ExportVdiWorkspaceTask,
     #ExportIndividualPdfTask
@@ -65,11 +65,10 @@ class WorkflowEcomms(Workflow):
             #working dirs
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
+            DIR_CONVERTED = CONFIG['WORKING_DIR'] / '2_CONVERTED'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '3_MODELS_APPLIED'
             '''
-            DIR_CRAWLED = CONFIG['WORKING_DIR'] / '2_CRAWLED'
-            DIR_CONVERTED = CONFIG['WORKING_DIR'] / '3_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '4_MODELS_APPLIED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '5_OUTPUT'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '4_OUTPUT'
             '''
 
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
@@ -85,12 +84,6 @@ class WorkflowEcomms(Workflow):
                 directory=DIR_VALIDATED,
                 extension_patterns=['.pickle']
                 )
-            '''
-            crawled_files = Files(
-                name='crawled',
-                directory=DIR_CRAWLED,
-                extension_patterns=['.json','.pickle']
-                )
             converted_files = Files(
                 name='converted',
                 directory=DIR_CONVERTED,
@@ -101,6 +94,7 @@ class WorkflowEcomms(Workflow):
                 directory=DIR_MODELS_APPLIED,
                 extension_patterns=['.json']
                 )
+            '''
             output_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
@@ -115,29 +109,23 @@ class WorkflowEcomms(Workflow):
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
-                #'crawled_files': crawled_files,
-                #'converted_files': converted_files,
-                #'models_applied_files': models_applied_files,
+                'converted_files': converted_files,
+                'models_applied_files': models_applied_files,
                 #'output_files': output_files,
                 #'output_individual_files': output_individual_files
             }
             #tasks
-            validate_task = ImportAndValidateEcommsTask(
+            validate_task = ImportValidateCombineEcommsTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files
             )
+            convert_task = ConvertEcommsToDocTask(
+                config=CONFIG,
+                input=converted_files,
+                output=models_applied_files
+            )
             '''
-            crawl_task = CrawlUrlsTask(
-                config=CONFIG,
-                input=validated_files,
-                output=crawled_files
-            )
-            convert_task = ConvertUrlDocToPdf(
-                config=CONFIG,
-                input=crawled_files,
-                output=converted_files
-            )
             apply_models_task = ApplyModelsTask(
                 config=CONFIG,
                 input=converted_files,

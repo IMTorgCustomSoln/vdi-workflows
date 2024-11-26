@@ -16,7 +16,7 @@ __license__ = "AGPL-3.0"
 from src.Files import File
 from src.io import export
 from src.io import utils
-from src.modules.enterodoc.url import UrlFactory#, UrlEncoder
+from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
 
 from pathlib import Path
 import sys
@@ -245,7 +245,7 @@ class ExportAsrToVdiWorkspaceTask(Task):
 
 
 from .Files import File
-from src.modules.enterodoc.url import UrlFactory, UniformResourceLocator
+from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 from .web.crawler import Crawler, empty_scenario, example_udap_search_terms
 
 import copy
@@ -338,9 +338,9 @@ class CrawlUrlsTask(Task):
 
 
 
-from src.modules.enterodoc.config import ConfigObj
-from src.modules.enterodoc.document_factory import DocumentFactory
-from src.modules.enterodoc.record import DocumentRecord
+from src.modules.enterodoc.entero_document.config import ConfigObj
+from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
+from src.modules.enterodoc.entero_document.record import DocumentRecord
 
 class ConvertUrlDocToPdf(Task):
     """Download URL document to memory then convert to PDF Format."""
@@ -541,8 +541,15 @@ class ExportIndividualPdfTask(Task):
 
 from src.modules.parse_emails.parse_emails import EmailParser
 
-class ImportAndValidateEcommsTask(Task):
-    """Import variety of e-communication files and validate they exist."""
+class ImportValidateCombineEcommsTask(Task):
+    """Import variety of e-communication files and validate quality.
+    
+    ecomms types:
+    * email - .eml, .msg, .pst, .mbox, ...
+    * chat - Teams, Bloomburg: .json
+    * legal - .dat, .opt, .txt, ...
+    * org chart - .csv
+    """
 
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
@@ -550,6 +557,7 @@ class ImportAndValidateEcommsTask(Task):
         self.target_extension=['.eml','.msg']
 
     def run(self):
+        #create messages
         ecomms_files_list = []
         for file in self.get_next_run_files():
             try:
@@ -562,6 +570,52 @@ class ImportAndValidateEcommsTask(Task):
             except:
                 pass
         ecomms_validated_files_list = [file for file in ecomms_files_list if file!=None]
+        #TODO:create org chart
+        #output
+        for file in ecomms_validated_files_list:
+            outfile = self.output_files.directory / f"{file['FileName']}.pickle"
+            out_file = File(filepath=outfile, type='pickle')
+            out_file.content = file
+            check = out_file.export_to_file()
+        self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(ecomms_validated_files_list)} files matching {self.target_extension}")
+        return check
+    
+
+from src.modules.enterodoc.entero_document.config import ConfigObj
+from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
+from src.modules.enterodoc.entero_document.record import DocumentRecord
+
+class ConvertEcommsToDocTask(Task):
+    """Convert e-communication records to enterodoc.
+
+    ...
+    """
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_folder = output.directory
+        self.target_extension=['.pickle']
+
+    def run(self):
+        check = None
+        ConfigObj.set_logger(self.config['LOGGER'])
+        Doc = DocumentFactory(ConfigObj)
+        docrec = DocumentRecord()
+        #input
+        input_files = self.get_next_run_files(type='update')
+        if len(input_files) > 0:
+            for file_idx, file in enumerate(input_files):
+                record = File(filepath=file, type='pickle').load_file(return_content=True)
+
+        #create documents
+        documents = []
+        for record in self.get_next_run_files():
+            try:
+                pass
+            except:
+                pass
+        ecomms_validated_files_list = [file for file in ecomms_files_list if file!=None]
+        #TODO:create org chart
         #output
         for file in ecomms_validated_files_list:
             outfile = self.output_files.directory / f"{file['FileName']}.pickle"

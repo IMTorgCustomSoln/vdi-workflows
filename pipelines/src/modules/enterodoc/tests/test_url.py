@@ -6,10 +6,8 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
-#sys.path.append(Path('backend').absolute().as_posix() )
 from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 
-from pathlib import Path
 
 
 hrefs = [
@@ -24,12 +22,6 @@ URL = UrlFactory()
 urls = [URL.build(url) for url in hrefs]
 
 
-
-def test_tojson_mixin_nested_dict():
-    nested_dict = {}
-    nested_dict['key'] = urls[0]
-    result = nested_dict.toJSON()
-    assert True == False
 
 def test_check_scheme():
     result = [url.check_scheme() for url in urls]
@@ -93,8 +85,7 @@ def test_get_subdomain():
     assert result == ['www', '', 'www', 'www', '', 'domain']
 
 def test_get_owner_():
-    URL = UrlFactory()
-    BaseUrl = URL.build(url='https://www.jpmorgan.com')
+    BaseUrl = URL.build('https://www.jpmorgan.com')
     owner = BaseUrl.get_owner_()
     assert owner == 'JPMorgan Chase & Co.'
 
@@ -117,7 +108,6 @@ def test_has_same_url_owner_():
     ]
 
     #test-1
-    URL = UrlFactory()
     BaseUrl = URL.build(base_url)
     check_owners_1 = []
     for url in urls:
