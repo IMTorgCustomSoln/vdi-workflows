@@ -1,5 +1,13 @@
-import pytest
+#!/usr/bin/env python3
+"""
+Test parsing emails
+"""
 
+__author__ = "Jason Beach"
+__version__ = "0.1.0"
+__license__ = "AGPL-3.0"
+
+import pytest
 
 from src.modules.parse_emails.handle_eml import handle_eml, unfold
 from src.modules.parse_emails.handle_msg import (DataModel, MsOxMessage,

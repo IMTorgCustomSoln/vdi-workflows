@@ -51,7 +51,8 @@ python main.py workflow_* run
 ## TODO:
 
 * ???create separate `workflow-text_classify` and remove from ASR, Site_Scrape
-* create `workflow-simple` to be used as a template
+* ~~create `workflow-simple` to be used as a template~~
+* add `workflow_simple` Tasks tests
 
 
 ### Ecomms
@@ -61,6 +62,8 @@ python main.py workflow_* run
   - setup ediscovery with .msg
   - improve validation rules
   - test
+* orgchart
+  - ~~load orgchart~~
   - integrate org chart file
 * export to VDI client
 
