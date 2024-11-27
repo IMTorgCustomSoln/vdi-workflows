@@ -44,11 +44,11 @@ class DocumentFactory:
         """Create Document object with path or url."""
         validation_dict = self._validate(path_or_url=path_or_url)
         if validation_dict:
-            return Document(path_or_url_format=validation_dict[0],
-                            path_or_url_obj=validation_dict[1],
-                            logger=self.config.logger,
-                            applySpacy=self.config.applySpacy,
-                            output_mapping=self.config.output_mapping
+            return Document(path_or_url_format = validation_dict[0],
+                            path_or_url_obj = validation_dict[1],
+                            logger = self.config.logger,
+                            applySpacy = self.config.applySpacy,
+                            output_mapping = self.config.output_mapping
                             )
         else:
             return None

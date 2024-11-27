@@ -18,14 +18,14 @@ Doc = DocumentFactory()
 
 
 def test_document_attributes():
-    test_file = Path('tests/examples/example.pdf')
+    test_file = Path(__file__).parent / './examples/example.pdf'
     doc = Doc.build(test_file)
     docrec = DocumentRecord()
     result = docrec.validate_object_attrs(doc)
     assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
 
 def test_document_populated():
-    test_file = Path('tests/demo/econ_2301.00410.pdf')
+    test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'
     doc = Doc.build(test_file)
     docrec = DocumentRecord()
     result = docrec.validate_object_attrs(doc)
@@ -35,7 +35,7 @@ def test_document_populated():
     assert not False in [check1, check2, check3]
 
 def test_document_creation_fail():
-    test_file = Path('tests/examples/no_file.docx')
+    test_file = Path(__file__).parent / './examples/no_file.docx'
     '''previous flow:
     with pytest.raises(Exception) as e_info:
         doc = Doc.build(test_file)
@@ -50,31 +50,31 @@ def test_document_determine_filetype_fail():
     method `Document.run_extraction_pipeline()`.  So, attr
     are None, and not empty string ''.
     """
-    test_file = Path('tests/examples/unavailable_extension.doc')
+    test_file = Path(__file__).parent / './examples/unavailable_extension.doc'
     doc = Doc.build(test_file)
     assert doc.record.file_document == None
 
 def test_document_extraction():
     """TODO: create separate tests using pytest."""
     #TODO:currently these fail to capture actual title
-    lst = { '.docx': ['tests/examples/example.docx', 'Document Title'],
-            '.html': ['tests/examples/example.html', 'The Website Title'],
-            '.pdf': ['tests/examples/example.pdf', 'The Website Title'],
-            '.csv': ['tests/examples/example.csv', 'Document Title'],
-            '.xlsx': ['tests/examples/example.xlsx', 'Document Title'],
+    lst = { '.docx': ['./examples/example.docx', 'Document Title'],
+            '.html': ['./examples/example.html', 'The Website Title'],
+            '.pdf': ['./examples/example.pdf', 'The Website Title'],
+            '.csv': ['./examples/example.csv', 'Document Title'],
+            '.xlsx': ['./examples/example.xlsx', 'Document Title'],
             }
     checks = []
     for k,v in lst.items():
         filepath = v[0]
         title = v[1]
-        test_file = Path(filepath)
+        test_file = Path(__file__).parent / filepath
         doc = Doc.build(test_file)
         check = hasattr(doc.record, 'title') == True
         checks.append(check)
     assert all(checks) == True
 
 def test_get_record():
-    test_file = Path('tests/demo/econ_2301.00410.pdf')
+    test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'
     doc = Doc.build(test_file)
     record = doc.get_record()
-    assert list(record.keys()).__len__() == 24
+    assert list(record.keys()).__len__() == 25

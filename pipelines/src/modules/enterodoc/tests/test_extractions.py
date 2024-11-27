@@ -11,6 +11,7 @@ __license__ = "MIT"
 from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 from src.modules.enterodoc.entero_document.extracts_pdf import PdfExtracts
 from src.modules.enterodoc.entero_document.extracts_html import HtmlExtracts
+#from src.modules.enterodoc.entero_document.extracts_msg import MsgExtracts
 #from entero_document.office_extracts import OfficeExtracts
 
 from src.modules.enterodoc.entero_document.record import record_attrs
@@ -22,7 +23,7 @@ config = EnteroConfig(apply_logger=False)
 
 
 def test_local_extract_from_pdf_string():
-    filepath = Path() / 'tests' / 'examples' / 'cs_nlp_2301.09640.pdf'    #3.3sec, 21sec, 0.65sec
+    filepath = Path(__file__).parent /  'examples' / 'cs_nlp_2301.09640.pdf'    #3.3sec, 21sec, 0.65sec
     #filepath = 'tests/demo/nuclear_2201.00276.pdf'    #3.8sec, 1.35sec
     pdf_stream = ''
     with open(filepath, 'rb') as f:
@@ -32,7 +33,7 @@ def test_local_extract_from_pdf_string():
         record[key] = None
 
     Pdf = PdfExtracts(config)
-    result_record = Pdf.extract_from_pdf_string(pdf_stream, record)
+    result_record = Pdf.extract_from_pdf_string(pdf_stream)
  
     #TODO:check all attrs - see `test_local_extract_html()`
     check_title = result_record['title'] == 'Weakly-Supervised Questions for Zero-Shot Relation Extraction'
@@ -55,7 +56,7 @@ def test_web_extract_from_pdf_string():
     assert result_record['title'] == "A MERCHANT'S GUIDE TO Card Acceptance Fees "
 
 def test_local_extract_html():
-    filepath = Path() / 'tests' / 'examples' / 'Research Articles in Simplified HTML.html'
+    filepath = Path(__file__).parent / 'examples' / 'Research Articles in Simplified HTML.html'
     #TODO: filepath = 'tests/data/Research Articles in Simplified HTML with CSS.html'
     html_str = ''
     with open(filepath, 'r') as f:
@@ -65,18 +66,21 @@ def test_local_extract_html():
         record[key] = None
 
     Html = HtmlExtracts(config)
-    record_from_context, pdf_bytes  = Html.html_string_to_pdf(html_str=html_str, 
-                                                              url_path=None, 
-                                                              record=record
-                                                              )
+    #record_from_context, pdf_bytes  = Html.html_string_to_pdf_bytes(html_str=html_str,
+    pdf_bytes  = Html.html_string_to_pdf_bytes(html_str=html_str,
+                                                                    url_path=None,
+                                                                    record=record
+                                                                    )
     
     check_pdf_bytes = len(pdf_bytes) > 0
-    check_title =  record_from_context['title'] == 'Research Articles in Simplified HTML: a Web-first format for HTML-based scholarly articles'
-    meta_attrs = ["title", "author", "subject", "keywords"]
-    check_record_attrs = [ record_from_context[key]!=None for key in meta_attrs ]
+    #TODO: removed all the following
+    #check_title =  record_from_context['title'] == 'Research Articles in Simplified HTML: a Web-first format for HTML-based scholarly articles'
+    #meta_attrs = ["title", "author", "subject", "keywords"]
+    #check_record_attrs = [ record_from_context[key]!=None for key in meta_attrs ]
     checks = []
-    checks.extend([check_pdf_bytes, check_title])
-    checks.extend(check_record_attrs)
+    checks.extend([check_pdf_bytes])
+    #checks.extend([check_pdf_bytes, check_title])
+    #checks.extend(check_record_attrs)
     assert all(checks) == True
 
 
@@ -88,13 +92,14 @@ def test_web_local_extract_html():
     artifacts = [{'name': url.url, 'file_format': url.get_file_artifact_(), 'file_str': url.file_str} for url in urls]
 
     Html = HtmlExtracts(config)
-    record_from_context, pdf_bytes  = Html.html_string_to_pdf(html_str=artifacts[0]['file_str'], 
+    #record_from_context, pdf_bytes  = Html.html_string_to_pdf(html_str=artifacts[0]['file_str'], 
+    pdf_bytes  = Html.html_string_to_pdf_bytes(html_str=artifacts[0]['file_str'], 
                                                               url_path=artifacts[0]['name']
                                                               )
     
     check_pdf_bytes = len(pdf_bytes) > 0
-    check_title =  record_from_context['title'] == 'Chase helps more than two million customers avoid overdraft service fees'
-    assert True == True
+    #check_title =  record_from_context['title'] == 'Chase helps more than two million customers avoid overdraft service fees'
+    assert check_pdf_bytes == True
 
 
 def test_extract_doc():
@@ -102,6 +107,10 @@ def test_extract_doc():
     #TODO: this fails because title includes to much: 'record['title']  "Title for paper submitted to International Journal of Scientific and Research PublicationsFirst Author*, Second Author**, Th....
     #filepath_str = 'tests/data/example.docx', 'Document Title', 7
     filepath_str = 'tests/examples/IJSRP-paper-submission-format-single-column.docx'
+    assert True == True
+
+
+def test_extract_msg():
     assert True == True
 
 

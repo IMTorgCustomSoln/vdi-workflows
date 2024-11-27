@@ -86,7 +86,9 @@ class Document:
 
         # process inferred metadata
         self.set_filename_modified()
-
+        if self.record.filetype == None:
+            logger.info(f"Document `{self.record.filename_original}` attributes could not be populated because filetype {self.record.filepath.suffix} is not supported")
+            return None
         record_extracts = self.run_extraction_pipeline()
         self.update_record_attrs(record_extracts, replace=False)
 

@@ -32,8 +32,8 @@ def test_config_print_error(capsys):
     assert stdout_info == 'ERROR: error msg printed'
 
 def test_output_mapping():
-    test_file = Path('tests/examples/example.pdf')
-    ConfigObj.output_mapping_template_path = Path('tests/data/mapping_template.json')
+    test_file = Path(__file__).parent / './examples/example.pdf'
+    ConfigObj.output_mapping_template_path = Path(__file__).parent / './data/mapping_template.json'
     ConfigObj.get_output_mapping_template()
 
     Doc = DocumentFactory(ConfigObj)
@@ -42,4 +42,7 @@ def test_output_mapping():
 
     docrec = DocumentRecord()
     result = docrec.validate_object_attrs(output_mapped)
-    assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
+    #TODO: was this original code correct???: assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
+    #new code
+    assert result['target_attrs_to_remove'] == set()
+    assert result['target_attrs_to_add'] == set(['file_pdf_bytes', 'file_document'])

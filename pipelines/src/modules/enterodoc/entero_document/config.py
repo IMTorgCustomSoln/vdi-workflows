@@ -80,23 +80,24 @@ class EnteroConfig:
     def get_output_mapping_template(self):
         """TODO"""
         if self.output_mapping_template_path:
-            template = Path(self.output_mapping_template_path)
-            mapping = ''
-            try:
-                with open(template, 'r') as f:
-                    mapping = json.load(f)
-                docrec = DocumentRecord()
-                result = docrec.validate_object_attrs(mapping)
-                check_mapping = result['target_attrs_to_remove']==[] and result['target_attrs_to_add']==[]
-            except:
-                self.logger.error(f'There was a problem loading the json file.')
-                return False
-            else:
-                if check_mapping:
-                    self.output_mapping = mapping
-                    return True
-                else:
+            if self.output_mapping_template_path.is_file():
+                template = Path(self.output_mapping_template_path)
+                mapping = ''
+                try:
+                    with open(template, 'r') as f:
+                        mapping = json.load(f)
+                    docrec = DocumentRecord()
+                    result = docrec.validate_object_attrs(mapping)
+                    check_mapping = result['target_attrs_to_remove']==[] and result['target_attrs_to_add']==[]
+                except:
+                    self.logger.error(f'There was a problem loading the json file.')
                     return False
+                else:
+                    if check_mapping:
+                        self.output_mapping = mapping
+                        return True
+                    else:
+                        return False
                 
 
 
