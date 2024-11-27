@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-WorkflowEcomms
+WorkflowSimple
 
 
-UseCase-1: create similar document representations from multiple ecommunication channels
+UseCase-1: use this as a template for building-out new workflows
+* load .txt files
+* classify and create intermediary .json records
+* output as table .csv
+* basic reporting
 """
 
 __author__ = "Jason Beach"
@@ -14,13 +18,10 @@ __license__ = "AGPL-3.0"
 from src.Workflow import Workflow
 from src.Files import Files
 
-from src.TaskComponents import (
-    ImportValidateCombineEcommsTask,
-    #ConvertEcommsToDocTask,
-    #ApplyModelsTask,
-    TextClassifyEcommTask
-    #ExportVdiWorkspaceTask,
-    #ExportIndividualPdfTask
+from src.Task import (
+    ImportTask,
+    SimpleTextClassificationTask,
+    ExportTask
 )
 """
 from src.Report import (
@@ -44,17 +45,17 @@ import time
 import sys
 
 
-class WorkflowEcomms(Workflow):
+class WorkflowSimple(Workflow):
     """..."""
 
     def __init__(self):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_ecomms/data_email/')
-            CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/account/') 
-            CONFIG['WORKING_DIR'] = Path('./tests/test_ecomms/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_ecomms/tmp/OUTPUT')]
+            CONFIG['INPUT_DIR'] = Path('./tests/test_simple/data/')
+            CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/simple/') 
+            CONFIG['WORKING_DIR'] = Path('./tests/test_simple/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_simple/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -68,8 +69,8 @@ class WorkflowEcomms(Workflow):
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
             #DIR_CONVERTED = CONFIG['WORKING_DIR'] / '2_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '3_MODELS_APPLIED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '4_OUTPUT'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '2_MODELS_APPLIED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
 
@@ -77,12 +78,12 @@ class WorkflowEcomms(Workflow):
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
-                extension_patterns=['.eml', '.msg']
+                extension_patterns=['.txt', '.md']
                 )
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.pickle']
+                extension_patterns=['.json']
                 )
             '''
             converted_files = Files(
@@ -94,14 +95,14 @@ class WorkflowEcomms(Workflow):
             models_applied_files = Files(
                 name='models_applied',
                 directory=DIR_MODELS_APPLIED,
-                extension_patterns=['.pickle']
+                extension_patterns=['.json']
                 )
-            '''
             output_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
-                extension_patterns=['.gz']
+                extension_patterns=['.csv']
                 )
+            '''
             output_individual_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
@@ -113,11 +114,11 @@ class WorkflowEcomms(Workflow):
                 'validated_files': validated_files,
                 #'converted_files': converted_files,
                 'models_applied_files': models_applied_files,
-                #'output_files': output_files,
+                'output_files': output_files,
                 #'output_individual_files': output_individual_files
             }
             #tasks
-            validate_task = ImportValidateCombineEcommsTask(
+            validate_task = ImportTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files
@@ -127,20 +128,19 @@ class WorkflowEcomms(Workflow):
                 config=CONFIG,
                 input=converted_files,
                 output=models_applied_files
-            )
-            '''
-            apply_models_task = TextClassifyEcommTask(
+            )'''
+            apply_models_task = SimpleTextClassificationTask(
                 config=CONFIG,
                 input=validated_files,
-                output=models_applied_files,
-                name_diff='.pickle'
+                output=models_applied_files
             )
-            '''
-            output_task = ExportVdiWorkspaceTask(
+            
+            output_task = ExportTask(
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
             )
+            '''
             output_files_task = ExportIndividualPdfTask(
                 config=CONFIG,
                 input=models_applied_files,
@@ -151,7 +151,7 @@ class WorkflowEcomms(Workflow):
                 #crawl_task,
                 #convert_task,
                 apply_models_task,
-                #output_task
+                output_task,
                 #output_files_task
                 ]
             self.tasks = tasks
@@ -232,4 +232,4 @@ class WorkflowEcomms(Workflow):
         
 
 
-workflow_ecomms = WorkflowEcomms()
+workflow_simple = WorkflowSimple()

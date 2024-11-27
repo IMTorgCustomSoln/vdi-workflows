@@ -12,4 +12,7 @@ norecursedirs = [
   "build",
   "runs",
   "workflows",
+
+  "tests/test_asr",
+  "tests/test_site_scrape",
 ]

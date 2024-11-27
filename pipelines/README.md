@@ -50,8 +50,20 @@ python main.py workflow_* run
 
 ## TODO:
 
-* create separate `workflow-text_classify` and remove from ASR, Site_Scrape
-* ...
+* ???create separate `workflow-text_classify` and remove from ASR, Site_Scrape
+* create `workflow-simple` to be used as a template
+
+
+### Ecomms
+
+* output to .json
+* ingest data
+  - setup ediscovery with .msg
+  - improve validation rules
+  - test
+  - integrate org chart file
+* export to VDI client
+
 
 ### ASR
 
