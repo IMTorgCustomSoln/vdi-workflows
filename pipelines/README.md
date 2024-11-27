@@ -59,12 +59,16 @@ python main.py workflow_* run
 
 * output to .json
 * ingest data
+  - create proper eDiscovery class with config (include col names)
+  - enable mapping provided .dat column names to default set
   - setup ediscovery with .msg
-  - improve validation rules
+  - ~~improve validation rules~~
   - test
+  - add to Task
 * orgchart
   - ~~load orgchart~~
   - integrate org chart file
+  - add to Task
 * export to VDI client
 
 

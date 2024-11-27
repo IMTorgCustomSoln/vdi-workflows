@@ -1,5 +1,6 @@
-from typing import List
+import pandas as pd
 
+from typing import List
 import click
 from colorama import Fore, init as init_colorama
 import chardet
@@ -20,9 +21,11 @@ ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 
 def validate_files(
         dat_filepath,
-        txt_dirpath
+        link_dirpath,
+        type
         ):
     """
+    * Do files referend to by .dat links exist?
     * Do the line counts match? ie: Documents = .dat; Pages = .opt
     * Does the number of rows in the DAT match the number of files loaded? ie: .dat == VOL /IMAGES, /NATIVES, /TEXT
     * Do all documents have text? (If not, image and OCR)
@@ -37,16 +40,42 @@ def validate_files(
     #load
     dat_lines = get_file_lines(dat_filepath)
     dat_rows = get_table_rows(dat_lines)
-    txt_dicts = get_nested_dirs_files_lines(txt_dirpath)
+    dat_df = pd.DataFrame(dat_rows)
 
-    #check: Are text files found in .dat records?
-    extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc['Extracted Text'])).stem for doc in dat_rows] )
-    txt_files = set( [pathlib.Path(txt).stem for txt in list(txt_dicts.keys())] )
-    diff = extxt_files.difference(txt_files)
-    check_diff =  len(diff) == 0
-    checks.append(check_diff)
+    #check: Are txt files found in .dat records?
+    if type=='txt':
+        txt_file_content = get_nested_dirs_files_lines(link_dirpath)
+        extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc['Extracted Text'])).stem for doc in dat_rows] )
+        txt_paths = set( [pathlib.Path(txt).stem for txt in list(txt_file_content.keys())] )
+        diff = extxt_files.difference(txt_paths)
+        check_file_diff =  len(diff) == 0
+        checks.append(check_file_diff)
 
+    #check: Are native file paths found in .dat records?
+    if type=='native':
+        native_files = get_file_names(link_dirpath)
+        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc['FILE_PATH']))) for doc in dat_rows ]
+        native_paths = [str(file) for file in native_files]
+        files_exist = []
+        for dat_path in dat_paths:
+            for txt_path in native_paths:
+                if dat_path in txt_path:
+                    files_exist.append(dat_path)
+                else:
+                    continue
+        check_path_diff =  len(files_exist) == len(dat_paths)
+        checks.append(check_path_diff)
     return checks
+
+
+def get_file_names(dir_path):
+    """..."""
+    p_dir_path = pathlib.Path(dir_path)
+    if p_dir_path.is_dir():
+        files = [item for item in p_dir_path.glob('**/*') if item.is_file()]
+    else:
+        raise TypeError
+    return files
 
 
 def get_file_lines(file_path):

@@ -15,6 +15,8 @@ txt_dir = 'VOL01/TEXT/'
 txt_dirpath = Path(cwdir) / txt_dir
 img_dir = 'VOL01/IMAGES/'
 img_dirpath = Path(cwdir) / img_dir
+native_dir = 'VOL01/NATIVES/'
+native_dirpath = Path(cwdir) / native_dir
 
 
 def test_get_rows():
@@ -29,6 +31,10 @@ def test_get_nested_dirs_files_lines():
     txt_dicts = get_nested_dirs_files_lines(txt_dirpath)
     assert len(txt_dicts.keys()) == 10
     
-def test_validate_files():
-    checks = validate_files(dat_filepath, txt_dirpath)
+def test_validate_txt_files():
+    checks = validate_files(dat_filepath, txt_dirpath, type='txt')
+    assert checks == [True]
+
+def test_validate_native_files():
+    checks = validate_files(dat_filepath, native_dirpath, type='native')
     assert checks == [True]

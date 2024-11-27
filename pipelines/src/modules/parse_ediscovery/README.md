@@ -28,6 +28,7 @@
   - .tif - image files
 * NATIVES/
   - original 'native' format, ie Word, Excel, etc.
+  - .msg with the email text may be included
 
 
 ## References
