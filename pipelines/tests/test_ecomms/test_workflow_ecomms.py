@@ -24,3 +24,7 @@ def test_run():
     check1 = workflow_ecomms.prepare_workspace()
     check2 = workflow_ecomms.run()
     assert check2 == True
+
+def test_report():
+    check = workflow_ecomms.report()
+    assert check == True

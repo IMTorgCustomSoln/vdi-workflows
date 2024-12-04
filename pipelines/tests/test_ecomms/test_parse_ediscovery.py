@@ -127,7 +127,15 @@ def test_get_nested_dirs_files_lines():
         txt_dicts = get_nested_dirs_files_lines(txt_dir)
         assert len(txt_dicts.keys()) == 4
     
-def test_validate_txt_files():
+def test_validate_files():
+    fields = {
+            'Control Number':'documentID', 'Custodian':'custodian',
+            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+            'number of attachments': 'numberOfAttachments',
+            'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+            'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+            }
     with setup_basic_layout() as env:
         cwdir, home_dirpath, dat_file, dat_filepath = env
         with tempfile.TemporaryDirectory() as t_dir:
@@ -143,9 +151,10 @@ def test_validate_txt_files():
             checks = validate_files(
                 new_file, 
                 home_dirpath,
-                linkfields={'TextLink':'Extracted Text', 'NativeLink':'FILE_PATH'}
+                rename_fields=fields
                 )
-        assert checks == [True, True]
+        lchecks = list(checks.values())
+        assert lchecks == [True, True, True, True, True, True, True, True, True]
     with setup_extended_layout() as env:
         cwdir, home_dirpath, dat_file, dat_filepath = env
         with tempfile.TemporaryDirectory() as t_dir:
@@ -161,6 +170,7 @@ def test_validate_txt_files():
             checks = validate_files(
                 new_file, 
                 home_dirpath,
-                linkfields={'TextLink':'Extracted Text', 'NativeLink':'FILE_PATH'}
+                rename_fields=fields
                 )
-        assert checks == [True, True]
+        lchecks = list(checks.values())
+        assert lchecks == [True, True, True, True, True, True, True, True, True]

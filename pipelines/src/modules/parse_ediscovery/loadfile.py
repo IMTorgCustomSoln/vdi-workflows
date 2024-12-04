@@ -23,7 +23,20 @@ ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 def validate_files(
         dat_filepath,
         home_dirpath,
-        linkfields={'TextLink': 'TextLink', 'NativeLink': 'NativeLink'}
+        rename_fields={
+            #document control and source
+            'Control Number':'documentID', 'Custodian':'custodian',
+            #groupid
+            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+            #attachments
+            'number of attachments': 'numberOfAttachments',
+            #doc / file info
+            'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+            #msg info
+            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+            #references
+            'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+            }
         ):
     """Validate ediscovery file package.
 
@@ -31,35 +44,83 @@ def validate_files(
     * Do files referend to by .dat links exist?
     *   ?Do the line counts match? ie: Documents = .dat; Pages = .opt
     *   ?Do the number of rows in the DAT match the number of files loaded? ie: .dat == VOL /IMAGES, /NATIVES, /TEXT
-    * Do all documents have text? (If not, image and OCR)
+    * Do all msg documents have text? (If not, image and OCR)?
+    * Is metadata reasonable?
     * Do the Custodian counts appear correct?
+
+    TODO:make diagrammatic explanation of structure
     """
     #support
     def get_linux_path_from_windows(win_path):
         posix = str(PurePosixPath(PureWindowsPath(win_path)))
         return posix
 
-    checks = []
+    checks = {}
     #load
-    dat_rows = get_table_rows_from_dat_file(dat_filepath, '\x14')
+    dfdat = get_table_rows_from_dat_file(dat_filepath, 'df', '\x14', rename_fields)
+    dfdat['nativeExtension'] = dfdat['nativeLink'].map(lambda x: Path(x).suffix)
+    dat_rows = dfdat.to_dict('records')
+    dfmsg = dfdat[dfdat['nativeExtension']=='.msg']
 
 
     #checks
+
+    #unique values
+    custodian_count = dfdat['custodian'].unique().tolist().__len__()
+    check_custodian = custodian_count > 0
+    checks['unique custodian'] = check_custodian
+
+    doc_count = dfdat['documentID'].unique().tolist().__len__()
+    msg_ext_count = dfmsg.shape[0]
+    check_msg_count = doc_count >= msg_ext_count
+    checks['unique msg_count'] = check_msg_count
+
+    #parentids refer back to groupids
+    lgroupids = dfdat['groupID'].unique().tolist()
+    parentid_referenced = []
+    parentids = dfdat['parentDocumentID'].dropna().tolist()
+    for parentid in parentids:
+        if parentid in lgroupids:
+            parentid_referenced.append(parentid)
+    check_parent_ids = len(parentid_referenced) == len(parentids)
+    checks['parent ids'] = check_parent_ids
+
+    #missing values
+    subject_count = dfdat['subject'].unique().tolist().__len__()
+    subject_not_missing = dfmsg[pd.isna(dfmsg['subject'])==False].shape[0]
+    check_subject = subject_count >= subject_not_missing
+    checks['missing subject'] = check_subject
+
+    from_count = dfdat['from'].unique().tolist().__len__()
+    from_not_missing = dfmsg[pd.isna(dfmsg['from'])==False].shape[0]
+    check_from = from_count >= from_not_missing
+    checks['missing from'] = check_from
+
+    to_count = dfdat['to'].unique().tolist().__len__()
+    to_not_missing = dfmsg[pd.isna(dfmsg['to'])==False].shape[0]
+    check_to = to_count >= to_not_missing
+    checks['missing to'] = check_to
+
+    cc_count = dfdat['cc'].unique().tolist().__len__()
+    cc_not_missing = dfmsg[pd.isna(dfmsg['cc'])==False].shape[0]
+    check_cc = cc_count >= cc_not_missing
+    checks['missing cc'] = check_cc
+
     #TEXT - message text
     text_dirpath = home_dirpath / 'TEXT'
     if text_dirpath.is_dir():
         txt_file_content = get_nested_dirs_files_lines(text_dirpath)
-        extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc[linkfields['TextLink']])).stem for doc in dat_rows] )
+        extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc['textLink'])).stem for doc in dat_rows] )
         txt_paths = set( [pathlib.Path(txt).stem for txt in list(txt_file_content.keys())] )
         diff = extxt_files.difference(txt_paths)
         check_file_diff =  len(diff) == 0
-        checks.append(check_file_diff)
+        checks['file_diff text'] = check_file_diff
 
     #NATIVE - message files (.msg, attachments, etc.)
     native_dirpath = home_dirpath / 'NATIVES'
     if native_dirpath.is_dir():
         native_files = get_file_names(native_dirpath)
-        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc[linkfields['NativeLink']]))) for doc in dat_rows ]
+        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc['nativeLink']))) for doc in dat_rows ]
         native_paths = [str(file) for file in native_files]
         files_exist = []
         for dat_path in dat_paths:
@@ -69,7 +130,7 @@ def validate_files(
                 else:
                     continue
         check_path_diff =  len(files_exist) == len(dat_paths)
-        checks.append(check_path_diff)
+        checks['file_diff native'] = check_file_diff
 
     return checks
 
@@ -162,7 +223,7 @@ def remove_empty_lines(lines):
     return new_lines
 
 
-def get_table_rows_from_dat_file(dat_file, sep='\x14'):
+def get_table_rows_from_dat_file(dat_file, type='rows', sep='\x14', rename_fields={}):
     """Get table rows from .dat file (leverage pandas).
 
     __Usage__
@@ -174,7 +235,11 @@ def get_table_rows_from_dat_file(dat_file, sep='\x14'):
     dat_file = pathlib.Path(dat_file)
     if dat_file.is_file():
         df = pd.read_csv(dat_file, sep=sep, encoding='utf-8')
-    return df.to_dict('records')
+    df.rename(columns=rename_fields, inplace=True)
+    if type == 'rows':
+        return df.to_dict('records')
+    if type == 'df':
+        return df
 
 
 def get_table_rows_from_lines(lines, field_list_or_first_row_header=[]):
