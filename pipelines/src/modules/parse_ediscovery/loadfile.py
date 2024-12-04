@@ -9,8 +9,9 @@ import csv
 import pathlib
 import json
 import sys
+import io
 
-from pathlib import PureWindowsPath, PurePosixPath
+from pathlib import PureWindowsPath, PurePosixPath, Path
 from itertools import chain
 
 init_colorama()
@@ -22,9 +23,12 @@ ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 def validate_files(
         dat_filepath,
         link_dirpath,
-        type
+        type,
+        linkfields={'TextLink': 'TextLink', 'NativeLink': 'NativeLink'}
         ):
-    """
+    """Validate ediscovery file package.
+
+
     * Do files referend to by .dat links exist?
     * Do the line counts match? ie: Documents = .dat; Pages = .opt
     * Does the number of rows in the DAT match the number of files loaded? ie: .dat == VOL /IMAGES, /NATIVES, /TEXT
@@ -38,14 +42,13 @@ def validate_files(
 
     checks = []
     #load
-    dat_lines = get_file_lines(dat_filepath)
-    dat_rows = get_table_rows(dat_lines)
-    dat_df = pd.DataFrame(dat_rows)
+    dat_rows = get_table_rows_from_dat_file(dat_filepath, '\x14')
+
 
     #check: Are txt files found in .dat records?
-    if type=='txt':
+    if type=='text':
         txt_file_content = get_nested_dirs_files_lines(link_dirpath)
-        extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc['Extracted Text'])).stem for doc in dat_rows] )
+        extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc[linkfields['TextLink']])).stem for doc in dat_rows] )
         txt_paths = set( [pathlib.Path(txt).stem for txt in list(txt_file_content.keys())] )
         diff = extxt_files.difference(txt_paths)
         check_file_diff =  len(diff) == 0
@@ -54,7 +57,7 @@ def validate_files(
     #check: Are native file paths found in .dat records?
     if type=='native':
         native_files = get_file_names(link_dirpath)
-        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc['FILE_PATH']))) for doc in dat_rows ]
+        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc[linkfields['NativeLink']]))) for doc in dat_rows ]
         native_paths = [str(file) for file in native_files]
         files_exist = []
         for dat_path in dat_paths:
@@ -66,6 +69,28 @@ def validate_files(
         check_path_diff =  len(files_exist) == len(dat_paths)
         checks.append(check_path_diff)
     return checks
+
+
+def copy_dat_file_with_fixed_format(bom_file, new_file, separator_str='', remove_chars=[], new_separator='\x14'):
+    """Copy the dat file (in utf-8 with BOM format) to a new file using utf-8 only encoding.
+
+    __Note:__ typical ediscovery separator characters include: thorn (þ) and pilcrow (\x14 or ¶)
+
+    __Usage:__
+    ```
+    >>> original_file = dirHome / ''
+    >>> new_file = dirHome / 'new_file.dat'
+    >>> copy_dat_file_with_fixed_format(original_file, new_file, 'þ\x14þ', ['þ'])
+    >>> df = pd.read_csv(new_file, sep='\x14')
+    ```
+    """
+    s = open(bom_file, mode='r', encoding='utf-8-sig').read()
+    s = s.replace(separator_str, new_separator)
+    if len(remove_chars) > 0:
+        for char in remove_chars:
+            s = s.replace(char, '')
+    open(new_file, mode='w', encoding='utf-8').write(s)
+    return True
 
 
 def get_file_names(dir_path):
@@ -106,7 +131,6 @@ def get_nested_dirs_files_lines(dir_path):
     return files_lines
 
 
-
 def get_encoding(filepath) -> str:
     with open(filepath, "rb") as readfile:
         raw = readfile.read()
@@ -132,8 +156,30 @@ def remove_empty_lines(lines):
     return new_lines
 
 
-def get_table_rows(lines, field_list_or_first_row_header=[]):
+def get_table_rows_from_dat_file(dat_file, sep='\x14'):
+    """Get table rows from .dat file (leverage pandas).
 
+    __Usage__
+    ```
+    >>> dat_rows = get_table_rows_from_dat_file(dat_filepath)
+    ```
+    """
+    df = None
+    dat_file = pathlib.Path(dat_file)
+    if dat_file.is_file():
+        df = pd.read_csv(dat_file, sep=sep, encoding='utf-8')
+    return df.to_dict('records')
+
+
+def get_table_rows_from_lines(lines, field_list_or_first_row_header=[]):
+    """Get table rows from .dat from ingested lines (BASIC CODE).
+
+    __Usage__
+    ```
+    >>> dat_lines = get_file_lines(dat_filepath)
+    >>> dat_rows = get_table_rows(dat_lines)
+    ```
+    """
     #support
     def split_cells_on_chars(ln):
         chars = ["þþ", "þ\x14þ", "þ\n", "þ", "|", "\n"]
