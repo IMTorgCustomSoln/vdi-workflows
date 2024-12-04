@@ -22,16 +22,15 @@ ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 
 def validate_files(
         dat_filepath,
-        link_dirpath,
-        type,
+        home_dirpath,
         linkfields={'TextLink': 'TextLink', 'NativeLink': 'NativeLink'}
         ):
     """Validate ediscovery file package.
 
 
     * Do files referend to by .dat links exist?
-    * Do the line counts match? ie: Documents = .dat; Pages = .opt
-    * Does the number of rows in the DAT match the number of files loaded? ie: .dat == VOL /IMAGES, /NATIVES, /TEXT
+    *   ?Do the line counts match? ie: Documents = .dat; Pages = .opt
+    *   ?Do the number of rows in the DAT match the number of files loaded? ie: .dat == VOL /IMAGES, /NATIVES, /TEXT
     * Do all documents have text? (If not, image and OCR)
     * Do the Custodian counts appear correct?
     """
@@ -45,18 +44,21 @@ def validate_files(
     dat_rows = get_table_rows_from_dat_file(dat_filepath, '\x14')
 
 
-    #check: Are txt files found in .dat records?
-    if type=='text':
-        txt_file_content = get_nested_dirs_files_lines(link_dirpath)
+    #checks
+    #TEXT - message text
+    text_dirpath = home_dirpath / 'TEXT'
+    if text_dirpath.is_dir():
+        txt_file_content = get_nested_dirs_files_lines(text_dirpath)
         extxt_files = set( [pathlib.Path(get_linux_path_from_windows(doc[linkfields['TextLink']])).stem for doc in dat_rows] )
         txt_paths = set( [pathlib.Path(txt).stem for txt in list(txt_file_content.keys())] )
         diff = extxt_files.difference(txt_paths)
         check_file_diff =  len(diff) == 0
         checks.append(check_file_diff)
 
-    #check: Are native file paths found in .dat records?
-    if type=='native':
-        native_files = get_file_names(link_dirpath)
+    #NATIVE - message files (.msg, attachments, etc.)
+    native_dirpath = home_dirpath / 'NATIVES'
+    if native_dirpath.is_dir():
+        native_files = get_file_names(native_dirpath)
         dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc[linkfields['NativeLink']]))) for doc in dat_rows ]
         native_paths = [str(file) for file in native_files]
         files_exist = []
@@ -68,6 +70,7 @@ def validate_files(
                     continue
         check_path_diff =  len(files_exist) == len(dat_paths)
         checks.append(check_path_diff)
+
     return checks
 
 
@@ -123,9 +126,12 @@ def get_nested_dirs_files_lines(dir_path):
             for dir in dirs:
                 files = [file for file in dir.iterdir() if file.is_file()]
                 for file_path in files:
-                    with open(file_path, 'r') as f:
-                        file_lines = f.readlines()
-                        files_lines[str(file_path)] = file_lines
+                    try:
+                        with open(file_path, 'r') as f:
+                            file_lines = f.readlines()
+                            files_lines[str(file_path)] = file_lines
+                    except Exception as e:
+                        print(e)
     except:
         raise TypeError
     return files_lines
