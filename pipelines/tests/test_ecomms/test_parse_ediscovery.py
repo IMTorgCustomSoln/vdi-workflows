@@ -76,15 +76,24 @@ def test_get_table_rows_from_lines():
 def test_copy_dat_file_with_fixed_format():
     with setup_basic_layout() as env:
         cwdir, home_dirpath, dat_file, dat_filepath = env
+        fields = {
+            'Control Number':'documentID', 'Custodian':'custodian',
+            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+            'number of attachments': 'numberOfAttachments',
+            'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+            'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+            }
         with tempfile.TemporaryDirectory() as t_dir:
             new_file = os.path.join (t_dir, 'new_file.dat')
             SEP = '\x14'
             check = copy_dat_file_with_fixed_format(
                 bom_file = dat_filepath, 
                 new_file = new_file, 
-                separator_str='|', 
-                remove_chars=[], 
-                new_separator=SEP
+                separator_str = '|', 
+                remove_chars = [], 
+                new_separator = SEP,
+                rename_fields = fields
                 )
             df = pd.read_csv(new_file, sep=SEP)
             assert df.shape == (4, 23)
@@ -99,7 +108,8 @@ def test_copy_dat_file_with_fixed_format():
                 new_file = new_file, 
                 separator_str='|', 
                 remove_chars=[], 
-                new_separator=SEP
+                new_separator=SEP,
+                rename_fields = fields
                 )
             df = pd.read_csv(new_file, sep=SEP)
             assert df.shape == (4, 23)
@@ -146,15 +156,15 @@ def test_validate_files():
                 new_file = new_file, 
                 separator_str='|', 
                 remove_chars=[], 
-                new_separator=SEP
+                new_separator=SEP,
+                rename_fields = fields
                 )
             checks = validate_files(
                 new_file, 
-                home_dirpath,
-                rename_fields=fields
+                home_dirpath
                 )
         lchecks = list(checks.values())
-        assert lchecks == [True, True, True, True, True, True, True, True, True]
+        assert all(lchecks) == True
     with setup_extended_layout() as env:
         cwdir, home_dirpath, dat_file, dat_filepath = env
         with tempfile.TemporaryDirectory() as t_dir:
@@ -165,12 +175,12 @@ def test_validate_files():
                 new_file = new_file, 
                 separator_str='|', 
                 remove_chars=[], 
-                new_separator=SEP
+                new_separator=SEP,
+                rename_fields = fields
                 )
             checks = validate_files(
                 new_file, 
-                home_dirpath,
-                rename_fields=fields
+                home_dirpath
                 )
         lchecks = list(checks.values())
-        assert lchecks == [True, True, True, True, True, True, True, True, True]
+        assert all(lchecks) == True

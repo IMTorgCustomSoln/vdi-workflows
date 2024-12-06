@@ -22,21 +22,7 @@ ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 
 def validate_files(
         dat_filepath,
-        home_dirpath,
-        rename_fields={
-            #document control and source
-            'Control Number':'documentID', 'Custodian':'custodian',
-            #groupid
-            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
-            #attachments
-            'number of attachments': 'numberOfAttachments',
-            #doc / file info
-            'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
-            #msg info
-            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
-            #references
-            'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
-            }
+        home_dirpath
         ):
     """Validate ediscovery file package.
 
@@ -57,8 +43,8 @@ def validate_files(
 
     checks = {}
     #load
-    dfdat = get_table_rows_from_dat_file(dat_filepath, 'df', '\x14', rename_fields)
-    dfdat['nativeExtension'] = dfdat['nativeLink'].map(lambda x: Path(x).suffix)
+    dfdat = get_table_rows_from_dat_file(dat_filepath, 'df', '\x14')
+    dfdat['nativeExtension'] = dfdat['nativeLink'].map(lambda x: Path(x).suffix if type(x)==str else '')
     dat_rows = dfdat.to_dict('records')
     dfmsg = dfdat[dfdat['nativeExtension']=='.msg']
 
@@ -120,7 +106,7 @@ def validate_files(
     native_dirpath = home_dirpath / 'NATIVES'
     if native_dirpath.is_dir():
         native_files = get_file_names(native_dirpath)
-        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc['nativeLink']))) for doc in dat_rows ]
+        dat_paths = [ str(pathlib.Path(get_linux_path_from_windows(doc['nativeLink']))) for doc in dat_rows if type(doc['nativeLink'])==str]
         native_paths = [str(file) for file in native_files]
         files_exist = []
         for dat_path in dat_paths:
@@ -135,7 +121,27 @@ def validate_files(
     return checks
 
 
-def copy_dat_file_with_fixed_format(bom_file, new_file, separator_str='', remove_chars=[], new_separator='\x14'):
+def copy_dat_file_with_fixed_format(
+    bom_file, 
+    new_file, 
+    separator_str='', 
+    remove_chars=[], 
+    new_separator='\x14', 
+    rename_fields={
+        #document control and source
+        'Control Number':'documentID', 'Custodian':'custodian',
+        #groupid
+        'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+        #attachments
+        'number of attachments': 'numberOfAttachments',
+        #doc / file info
+        'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+        #msg info
+        'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+        #references
+        'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+        }
+    ):
     """Copy the dat file (in utf-8 with BOM format) to a new file using utf-8 only encoding.
 
     __Note:__ typical ediscovery separator characters include: thorn (þ) and pilcrow (\x14 or ¶)
@@ -144,7 +150,8 @@ def copy_dat_file_with_fixed_format(bom_file, new_file, separator_str='', remove
     ```
     >>> original_file = dirHome / ''
     >>> new_file = dirHome / 'new_file.dat'
-    >>> copy_dat_file_with_fixed_format(original_file, new_file, 'þ\x14þ', ['þ'])
+    >>> fields = {'Group Identifier': 'groupID'}
+    >>> copy_dat_file_with_fixed_format(original_file, new_file, 'þ\x14þ', ['þ'], fields)
     >>> df = pd.read_csv(new_file, sep='\x14')
     ```
     """
@@ -154,6 +161,19 @@ def copy_dat_file_with_fixed_format(bom_file, new_file, separator_str='', remove
         for char in remove_chars:
             s = s.replace(char, '')
     open(new_file, mode='w', encoding='utf-8').write(s)
+    try:
+        dfdat = pd.read_csv(new_file, sep=new_separator)
+        dfdat.rename(columns=rename_fields, inplace=True)
+        dfdat.to_csv(new_file, sep=new_separator, index=False)
+    except Exception as e:
+        scols = set(dfdat.columns)
+        snew_cols = set(rename_fields.keys())
+        col_keys_not_available_in_dat_file = snew_cols.difference(scols)
+        print('dfdat columns not available')
+        print(col_keys_not_available_in_dat_file)
+        print('dfdat columns')
+        print(dfdat.columns)
+        print(e)
     return True
 
 
