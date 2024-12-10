@@ -14,7 +14,7 @@ __license__ = "AGPL-3.0"
 from src.Workflow import Workflow
 from src.Files import Files
 
-from src.Task import (
+from src.TaskComponents import (
     ImportAndValidateUrlsTask,
     CrawlUrlsTask,
     ConvertUrlDocToPdf,
@@ -51,10 +51,10 @@ class WorkflowSiteScrape(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_site_scrape/data/samples/')
+            CONFIG['INPUT_DIR'] = Path('./tests/test_wf_site_scrape/data/samples/')
             CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/overdraft/') 
-            CONFIG['WORKING_DIR'] = Path('./tests/test_site_scrape/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_site_scrape/tmp/OUTPUT')]
+            CONFIG['WORKING_DIR'] = Path('./tests/test_wf_site_scrape/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_wf_site_scrape/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -176,7 +176,7 @@ class WorkflowSiteScrape(Workflow):
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/test_site_scrape/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/test_wf_site_scrape/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema

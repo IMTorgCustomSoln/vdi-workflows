@@ -51,10 +51,10 @@ class WorkflowEcomms(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_ecomms/data_email/')
+            CONFIG['INPUT_DIR'] = Path('./tests/test_wf_ecomms/data_email/')
             CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/account/') 
-            CONFIG['WORKING_DIR'] = Path('./tests/test_ecomms/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_ecomms/tmp/OUTPUT')]
+            CONFIG['WORKING_DIR'] = Path('./tests/test_wf_ecomms/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_wf_ecomms/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None

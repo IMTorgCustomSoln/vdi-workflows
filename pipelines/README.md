@@ -51,8 +51,8 @@ python main.py workflow_* run
 ## TODO:
 
 * ???create separate `workflow-text_classify` and remove from ASR, Site_Scrape
-* ~~create `workflow-simple` to be used as a template~~
-* add `workflow_simple` Tasks tests
+* ~~create `workflow-template` to be used as a template~~
+* add `workflow_template` Tasks tests
 
 
 ### Ecomms
@@ -60,16 +60,19 @@ python main.py workflow_* run
 * output to .json
 * ingest data
   - create proper eDiscovery class with config (include col names)
-  - enable mapping provided .dat column names to default set
-  - setup ediscovery with .msg
+  - ~~enable mapping provided .dat column names to default set~~
+  - add text msg parse to ediscovery
+  - (later)setup ediscovery with .msg parse
   - ~~improve validation rules~~
   - test
   - add to Task
 * orgchart
   - ~~load orgchart~~
-  - integrate org chart file
+  - integrate org chart file: just get titles
   - add to Task
+* prepare models
 * export to VDI client
+* (later) add visual message display
 
 
 ### ASR

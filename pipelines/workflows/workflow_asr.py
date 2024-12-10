@@ -10,7 +10,7 @@ __license__ = "AGPL-3.0"
 
 from src.Workflow import Workflow
 from src.Files import Files
-from src.Task import (
+from src.TaskComponents import (
     UnzipTask,
     AsrTask,
     TextClassificationTask,
@@ -23,7 +23,7 @@ from src.Report import (
 )
 from src.models import prepare_models
 from src.io import load
-from tests.test_asr.estimate_processing_time import ProcessTimeQrModel
+from tests.test_wf_asr.estimate_processing_time import ProcessTimeQrModel
 
 from config._constants import (
     logging_dir,
@@ -43,10 +43,10 @@ class WorkflowASR(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_asr/data/samples/')
-            CONFIG['TRAINING_DATA_DIR'] = Path('./tests/test_asr/data/model_training/')     #Path('./src/data/covid/')
-            CONFIG['WORKING_DIR'] = Path('./tests/test_asr/tmp/')
-            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_asr/tmp/OUTPUT')]
+            CONFIG['INPUT_DIR'] = Path('./tests/test_wf_asr/data/samples/')
+            CONFIG['TRAINING_DATA_DIR'] = Path('./tests/test_wf_asr/data/model_training/')     #Path('./src/data/covid/')
+            CONFIG['WORKING_DIR'] = Path('./tests/test_wf_asr/tmp/')
+            CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_wf_asr/tmp/OUTPUT')]
 
             #system input
             CONFIG['START_TIME'] = None
@@ -144,7 +144,7 @@ class WorkflowASR(Workflow):
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/test_asr/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/test_wf_asr/data/meta') / 'VDI_ApplicationStateData_v0.2.1.gz'
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema

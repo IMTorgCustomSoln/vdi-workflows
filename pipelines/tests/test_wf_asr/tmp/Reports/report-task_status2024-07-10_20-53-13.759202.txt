@@ -1,0 +1,11 @@
+Files input_files contains 2 files in directory tests/test_asr/data/samples of extension ['.zip']
+	next files unzip_files has 4 more files than input_files
+Files unzip_files contains 6 files in directory tests/test_asr/tmp/1_UNZIPPED of extension ['.wav', '.mp3']
+	next files processed_files has 0 more files than unzip_files
+Files processed_files contains 6 files in directory tests/test_asr/tmp/2_PROCESSED of extension ['.json']
+	next files output_files has -6 more files than processed_files
+Files output_files contains 0 files in directory tests/test_asr/tmp/4_OUTPUT of extension ['.gz']
+
+
+Next task with remaining files:
+Files output_files contains 0 files in directory tests/test_asr/tmp/4_OUTPUT of extension ['.gz']
