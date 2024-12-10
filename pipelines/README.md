@@ -46,13 +46,24 @@ python main.py workflow_* run
 
 
 
+## Create New Workflow
+
+* use `template` workflow as guide
+* create new `workflows/workflow_*.py`
+  - setup `test/test_wf_*/`
+* config directories
+* determine ingest with i) individual records, ii) record batches
+* add pipeline task components
+  - review `tests/test_task/*` to fit class templates
+* build and test
+
 
 
 ## TODO:
 
 * ???create separate `workflow-text_classify` and remove from ASR, Site_Scrape
 * ~~create `workflow-template` to be used as a template~~
-* add `workflow_template` Tasks tests
+* ~~add `workflow_template` Tasks tests~~
 
 
 ### Ecomms

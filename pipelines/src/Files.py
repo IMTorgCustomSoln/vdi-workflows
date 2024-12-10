@@ -21,14 +21,14 @@ class File:
     """..."""
     types = ['txt','json','yaml','pickle','schema','workspace']#TODO:,'archive']
 
-    def __init__(self, filepath, type):
+    def __init__(self, filepath, filetype):
         filepath = Path(filepath).resolve()
         if not filepath.is_file():
             with open(filepath, 'w') as f_out:
                 f_out.write("")
         self.filepath = filepath
-        if type in File.types:
-            self.type = type
+        if filetype in File.types:
+            self.filetype = filetype
         else:
             raise TypeError
         self.content = None
@@ -37,28 +37,48 @@ class File:
         """Import from file"""
         #support functions
         def import_text(filepath):
-            with open(filepath, 'r') as f_in:
-                text_content = f_in.readlines()
+            try:
+                with open(filepath, 'r') as f_in:
+                    text_content = f_in.readlines()
+            except Exception as e:
+                print(e)
+                text_content = None
             return text_content
 
         def import_json(filepath):
-            with open(filepath, 'r') as f:
-                json_content = json.load(f)
+            try:
+                with open(filepath, 'r') as f:
+                    json_content = json.load(f)
+            except Exception as e:
+                print(e)
+                json_content = None
             return json_content
         
         def import_yaml(filepath):
-            with open(filepath, 'r') as f:
-                yaml_content = yaml.safe_load(f)
+            try:
+                with open(filepath, 'r') as f:
+                    yaml_content = yaml.safe_load(f)
+            except Exception as e:
+                print(e)
+                yaml_content = None
             return yaml_content
         
         def import_pickle(filepath):
-            with open(filepath, 'rb') as f:
-                content = pickle.load(f)
+            try:
+                with open(filepath, 'rb') as f:
+                    content = pickle.load(f)
+            except Exception as e:
+                print(e)
+                content = None
             return content
             
         def import_workspace(filepath):
-            with gzip.open(filepath, 'rb') as f:
-                workspace_json = json.load(f)
+            try:
+                with gzip.open(filepath, 'rb') as f:
+                    workspace_json = json.load(f)
+            except Exception as e:
+                print(e)
+                workspace_json = None
             return workspace_json
         
         options = {
@@ -74,7 +94,7 @@ class File:
 
         #workflow
         ext = self.filepath.suffix
-        key = f'{self.type}-{ext}'
+        key = f'{self.filetype}-{ext}'
         self.content = options[key](self.filepath)
         if return_content:
             return self.get_content()
@@ -120,7 +140,7 @@ class File:
         }
         #workflow
         ext = self.filepath.suffix
-        key = f'{self.type}-{ext}'
+        key = f'{self.filetype}-{ext}'
         check = options[key](self.filepath)
         return check
 
@@ -143,7 +163,7 @@ class Files:
         self.directory = path
         self.extension_patterns = extension_patterns
 
-    def get_files(self, type='full_path'):
+    def get_files(self, filetype='full_path'):
         """Return files from smallest to largest by size"""
         def get_full_path(file):
             return file
@@ -172,7 +192,7 @@ class Files:
             check2 = len(suffixes)==1
             if all([check1, check2]):
                 if file.is_file():
-                    result = options[type](file)
+                    result = options[filetype](file)
                     yield result
                 else:
                     raise Exception(f'file {file} is not found')

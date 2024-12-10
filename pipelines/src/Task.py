@@ -35,7 +35,7 @@ class Task:
             raise Exception(f'target_folder not found: {output}')
         self.name_diff = name_diff
     
-    def get_next_run_files(self, type='same'):
+    def get_next_run_files(self, method='same'):
         """Get the remaining files that should be provided to run()
         Each record is an file and they are processed, individually, as opposed
         to multiple records within a file.
@@ -47,10 +47,10 @@ class Task:
 
         TODO:add as function to Files.py and ensure appropriate attr: .name, .stem, etc.
         """
-        if type == 'same':
+        if method == 'same':
             Type = 'name_only'
-            input_names = set(self.input_files.get_files(type=Type))
-            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
+            input_names = set(self.input_files.get_files(filetype=Type))
+            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(filetype=Type)])
             remainder_names = list( input_names.difference(processed_names) )
             if len(remainder_names)>0 and Type == 'name_only':
                 remainder_paths = [file for file in self.input_files.get_files() 
@@ -60,10 +60,10 @@ class Task:
                 remainder_paths = []
             return remainder_paths
         
-        elif type == 'update':      #TODO:improve this idea
+        elif method == 'update':      #TODO:improve this idea
             Type = 'name_only'
-            input_names = set(self.input_files.get_files(type=Type))
-            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(type=Type)])
+            input_names = set(self.input_files.get_files(filetype=Type))
+            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(filetype=Type)])
             if len(processed_names) >= len(input_names):
                 remainder_paths = []
             else:
@@ -76,7 +76,7 @@ class Task:
 
 
 class ImportTask(Task):
-    """Simple import of files."""
+    """Simple import of local files."""
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
         self.target_folder = output.directory
@@ -120,7 +120,7 @@ class ImportTask(Task):
 
 
 class ExportTask(Task):
-    """Simple export to .csv table."""
+    """Simple export to local .csv table."""
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
         self.target_folder = output.directory
@@ -135,7 +135,7 @@ class ExportTask(Task):
                 #run classification models on each: chunk,item
                 records = []
                 for idx, file in enumerate(batch):
-                    record = File(filepath=file, type='json').load_file(return_content=True)
+                    record = File(filepath=file, filetype='json').load_file(return_content=True)
                     records.append(record)
                     self.config['LOGGER'].info(f'text-classification processing for file {idx} - {record["file_name"]}')
                 #TODO:append line to csv file
@@ -165,7 +165,7 @@ class SimpleTextClassificationTask(Task):
                 #run classification models on each: chunk,item
                 records = []
                 for idx, file in enumerate(batch):
-                    record = File(filepath=file, type='json').load_file(return_content=True)
+                    record = File(filepath=file, filetype='json').load_file(return_content=True)
                     record['classifier'] = []
                     for chunk in record['chunks']:
                         results = TextClassifier.run(chunk)
@@ -185,7 +185,7 @@ class SimpleTextClassificationTask(Task):
                 if intermediate_save_dir:
                     for idx, record in enumerate(records):
                         save_path = Path(intermediate_save_dir) / f'{record["file_name"]}.json'
-                        out_file = File(filepath=save_path, type='json')
+                        out_file = File(filepath=save_path, filetype='json')
                         out_file.content = record
                         check = out_file.export_to_file()
                         if check:

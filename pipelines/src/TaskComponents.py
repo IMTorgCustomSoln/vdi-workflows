@@ -206,7 +206,7 @@ class ImportAndValidateUrlsTask(Task):
         input_files = self.get_next_run_files()
         if len(input_files) == 1:   #only one input file
             input_file = input_files[0]
-            records = File(filepath=input_file, type='yaml').load_file(return_content=True)
+            records = File(filepath=input_file, filetype='yaml').load_file(return_content=True)
             for key, item in records.items():
                 item['given_urls'].insert(0, item['root_url'])
                 url_list = [URL.build(url) for url in item['given_urls'] if URL.build(url) != None]
@@ -219,7 +219,7 @@ class ImportAndValidateUrlsTask(Task):
                 self.config['LOGGER'].info(f"validated {len(valid_urls)} urls and saved to target {key} ")
             #output
             outfile = self.output_files.directory / 'urls.json'
-            out_file = File(filepath=outfile, type='json')
+            out_file = File(filepath=outfile, filetype='json')
             out_file.content = records
             check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
@@ -240,10 +240,10 @@ class CrawlUrlsTask(Task):
             return flat_list
     
         URL = UrlFactory()
-        input_files = self.get_next_run_files(type='update')
+        input_files = self.get_next_run_files(method='update')
         if len(input_files) == 1:
             input_file = input_files[0]
-            records = File(filepath=input_file, type='json').load_file(return_content=True)
+            records = File(filepath=input_file, filetype='json').load_file(return_content=True)
             for idx, (key, item) in enumerate(records.items()):
                 valid_urls = [URL.build(url) for url in copy.deepcopy(item['_valid_urls'])]
                 #prepare scenario
@@ -269,7 +269,7 @@ class CrawlUrlsTask(Task):
                 self.config['LOGGER'].info(f"searched { len(list(result_urls.keys())) } root urls to find leaf results of {len(combined_urls)} urls and saved to target {key} ")
                 #output
                 outfile = self.output_files.directory / f'urls{idx}-{key}.json'
-                out_file = File(filepath=outfile, type='json')
+                out_file = File(filepath=outfile, filetype='json')
                 out_file.content = record
                 check = out_file.export_to_file()
                 self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
@@ -294,10 +294,10 @@ class ConvertUrlDocToPdf(Task):
         ConfigObj.set_logger(self.config['LOGGER'])
         Doc = DocumentFactory(ConfigObj)
         docrec = DocumentRecord()
-        input_files = self.get_next_run_files(type='update')
+        input_files = self.get_next_run_files(method='update')
         if len(input_files) > 0:
             for file_idx, file in enumerate(input_files):
-                record = File(filepath=file, type='json').load_file(return_content=True)
+                record = File(filepath=file, filetype='json').load_file(return_content=True)
                 #process
                 for key, item in record.items():
                     for url_idx, url_str in enumerate(item['_result_urls']   ):     #<<< TODO:remove slice [:3]
@@ -318,7 +318,7 @@ class ConvertUrlDocToPdf(Task):
                             continue
                         #output
                         outfile = self.output_files.directory / f'doc-{key}-{url_idx}.json'
-                        out_file = File(filepath=outfile, type='json')
+                        out_file = File(filepath=outfile, filetype='json')
                         out_file.content = record_dict
                         check = out_file.export_to_file()
                         #log url
@@ -341,7 +341,7 @@ class ApplyModelsTask(Task):
         input_files = self.get_next_run_files()
         if len(input_files) > 0:
             for file in input_files:
-                record = File(filepath=file, type='json').load_file(return_content=True)
+                record = File(filepath=file, filetype='json').load_file(return_content=True)
                 record['classifier'] = []
                 #process
                 chunks = []
@@ -360,7 +360,7 @@ class ApplyModelsTask(Task):
                 record['time_textmdl'] = time.time() - self.config['START_TIME']
                 #output
                 outfile = self.output_files.directory / file.name
-                out_file = File(filepath=outfile, type='json')
+                out_file = File(filepath=outfile, filetype='json')
                 out_file.content = record
                 check = out_file.export_to_file()
             self.config['LOGGER'].info(f"end ingest file of {len(input_files)} files")
@@ -453,7 +453,7 @@ class ExportIndividualPdfTask(Task):
         for file in processed_files:
             #import and convert
             self.config['LOGGER'].info("begin export")
-            record = File(filepath=file, type='json').load_file(return_content=True)
+            record = File(filepath=file, filetype='json').load_file(return_content=True)
             pdf_bytes = uint8array_to_pdf_file(record["file_uint8arr"])
             #export
             outfile = self.output_files.directory / f'{file.stem}.pdf'
@@ -517,7 +517,7 @@ class ImportValidateCombineEcommsTask(Task):
         #output
         for file in ecomms_validated_files_list:
             outfile = self.output_files.directory / f"{file['FileName']}.pickle"
-            out_file = File(filepath=outfile, type='pickle')
+            out_file = File(filepath=outfile, filetype='pickle')
             out_file.content = file
             check = out_file.export_to_file()
         self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(ecomms_validated_files_list)} files matching {self.target_extension}")
@@ -557,7 +557,7 @@ class TextClassifyEcommTask(Task):
                 #run classification models on each: chunk,item
                 dialogues = []
                 for idx, batch in enumerate(batches):
-                    dialogue = File(filepath=batch, type='pickle').load_file(return_content=True)
+                    dialogue = File(filepath=batch, filetype='pickle').load_file(return_content=True)
                     #with open(batch, 'r') as f_in:
                     #    dialogue = json.load(f_in)
                     #dialogues[idx]['classifier'] = []

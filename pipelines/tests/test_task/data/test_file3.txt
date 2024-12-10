@@ -1,0 +1,10 @@
+firstName John
+lastNameDoe
+age 30
+emailjohn.doe@example.com
+isAdmin true
+courses [Math Science History]
+address 
+  street 123 Main St 
+  city Anytown 
+  postalCode 12345
