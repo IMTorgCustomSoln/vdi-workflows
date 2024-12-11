@@ -52,9 +52,10 @@ python main.py workflow_* run
 * create new `workflows/workflow_*.py`
   - setup `test/test_wf_*/`
 * config directories
-* determine ingest with i) individual records, ii) record batches
+* TODO: determine ingest with i) individual records, ii) record batches, iii) indexed records
 * add pipeline task components
   - review `tests/test_task/*` to fit class templates
+* ensure current workspace output format: `tests/data/VDI_ApplicationStateData_v*.*.*.gz`
 * build and test
 
 
@@ -64,6 +65,11 @@ python main.py workflow_* run
 * ???create separate `workflow-text_classify` and remove from ASR, Site_Scrape
 * ~~create `workflow-template` to be used as a template~~
 * ~~add `workflow_template` Tasks tests~~
+* discussion on foundation Task class
+* ???single parent class for workflow
+  - just provide i) list of tasks and ii) shape of records
+  - all Files and intermediate objects created for you
+  - automated validation, logging, error handling, and failover
 
 
 ### Ecomms

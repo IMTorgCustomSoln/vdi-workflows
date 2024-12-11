@@ -134,7 +134,7 @@ class WorkflowASR(Workflow):
     def prepare_models(self):
         """Prepare by loading train,test data and refine models"""
         self.config['LOGGER'].info("Begin prepare_models")
-        check_prepare = prepare_models.finetune()
+        check_prepare = prepare_models.finetune_classification_model()
         if not check_prepare: 
             self.config['LOGGER'].info(f"models failed to prepare")
             exit()

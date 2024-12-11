@@ -12,9 +12,8 @@ from workflows.workflow_template import workflow_template
 
 
 def test_prepare_models():
-    #TODO:fix
     check1 = workflow_template.prepare_models()
-    assert check1 == False
+    assert check1 == True
 
 
 def test_prepare_workspace():

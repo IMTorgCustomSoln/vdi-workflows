@@ -35,24 +35,19 @@ from pathlib import Path
 import tempfile
 import shutil
 
-
-#support
-class LoggerPlaceholder:
-  def __init__(self):
-    self.info = self.print_statement
-    self.error = self.print_statement
-
-  def print_statement(self, text):
-    print(text)
+from config._constants import (
+    logging_dir,
+    logger
+)
 
 
 def test_task_template():
   #TODO:remainder_paths = tmp_task.get_next_run_files(type='update')
   #setup
-  input_dir = Path(__file__).parent / 'data'
   config = {
-    'logger': LoggerPlaceholder()
+    'LOGGER': logger
     }
+  input_dir = Path(__file__).parent / 'data'
   input_files = Files(
     name='input',
     directory=input_dir,

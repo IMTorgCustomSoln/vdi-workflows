@@ -19,11 +19,11 @@ from src.Workflow import Workflow
 from src.Files import Files
 
 from src.Task import (
-    ImportTask,
-    SimpleTextClassificationTask,
-    ExportTask
+    ImportFromLocalFileTask,
+    ApplyTextModelsTask,
+    ExportToLocalTableTask
 )
-"""
+"""TODO
 from src.Report import (
     TaskStatusReport,
     MapBatchFilesReport,
@@ -32,7 +32,7 @@ from src.Report import (
 """
 from src.models import prepare_models
 from src.io import load
-#from tests.estimate_processing_time import ProcessTimeQrModel
+#TODO: from tests.estimate_processing_time import ProcessTimeQrModel
 
 from config._constants import (
     logging_dir,
@@ -85,13 +85,6 @@ class WorkflowTemplate(Workflow):
                 directory=DIR_VALIDATED,
                 extension_patterns=['.json']
                 )
-            '''
-            converted_files = Files(
-                name='converted',
-                directory=DIR_CONVERTED,
-                extension_patterns=['.json']
-                )
-            '''
             models_applied_files = Files(
                 name='models_applied',
                 directory=DIR_MODELS_APPLIED,
@@ -102,57 +95,33 @@ class WorkflowTemplate(Workflow):
                 directory=DIR_OUTPUT,
                 extension_patterns=['.csv']
                 )
-            '''
-            output_individual_files = Files(
-                name='output',
-                directory=DIR_OUTPUT,
-                extension_patterns=['.pdf']
-                )
-            '''
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
-                #'converted_files': converted_files,
                 'models_applied_files': models_applied_files,
-                'output_files': output_files,
-                #'output_individual_files': output_individual_files
+                'output_files': output_files
             }
             #tasks
-            validate_task = ImportTask(
+            validate_task = ImportFromLocalFileTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files
             )
-            '''
-            convert_task = ConvertEcommsToDocTask(
-                config=CONFIG,
-                input=converted_files,
-                output=models_applied_files
-            )'''
-            apply_models_task = SimpleTextClassificationTask(
+            apply_models_task = ApplyTextModelsTask(
                 config=CONFIG,
                 input=validated_files,
                 output=models_applied_files
             )
             
-            output_task = ExportTask(
+            output_task = ExportToLocalTableTask(
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
             )
-            '''
-            output_files_task = ExportIndividualPdfTask(
-                config=CONFIG,
-                input=models_applied_files,
-                output=output_files
-            )'''
             tasks = [
                 validate_task,
-                #crawl_task,
-                #convert_task,
                 apply_models_task,
-                output_task,
-                #output_files_task
+                output_task
                 ]
             self.tasks = tasks
         except Exception as e:
@@ -163,9 +132,10 @@ class WorkflowTemplate(Workflow):
     def prepare_models(self):
         """Prepare by loading train,test data and refine models"""
         self.config['LOGGER'].info("Begin prepare_models")
-        check_prepare = prepare_models.finetune(self.config)
-        if not check_prepare: 
-            self.config['LOGGER'].info(f"models failed to prepare")
+        check_prepare_keywords = prepare_models.validate_key_terms(self.config)
+        check_prepare_model = prepare_models.finetune_classification_model(self.config)
+        if not (check_prepare_keywords | check_prepare_model): 
+            self.config['LOGGER'].info(f"keywords or models failed to prepare")
             return False
         self.config['LOGGER'].info("End prepare_models")
         return True

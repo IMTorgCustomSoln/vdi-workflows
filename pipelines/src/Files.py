@@ -18,7 +18,17 @@ import yaml
 
 
 class File:
-    """..."""
+    """...
+    Manipulate an individual file based upon its format.
+
+    Usage
+    ```
+    >>> test_file = File(filepath / filename, 'txt')
+    >>> file_content = test_file.load_file(return_content=True)
+    >>> test_file.filepath = outpath / filename
+    >>> result = test_file.export_to_file()
+    ```
+    """
     types = ['txt','json','yaml','pickle','schema','workspace']#TODO:,'archive']
 
     def __init__(self, filepath, filetype):

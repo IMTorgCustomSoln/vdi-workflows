@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 """
-Module Docstring
+Prepare all models used in workflow
+
+Perform the following tasks:
+* validate exact-term search items
+* finetune models
+* obtain results applyig system to test dataset
+* log progress and results
 
 """
+from src.Files import File
+
 import torch
 
 from pathlib import Path
@@ -18,7 +26,27 @@ from config._constants import (
 #TODO: logger.info("Begin prepare_models")
 
 
-def finetune(config):
+def validate_key_terms(config):
+    """..."""
+    wdir = config['TRAINING_DATA_DIR']
+    path_pos_keywords = wdir / 'pos_kw.txt'  
+    path_neg_keywords = wdir / 'pos_kw.txt'   
+    if path_pos_keywords.is_file():
+        pos_file = File(path_pos_keywords, 'txt')
+        pos_kw = [line.rstrip() for line in pos_file.load_file(return_content=True)]
+        logger.info(f'positive keywords found: {len(pos_kw)}')
+    else:
+        logger.info(f'no positive keywords found at path: {path_pos_keywords}')
+    if path_neg_keywords.is_file():
+        neg_file = File(path_neg_keywords, 'txt')
+        neg_kw = [line.rstrip() for line in neg_file.load_file(return_content=True)]
+        logger.info(f'negative keywords found: {len(neg_kw)}')
+    else:
+        logger.info(f'no negative keywords found at path: {path_neg_keywords}')
+    return True
+
+
+def finetune_classification_model(config):
     """..."""
 
     #config_env.config()

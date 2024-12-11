@@ -6,6 +6,7 @@ Task class
 TODO: apply `get_next_run_files()` to new Tasks
   - but instead of simple review of files, apply to content of files
   - ensure it picks-up at last url - it is currently only designed for last file
+  
 """
 
 __author__ = "Jason Beach"
@@ -17,6 +18,8 @@ from src.Files import File
 from src.io import export
 from src.io import utils
 from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
+
+import pandas as pd
 
 from pathlib import Path
 import sys
@@ -75,7 +78,7 @@ class Task:
         pass
 
 
-class ImportTask(Task):
+class ImportFromLocalFileTask(Task):
     """Simple import of local files."""
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
@@ -119,26 +122,37 @@ class ImportTask(Task):
         return True
 
 
-class ExportTask(Task):
+class ExportToLocalTableTask(Task):
     """Simple export to local .csv table."""
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
         self.target_folder = output.directory
-        self.target_extension=['.json']
 
     def run(self):
-        intermediate_save_dir=self.target_folder
+        filename = 'export'
         unprocessed_files = self.get_next_run_files()
         if len(unprocessed_files)>0:
-            #process by batch
-            for idx, batch in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
-                #run classification models on each: chunk,item
+            #process by batch of files
+            if 'BATCH_COUNT' in list(self.config.keys()):
+                idx = 0
+                for bidx, batch in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
+                    records = []
+                    for fidx, file in enumerate( batch ):
+                        record_content = File(filepath=file, filetype='json').load_file(return_content=True)
+                        records.append(record_content)
+                        self.config['LOGGER'].info(f'text-classification processing for file {idx} - {file.stem}')
+                        idx += 1
+                    df = pd.DataFrame(records)
+                    df.to_csv(self.target_folder / f'{filename}-{bidx}.csv')
+            #process by file
+            else:
                 records = []
-                for idx, file in enumerate(batch):
-                    record = File(filepath=file, filetype='json').load_file(return_content=True)
-                    records.append(record)
-                    self.config['LOGGER'].info(f'text-classification processing for file {idx} - {record["file_name"]}')
-                #TODO:append line to csv file
+                for fidx, file in enumerate( unprocessed_files ):
+                    record_content = File(filepath=file, filetype='json').load_file(return_content=True)
+                    records.append(record_content)
+                    self.config['LOGGER'].info(f'text-classification processing for file {fidx} - {file.stem}')
+                df = pd.DataFrame(records)
+                df.to_csv(self.target_folder / f'{filename}-{fidx+1}.csv')
         return True
 
 
@@ -146,8 +160,8 @@ from src.models.classification import TextClassifier
 import time
 import json
 
-class SimpleTextClassificationTask(Task):
-    """Apply text classification to documents in most simple scenario.
+class ApplyTextModelsTask(Task):
+    """Apply text models (keyterms, classification, etc.) to documents in most simple scenario.
     """
 
     def __init__(self, config, input, output):
