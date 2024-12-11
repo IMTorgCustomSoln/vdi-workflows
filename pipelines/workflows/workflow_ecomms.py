@@ -68,8 +68,8 @@ class WorkflowEcomms(Workflow):
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
             #DIR_CONVERTED = CONFIG['WORKING_DIR'] / '2_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '3_MODELS_APPLIED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '4_OUTPUT'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '2_MODELS_APPLIED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
 
@@ -159,22 +159,22 @@ class WorkflowEcomms(Workflow):
             print(e)
             sys.exit()
         
-    '''
+
     def prepare_models(self):
-        """Prepare by loading train,test data and refine models
+        """Prepare by loading train,test data and refine models"""
         self.config['LOGGER'].info("Begin prepare_models")
-        check_prepare = prepare_models.finetune()
-        if not check_prepare: 
-            self.config['LOGGER'].info(f"models failed to prepare")
-            exit()
-        self.config['LOGGER'].info("End prepare_models")"""
+        check_prepare_keywords = prepare_models.validate_key_terms(self.config)
+        check_prepare_model = prepare_models.finetune_classification_model(self.config)
+        if not (check_prepare_keywords | check_prepare_model): 
+            self.config['LOGGER'].info(f"keywords or models failed to prepare")
+            return False
+        self.config['LOGGER'].info("End prepare_models")
         return True
-    '''
 
     def prepare_workspace(self):
         """Prepare workspace with output schema and file paths"""
         #prepare schema
-        filepath = Path('./tests/data') / 'VDI_ApplicationStateData_v0.2.1.gz'
+        filepath = Path('./tests/data/VDI_ApplicationStateData_v0.2.1.gz')
         if filepath.is_file():
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema

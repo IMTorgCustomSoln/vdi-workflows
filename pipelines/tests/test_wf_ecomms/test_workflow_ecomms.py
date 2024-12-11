@@ -9,16 +9,16 @@ __license__ = "AGPL-3.0"
 
 from workflows.workflow_ecomms import workflow_ecomms
 
-'''
+
 def test_prepare_models():
     check1 = workflow_ecomms.prepare_models()
     assert check1 == True
-'''
 
 def test_prepare_workspace():
     check1 = workflow_ecomms.prepare_workspace()
+    #TODO: add modification of .dat files
+    #TODO: validate input files, ie org chart
     assert check1 == True
-
 
 def test_run():
     check1 = workflow_ecomms.prepare_workspace()
