@@ -74,7 +74,7 @@ python main.py workflow_* run
 
 ### Ecomms
 
-* output to .json
+* ~~output to .json~~
 * ingest data
   - create proper eDiscovery class with config (include col names)
   - ~~enable mapping provided .dat column names to default set~~
@@ -87,7 +87,7 @@ python main.py workflow_* run
   - ~~load orgchart~~
   - integrate org chart file: just get titles
   - add to Task
-* prepare models
+* ~~prepare models~~
 * export to VDI client
 * (later) add visual message display
 

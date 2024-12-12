@@ -483,14 +483,11 @@ class ExportIndividualPdfTask(Task):
 
 from src.modules.parse_emails.parse_emails import EmailParser
 
-class ImportValidateCombineEcommsTask(Task):
-    """Import variety of e-communication files and validate quality.
+class ImportEmailsTask(Task):
+    """Import email files and validate quality.
     
     ecomms types:
     * email - .eml, .msg, .pst, .mbox, ...
-    * chat - Teams, Bloomburg: .json
-    * legal - .dat, .opt, .txt, ...
-    * org chart - .csv
     """
 
     def __init__(self, config, input, output):
@@ -513,7 +510,6 @@ class ImportValidateCombineEcommsTask(Task):
             except:
                 pass
         ecomms_validated_files_list = [file for file in ecomms_files_list if file!=None]
-        #TODO:create org chart
         #output
         for file in ecomms_validated_files_list:
             outfile = self.output_files.directory / f"{file['FileName']}.pickle"
@@ -522,6 +518,155 @@ class ImportValidateCombineEcommsTask(Task):
             check = out_file.export_to_file()
         self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(ecomms_validated_files_list)} files matching {self.target_extension}")
         return check
+
+
+#from src.models.classification import classifier
+from src.models.classification import TextClassifier
+import time
+import json
+
+class TextClassifyEcommEmailTask(Task):
+    """Apply text classification to documents
+    """
+
+    def __init__(self, config, input, output, name_diff):
+        super().__init__(config, input, output, name_diff)
+        self.target_files = output
+
+    def run(self):
+        TextClassifier.config(self.config)
+        intermediate_save_dir=self.target_files.directory
+        unprocessed_files = self.get_next_run_files()
+        if len(unprocessed_files)>0:
+            #process by batch
+            for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
+                '''
+                batch_files = asr.run_workflow(
+                    config=self.config,
+                    sound_files=batch, 
+                    intermediate_save_dir=self.target_files.directory,
+                    infer_text_classify_only=False
+                    )
+                self.config['LOGGER'].info(f"end model workflow, batch-index: {idx} with {len(batch_files)} files")
+
+                '''
+                #run classification models on each: chunk,item
+                dialogues = []
+                for idx, batch in enumerate(batches):
+                    dialogue = File(filepath=batch, filetype='pickle').load_file(return_content=True)
+                    #with open(batch, 'r') as f_in:
+                    #    dialogue = json.load(f_in)
+                    #dialogues[idx]['classifier'] = []
+                    dialogue['classifier'] = []
+                    for chunk in dialogue['chunks']:
+                        results = TextClassifier.run(chunk)
+                        for result in results:
+                            if result != None:
+                                dialogue['classifier'].append(result)
+                            else:
+                                dialogue['classifier'].append({})
+                    dialogue['time_textmdl'] = time.time() - self.config['START_TIME']
+                    dialogues.append(dialogue)
+                    self.config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
+                
+        #save
+        from src.io import export
+
+        save_json_paths = []
+        if intermediate_save_dir:
+            for idx, dialogue in enumerate(dialogues):
+                save_path = Path(intermediate_save_dir) / f'{dialogue["file_name"]}.json'
+                try:
+                    with open(save_path, 'w') as f:
+                        json.dump(dialogue, f)
+                    save_json_paths.append( str(save_path) )
+                    self.config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
+                except Exception as e:
+                    print(e)
+                #TODO:   dialogues.extend(processed_dialogues)   #combine records of previously processed dialogues
+
+        return save_json_paths
+
+
+
+
+from .Files import File
+from src.modules.parse_emails.parse_emails import EmailParser
+from src.modules.parse_ediscovery.loadfile import (
+    collect_workspace_files,
+    copy_dat_file_with_fixed_format,
+    get_table_rows_from_dat_file,
+)
+from src.modules.parse_orgchart.orgchart import OrgChartParser
+
+class ImportValidateCombineEcommsTask(Task):
+    """Import variety of e-communication files and validate quality.
+    
+    ecomms types:
+    * email - .eml, .msg, .pst, .mbox, ...
+    * chat - Teams, Bloomburg: .json
+    * legal - .dat, .opt, .txt, ...
+    * org chart - .csv
+    """
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_folder = output.directory
+        self.target_extension=['.mdat','.txt','.eml','.msg']
+
+    def run(self):
+        #orgchart
+        file_path_csv = self.config['INPUT_DIR'] / 'org1.csv'
+        orgchart_parser = OrgChartParser(file_path=file_path_csv)
+        check = orgchart_parser.validate()
+        #msg records
+        dfdats = pd.DataFrame()
+        file_collection = collect_workspace_files(self.config['INPUT_DIR'])
+        for idx, volume_key in enumerate(file_collection.keys()):
+            if file_collection[volume_key]['mdat']:
+                dat_file = file_collection[volume_key]['mdat']
+                dfdat = get_table_rows_from_dat_file(
+                    dat_file, 
+                    type='df', 
+                    sep='\x14', 
+                    #rename_fields={}
+                    )
+                dfdat['text'] = None
+                contents = []
+                for txt in dfdat['textLink']:
+                    txt_file = self.config['INPUT_DIR'] / volume_key / Path(txt)
+                    if txt_file.suffix in self.target_extension:
+                        with open(txt_file, 'r') as f:
+                            content = txt + '\n' + f.read()
+                            contents.append(content)
+                    else:
+                        contents.append(None)
+                dfdat['text'] = contents
+                dfdats['volume'] = volume_key
+                dfdats = pd.concat([dfdats, dfdat])
+            else:
+                raise Exception
+        #group into discussions ('subject')
+        dfdats.reset_index(inplace=True)
+        dfdats['Date Received'] = pd.to_datetime(dfdats['Date Received'])
+        dfdats.sort_values(by=['subject','documentID','Date Received','from'], inplace=True, ascending=True)
+        dfdats['Date Received'] = dfdats['Date Received'].astype(str)
+        #cols=['subject','documentID','Date Received','from']
+        #dfdats[['documentID','groupID','Date Received','from','to','subject','text']]
+        #output by subject
+        for subject in list(dfdats['subject'].unique()):
+            dfsubj = dfdats[dfdats['subject']==subject].reset_index()
+            filename = f"filegrp-subj_{dfsubj['documentID'][0]}_{dfsubj.shape[0]}"
+            outfile_dir = self.output_files.directory / f"{filename}.json"
+            outfile = File(outfile_dir, 'json')
+            outfile.content = {
+                'id': dfsubj['documentID'][0],
+                'file_name': filename,
+                'chunks': dfsubj.to_dict('records')
+            }
+            result = outfile.export_to_file()
+        self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {dfdats.shape[0]} files matching {self.target_extension}")
+        return True
     
 
 #from src.models.classification import classifier

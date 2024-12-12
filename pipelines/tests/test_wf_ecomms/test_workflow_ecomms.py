@@ -31,8 +31,16 @@ def test_prepare_workspace():
     assert check1 == True
 
 def test_run():
-    check1 = workflow_ecomms.prepare_workspace()
-    check2 = workflow_ecomms.run()
+    with tempfile.TemporaryDirectory() as t_dir:
+        input_dir = Path(t_dir) / 'extended_layout'
+        source_dir = Path(__file__).parent / 'data_ediscovery' / 'extended_layout'
+        shutil.copytree(source_dir, input_dir )
+        source_dir = Path(__file__).parent / 'data_orgchart' / 'org1.csv'
+        shutil.copy(source_dir, input_dir)
+
+        workflow_ecomms.config['INPUT_DIR'] = input_dir
+        check1 = workflow_ecomms.prepare_workspace()
+        check2 = workflow_ecomms.run()
     assert check2 == True
 
 def test_report():

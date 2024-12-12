@@ -46,6 +46,11 @@ def collect_workspace_files(cwdir):
     return data_index
 
 
+def get_linux_path_from_windows(win_path):
+        posix = str(PurePosixPath(PureWindowsPath(win_path)))
+        return posix
+
+
 def validate_files(
         dat_filepath,
         home_dirpath
@@ -62,11 +67,6 @@ def validate_files(
 
     TODO:make diagrammatic explanation of structure
     """
-    #support
-    def get_linux_path_from_windows(win_path):
-        posix = str(PurePosixPath(PureWindowsPath(win_path)))
-        return posix
-
     checks = {}
     #load
     dfdat = get_table_rows_from_dat_file(dat_filepath, 'df', '\x14')
@@ -282,6 +282,8 @@ def get_table_rows_from_dat_file(dat_file, type='rows', sep='\x14', rename_field
     if dat_file.is_file():
         df = pd.read_csv(dat_file, sep=sep, encoding='utf-8')
     df.rename(columns=rename_fields, inplace=True)
+    df['textLink'] = df['textLink'].apply(get_linux_path_from_windows)
+    df['nativeLink'] = df['nativeLink'].apply(get_linux_path_from_windows)
     if type == 'rows':
         return df.to_dict('records')
     if type == 'df':

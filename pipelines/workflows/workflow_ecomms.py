@@ -19,6 +19,7 @@ from src.modules.parse_ediscovery.loadfile import (
 )
 from src.modules.parse_orgchart.orgchart import OrgChartParser
 
+from src.Task import ApplyTextModelsTask
 from src.TaskComponents import (
     ImportValidateCombineEcommsTask,
     #ConvertEcommsToDocTask,
@@ -82,12 +83,12 @@ class WorkflowEcomms(Workflow):
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
-                extension_patterns=['.eml', '.msg']
+                extension_patterns=['.mdat','.txt','.eml','.msg']
                 )
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.pickle']
+                extension_patterns=['.json']
                 )
             '''
             converted_files = Files(
@@ -99,7 +100,7 @@ class WorkflowEcomms(Workflow):
             models_applied_files = Files(
                 name='models_applied',
                 directory=DIR_MODELS_APPLIED,
-                extension_patterns=['.pickle']
+                extension_patterns=['.json']
                 )
             '''
             output_files = Files(
@@ -134,11 +135,12 @@ class WorkflowEcomms(Workflow):
                 output=models_applied_files
             )
             '''
-            apply_models_task = TextClassifyEcommTask(
+            apply_models_task = ApplyTextModelsTask(
+                #apply_models_task = TextClassifyEcommTask(
                 config=CONFIG,
                 input=validated_files,
                 output=models_applied_files,
-                name_diff='.pickle'
+                #name_diff='.pickle'
             )
             '''
             output_task = ExportVdiWorkspaceTask(
