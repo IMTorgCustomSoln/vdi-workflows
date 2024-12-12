@@ -13,6 +13,11 @@ __license__ = "AGPL-3.0"
 
 from src.Workflow import Workflow
 from src.Files import Files
+from src.modules.parse_ediscovery.loadfile import (
+    collect_workspace_files,
+    copy_dat_file_with_fixed_format
+)
+from src.modules.parse_orgchart.orgchart import OrgChartParser
 
 from src.TaskComponents import (
     ImportValidateCombineEcommsTask,
@@ -181,7 +186,37 @@ class WorkflowEcomms(Workflow):
         schema = self.config['WORKING_DIR'] / 'workspace_schema_v0.2.1.json'
         with open(schema, 'w') as f:
             json.dump(workspace_schema, f)
-        #TODO:validate file paths
+        #validate file paths
+        if not self.config['INPUT_DIR'].is_dir():
+            raise Exception
+        fields = {
+            'Control Number':'documentID', 'Custodian':'custodian',
+            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+            'number of attachments': 'numberOfAttachments',
+            'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+            'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+            }
+        file_collection = collect_workspace_files(self.config['INPUT_DIR'])
+        for volume_key in file_collection.keys():
+            if not file_collection[volume_key]['mdat']:
+                new_file = file_collection[volume_key]['dat'].parent / 'new_file.mdat'
+                SEP = '\x14'
+                check = copy_dat_file_with_fixed_format(
+                    bom_file = file_collection[volume_key]['dat'], 
+                    new_file = new_file, 
+                    separator_str='|', 
+                    remove_chars=[], 
+                    new_separator=SEP,
+                    rename_fields = fields
+                    )
+                if not check:
+                    raise Exception
+                file_collection[volume_key]['mdat'] = new_file
+        #validate input files, ie org chart
+        file_path_csv = self.config['INPUT_DIR'] / 'org1.csv'
+        orgchart_parser = OrgChartParser(file_path=file_path_csv)
+        check = orgchart_parser.validate()
         return True
     
     def run(self):

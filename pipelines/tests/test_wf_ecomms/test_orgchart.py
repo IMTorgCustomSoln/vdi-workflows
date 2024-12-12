@@ -14,9 +14,16 @@ from src.modules.parse_orgchart.orgchart import OrgChartParser
 from pathlib import Path
 
 
+file_path_csv = Path(__file__).parent / 'data_orgchart/org1.csv'
+file_path_json = Path(__file__).parent / 'data_orgchart/org.json'
+
+
+def test_validate_orgchart():
+    orgchart_parser = OrgChartParser(file_path=file_path_csv)
+    check = orgchart_parser.validate()
+    assert check == True
+
 def test_load_orgchart():
-    file_path_csv = Path(__file__).parent / 'data_orgchart/org1.csv'
-    file_path_json = Path(__file__).parent / 'data_orgchart/org.json'
     orgchart_parser = OrgChartParser(file_path=file_path_csv)
     csv = orgchart_parser.parse(
         office_fields=['LineOfBusiness','SubLOB-1','SubLOB-2','SubLOB-3'],

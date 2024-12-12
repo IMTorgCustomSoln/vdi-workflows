@@ -9,15 +9,25 @@ __license__ = "AGPL-3.0"
 
 from workflows.workflow_ecomms import workflow_ecomms
 
+from pathlib import Path
+import tempfile
+import shutil
+
 
 def test_prepare_models():
     check1 = workflow_ecomms.prepare_models()
     assert check1 == True
 
 def test_prepare_workspace():
-    check1 = workflow_ecomms.prepare_workspace()
-    #TODO: add modification of .dat files
-    #TODO: validate input files, ie org chart
+    with tempfile.TemporaryDirectory() as t_dir:
+        input_dir = Path(t_dir) / 'extended_layout'
+        source_dir = Path(__file__).parent / 'data_ediscovery' / 'extended_layout'
+        shutil.copytree(source_dir, input_dir )
+        source_dir = Path(__file__).parent / 'data_orgchart' / 'org1.csv'
+        shutil.copy(source_dir, input_dir)
+
+        workflow_ecomms.config['INPUT_DIR'] = input_dir
+        check1 = workflow_ecomms.prepare_workspace()
     assert check1 == True
 
 def test_run():

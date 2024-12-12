@@ -20,13 +20,18 @@ class OrgChartParser:
     def __init__(self, file_path):
         """..."""
         self.file_path = Path(file_path)
+        self.validate()
+        self.primary_keys = ['Name', 'Role', 'ImmediateManager']
+        self.data = None
+    
+    def validate(self):
+        """..."""
         if not self.file_path.is_file():
             raise TypeError
         if not self.file_path.suffix in ['.csv', '.json']:
             raise TypeError
-        self.primary_keys = ['Name', 'Role', 'ImmediateManager']
-        self.data = None
-            
+        return True
+
     def parse(self, office_fields=[], office_asc=True, manager_fields=[], manager_asc=True):
         """..."""
         data = None

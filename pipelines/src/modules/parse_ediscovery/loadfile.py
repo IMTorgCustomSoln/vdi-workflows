@@ -20,6 +20,32 @@ init_colorama()
 ASCII_MATCH = re.compile("[a-zA-Z0-9]")
 
 
+def collect_workspace_files(cwdir):
+    """Collect all relevant files, from all volumes, within a working directory."""
+    base_dirs = [dir for dir in cwdir.iterdir() if dir.is_dir()]
+    #add modification of .dat files
+    data_index = {}
+    for dirTgt in base_dirs:
+        record = {}
+        dats = [file for file in dirTgt.rglob('**/*.dat')]
+        if len(dats)==1:
+            record["dat"] = dats[0]
+        else:
+            raise Exception
+        mdats = [file for file in dirTgt.rglob('**/*.mdat')]
+        if len(mdats)==1:
+            record["mdat"] = mdats[0]
+        else:
+            record["mdat"] = None
+        native_dir = [dir for dir in dirTgt.rglob('**/*') if (dir.is_dir() and dir.stem=='NATIVES')]
+        if len(native_dir)==1:
+            record["native_dir"] = native_dir[0]
+        else:
+            raise Exception
+        data_index[dirTgt.stem] = record
+    return data_index
+
+
 def validate_files(
         dat_filepath,
         home_dirpath

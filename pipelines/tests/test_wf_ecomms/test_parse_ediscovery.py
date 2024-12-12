@@ -8,6 +8,7 @@ __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
 from src.modules.parse_ediscovery.loadfile import (
+    collect_workspace_files,
     validate_files, 
     copy_dat_file_with_fixed_format,
     get_table_rows_from_lines, 
@@ -29,7 +30,7 @@ from contextlib import contextmanager
 @contextmanager
 def setup_basic_layout():
     """Typical simple layout for testing."""
-    cwdir = Path('tests/test_ecomms/data_ediscovery/basic_layout')
+    cwdir = Path('tests/test_wf_ecomms/data_ediscovery/basic_layout')
     home_dirpath = cwdir / 'VOL01'
     dat_file = 'load_file_01.dat'
     dat_filepath = cwdir / dat_file
@@ -41,7 +42,7 @@ def setup_basic_layout():
 @contextmanager
 def setup_extended_layout():
     """Extended layout for large amount of data."""
-    cwdir = Path('tests/test_ecomms/data_ediscovery/extended_layout')
+    cwdir = Path('tests/test_wf_ecomms/data_ediscovery/extended_layout')
     home_dirpath = cwdir / '12345_VOL01' / 'VOL01'
     dat_file = 'load_file_01.dat'
     dat_filepath = home_dirpath / 'DATA' /  dat_file
@@ -163,7 +164,7 @@ def test_validate_files():
                 new_file, 
                 home_dirpath
                 )
-        lchecks = list(checks.values())
+            lchecks = list(checks.values())
         assert all(lchecks) == True
     with setup_extended_layout() as env:
         cwdir, home_dirpath, dat_file, dat_filepath = env
@@ -182,5 +183,14 @@ def test_validate_files():
                 new_file, 
                 home_dirpath
                 )
-        lchecks = list(checks.values())
+            lchecks = list(checks.values())
         assert all(lchecks) == True
+        
+def test_collect_workspace_files():
+    with setup_extended_layout() as env:
+        cwdir, home_dirpath, dat_file, dat_filepath = env
+        file_collection = collect_workspace_files(cwdir)
+    assert list(file_collection.keys()) == ['12345_VOL02', '12345_VOL01']
+    assert file_collection['12345_VOL01']['dat'] != None
+    assert file_collection['12345_VOL01']['mdat'] == None
+    assert file_collection['12345_VOL01']['native_dir'] != None
