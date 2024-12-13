@@ -70,6 +70,25 @@ python main.py workflow_* run
   - just provide i) list of tasks and ii) shape of records
   - all Files and intermediate objects created for you
   - automated validation, logging, error handling, and failover
+  - use pickle to preserve objects, until task penultimate to output
+  - each record should be intermediary file
+* record structure for Task i/o and provisioning output
+  ```urls.json
+  {
+  'indexed group': {
+    'root_url: 'https://www...',
+    'given_urls: [Url1, Url2, ...],
+    'added_docs': [DocPath1, DocPath2, ...],
+    'documents': [DocumentRecord, DocumentRecord, ...]
+    }
+  }
+  ```
+* indexed group | (output format) file_field | doc_display
+  - wf_site_scrape-tgt: bank_name | (vdi client) Url,DocPath | Doc
+  - wf_site_scrape-multi: bank_name | (table) Url | reference to docpath
+  - wf_asr: acct_num | (vdi client) acct_num | {audio file-date}\n asr_text
+  - wf_ecomms: msg_chain_subject | (vdi client) msg_chain_subject-msg_count | {msg file-date}\n msg_text
+  - wf_default: indv_file | (vdi client) indv_file | Doc
 
 
 ### Ecomms

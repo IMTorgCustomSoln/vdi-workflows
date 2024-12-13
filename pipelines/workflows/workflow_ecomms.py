@@ -24,9 +24,13 @@ from src.TaskComponents import (
     ImportValidateCombineEcommsTask,
     #ConvertEcommsToDocTask,
     #ApplyModelsTask,
-    TextClassifyEcommTask
+    TextClassifyEcommTask,
+    
     #ExportVdiWorkspaceTask,
-    #ExportIndividualPdfTask
+    #ExportIndividualPdfTask,
+
+    ConvertUrlDocToPdf,
+    ExportVdiWorkspaceTask
 )
 """
 from src.Report import (
