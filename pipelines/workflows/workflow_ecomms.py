@@ -25,12 +25,13 @@ from src.TaskComponents import (
     #ConvertEcommsToDocTask,
     #ApplyModelsTask,
     TextClassifyEcommTask,
-    
+
     #ExportVdiWorkspaceTask,
     #ExportIndividualPdfTask,
 
     ConvertUrlDocToPdf,
-    ExportVdiWorkspaceTask
+    ExportVdiWorkspaceTask,
+    ExportEcommsToVdiWorkspaceTask
 )
 """
 from src.Report import (
@@ -106,12 +107,13 @@ class WorkflowEcomms(Workflow):
                 directory=DIR_MODELS_APPLIED,
                 extension_patterns=['.json']
                 )
-            '''
+            
             output_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
                 extension_patterns=['.gz']
                 )
+            '''
             output_individual_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
@@ -123,7 +125,7 @@ class WorkflowEcomms(Workflow):
                 'validated_files': validated_files,
                 #'converted_files': converted_files,
                 'models_applied_files': models_applied_files,
-                #'output_files': output_files,
+                'output_files': output_files,
                 #'output_individual_files': output_individual_files
             }
             #tasks
@@ -146,6 +148,11 @@ class WorkflowEcomms(Workflow):
                 output=models_applied_files,
                 #name_diff='.pickle'
             )
+            output_task = ExportEcommsToVdiWorkspaceTask(
+                config=CONFIG,
+                input=models_applied_files,
+                output=output_files
+            )
             '''
             output_task = ExportVdiWorkspaceTask(
                 config=CONFIG,
@@ -162,7 +169,7 @@ class WorkflowEcomms(Workflow):
                 #crawl_task,
                 #convert_task,
                 apply_models_task,
-                #output_task
+                output_task
                 #output_files_task
                 ]
             self.tasks = tasks
