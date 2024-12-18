@@ -41,7 +41,7 @@ class UnzipTask(Task):
 
     def run(self):
         sound_files_list = []
-        for file in self.get_next_run_files():
+        for file in self.get_next_run_file():
             extracted_sound_files = utils.decompress_filepath_archives(
                 filepath=file,
                 extract_dir=self.target_folder,
@@ -65,7 +65,7 @@ class AsrTask(Task):
         #self.infer_text_classify_only = False       #TODO:separate into another Task???
 
     def run(self):
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         if len(unprocessed_files)>0:
             #process by batch
             for idx, batch in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
@@ -95,7 +95,7 @@ class TextClassificationTask(Task):
     def run(self):
         TextClassifier.config(self.config)
         intermediate_save_dir=self.target_files.directory
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         if len(unprocessed_files)>0:
             #process by batch
             for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
@@ -165,7 +165,7 @@ class ExportAsrToVdiWorkspaceTask(Task):
             sys.exit()
 
         #export by batch
-        processed_files = self.get_next_run_files()
+        processed_files = self.get_next_run_file()
         cnt = 0
         for idx, batch in enumerate( utils.get_next_batch_from_list(processed_files, self.config['BATCH_COUNT']) ):
             self.config['LOGGER'].info("begin export")
@@ -203,7 +203,7 @@ class ImportAndValidateUrlsTask(Task):
                 logger=self.config['LOGGER'],
                 exporter=None
             )
-        input_files = self.get_next_run_files()
+        input_files = self.get_next_run_file()
         if len(input_files) == 1:   #only one input file
             input_file = input_files[0]
             records = File(filepath=input_file, filetype='yaml').load_file(return_content=True)
@@ -240,7 +240,7 @@ class CrawlUrlsTask(Task):
             return flat_list
     
         URL = UrlFactory()
-        input_files = self.get_next_run_files(method='update')
+        input_files = self.get_next_run_file(method='update')
         if len(input_files) == 1:
             input_file = input_files[0]
             records = File(filepath=input_file, filetype='json').load_file(return_content=True)
@@ -294,7 +294,7 @@ class ConvertUrlDocToPdf(Task):
         ConfigObj.set_logger(self.config['LOGGER'])
         Doc = DocumentFactory(ConfigObj)
         docrec = DocumentRecord()
-        input_files = self.get_next_run_files(method='update')
+        input_files = self.get_next_run_file(method='update')
         if len(input_files) > 0:
             for file_idx, file in enumerate(input_files):
                 record = File(filepath=file, filetype='json').load_file(return_content=True)
@@ -338,7 +338,7 @@ class ApplyModelsTask(Task):
 
     def run(self):
         TextClassifier.config(self.config)
-        input_files = self.get_next_run_files()
+        input_files = self.get_next_run_file()
         if len(input_files) > 0:
             for file in input_files:
                 record = File(filepath=file, filetype='json').load_file(return_content=True)
@@ -389,7 +389,7 @@ class ExportVdiWorkspaceTask(Task):
             sys.exit()
 
         #export by batch
-        processed_files = self.get_next_run_files()
+        processed_files = self.get_next_run_file()
         processed_files.sort()
         cnt = 0
         for idx, batch in enumerate( utils.get_next_batch_from_list(processed_files, self.config['BATCH_COUNT']) ):
@@ -445,7 +445,7 @@ class ExportIndividualPdfTask(Task):
 
     def run(self):
         #export by batch
-        processed_files = self.get_next_run_files()
+        processed_files = self.get_next_run_file()
         processed_files.sort()
         export_fields = ['id', 'date', 'page_nos', 'filetype', 'file_extension', 'file_size_mb', 'title', 'filename_original', 'filepath', 'pp_toc']
         report_records = []
@@ -499,7 +499,7 @@ class ImportEmailsTask(Task):
         #create messages
         check = True
         ecomms_files_list = []
-        for file in self.get_next_run_files():
+        for file in self.get_next_run_file():
             try:
                 email_parser = EmailParser(file_path=file, max_depth=2)
                 results = email_parser.parse()
@@ -536,7 +536,7 @@ class TextClassifyEcommEmailTask(Task):
     def run(self):
         TextClassifier.config(self.config)
         intermediate_save_dir=self.target_files.directory
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         if len(unprocessed_files)>0:
             #process by batch
             for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
@@ -685,7 +685,7 @@ class TextClassifyEcommTask(Task):
     def run(self):
         TextClassifier.config(self.config)
         intermediate_save_dir=self.target_files.directory
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         if len(unprocessed_files)>0:
             #process by batch
             for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
@@ -756,7 +756,7 @@ class ExportEcommsToVdiWorkspaceTask(Task):
             sys.exit()
 
         #export by batch
-        processed_files = self.get_next_run_files()
+        processed_files = self.get_next_run_file()
         cnt = 0
         for idx, batch in enumerate( utils.get_next_batch_from_list(processed_files, self.config['BATCH_COUNT']) ):
             self.config['LOGGER'].info("begin export")

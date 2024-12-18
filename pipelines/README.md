@@ -76,6 +76,7 @@ python main.py workflow_* run
   ```urls.json
   {
   'indexed group': {
+    'source': 'one_of_many',
     'root_url: 'https://www...',
     'given_urls: [Url1, Url2, ...],
     'added_docs': [DocPath1, DocPath2, ...],

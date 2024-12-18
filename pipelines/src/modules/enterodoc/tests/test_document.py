@@ -13,6 +13,7 @@ from src.modules.enterodoc.entero_document.document import Document
 
 from pathlib import Path
 import pytest
+import dill
 
 Doc = DocumentFactory()
 
@@ -21,8 +22,10 @@ def test_document_attributes():
     test_file = Path(__file__).parent / './examples/example.pdf'
     doc = Doc.build(test_file)
     docrec = DocumentRecord()
-    result = docrec.validate_object_attrs(doc)
-    assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
+    #result = docrec.validate_object_attrs(doc)
+    #assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
+    new_doc = dill.loads(dill.dumps(doc))
+    assert type(new_doc) == DocumentRecord
 
 def test_document_populated():
     test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'

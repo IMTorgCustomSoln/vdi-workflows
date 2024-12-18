@@ -26,19 +26,79 @@ import sys
 import datetime
 
 
+
+class PipelineRecordFactory():
+    """TODO: maybe later create different subclasses from PipelineRecords."""
+    def __init__(self):
+        """..."""
+        pass
+
+    def create_from_id(self, id, source_type, root_source=None):
+        if source_type not in ['single_file', 'single_url', 'multiple_files']:
+            return None
+        return PipelineRecord(id, source_type, root_source)
+    #def create_from_record(self, record):
+    #    pass
+
+
+class PipelineRecord():
+    """..."""
+    def __init__(self, id, source_type=None, root_source=None):
+        """..."""
+        self.id = id
+        self.source_type = source_type
+        self.root_source = root_source
+        self.added_sources = []
+        self.collected_docs = []
+        
+    def _populate_pdf_from_string(self):
+        pass
+    #def export_to_json(self):
+    #    """TODO: this is too complicated because of the nested internal classes"""
+    #    return True
+    def export_to_vdi_workspace(self):
+        """..."""
+        return True
+    def export_to_excel(self):
+        """..."""
+        return True
+
+
+
 class Task:
     """..."""
 
     def __init__(self, config, input, output, name_diff=''):
+        #standard inputs
         self.config = config
-        self.input_files = input
+        self.input_files = None
+        self.output_files = None
+        #TODOif type(config) == Config:
+        #    self.config = config
+        if input.directory.is_dir():
+            self.input_files = input
+        else:
+            raise Exception(f'input not found: {input}')
         if output.directory.is_dir():
             self.output_files = output
         else:
-            raise Exception(f'target_folder not found: {output}')
+            raise Exception(f'output not found: {output}')
         self.name_diff = name_diff
-    
-    def get_next_run_files(self, method='same'):
+
+        #standard data
+        self.target_extension=[]
+        self.factory = PipelineRecordFactory()
+        self.pipeline_record_ids = []
+
+    def run(self):
+        """Run processing steps on input Files"""
+        pass
+
+    def create_pipeline_record_from_file(self, file):
+        """Create PipelineRecords from Files"""
+        pass
+
+    def get_next_run_file(self, method='same'):
         """Get the remaining files that should be provided to run()
         Each record is an file and they are processed, individually, as opposed
         to multiple records within a file.
@@ -52,17 +112,19 @@ class Task:
         """
         if method == 'same':
             Type = 'name_only'
-            input_names = set(self.input_files.get_files(filetype=Type))
-            processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(filetype=Type)])
+            input_names = set([file.filepath.name for file in self.input_files.get_files(filetype=Type)])
+            #processed_names = set([file.replace(self.name_diff,'') for file in self.output_files.get_files(filetype=Type)])
+            processed_names = set([file.filepath.name for file in self.output_files.get_files(filetype=Type)])
             remainder_names = list( input_names.difference(processed_names) )
             if len(remainder_names)>0 and Type == 'name_only':
-                remainder_paths = [file for file in self.input_files.get_files() 
-                                   if utils.remove_all_extensions_from_filename(file.stem) in remainder_names    #TODO:possible error for workflow_site_scrape
+                remainder_files = [file for file in self.input_files.get_files()
+                                    if file.filepath.name in remainder_names
+                                   #if utils.remove_all_extensions_from_filename(file.stem) in remainder_names    #TODO:possible error for workflow_site_scrape
                                    ]
             else:
-                remainder_paths = []
-            return remainder_paths
-        
+                remainder_files = []
+            return remainder_files
+        """
         elif method == 'update':      #TODO:improve this idea
             Type = 'name_only'
             input_names = set(self.input_files.get_files(filetype=Type))
@@ -72,54 +134,33 @@ class Task:
             else:
                 remainder_paths = list( self.input_files.get_files() )
             return remainder_paths
-
-    def run(self):
-        """Run processing steps on input files"""
-        pass
-
-
-class ImportFromLocalFileTask(Task):
-    """Simple import of local files."""
-    def __init__(self, config, input, output):
-        super().__init__(config, input, output)
-        self.target_folder = output.directory
-        self.target_extension=['.txt','.md']
-
-    def run(self):
-        file_records = []
-        intermediate_save_dir=self.target_folder
-        for file in self.get_next_run_files():
-            with open(file, 'r') as f:
-                lines = f.readlines()
-            content = ' '.join(lines)
-            simulated_chunks = []
-            for idx,line in enumerate(lines):
-                simulated_chunks.append( {
-                    'idx': idx,
-                    'text': line
-                    })
-            file_record = {
-                'file_name': file.name,
-                'content': content,
-                'chunks': simulated_chunks
-            }
-            file_records.append(file_record)
-        file_records = [file for file in file_records if file!=None]
-        self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(file_records)} files matching {self.target_extension}")
+        """
+    
+    def export_pipeline_record_to_file(self, record, type='pickle'):
+        """...
         
-        save_json_paths = []
-        if intermediate_save_dir:
-            for idx, file_record in enumerate(file_records):
-                save_path = Path(intermediate_save_dir) / f'{file_record["file_name"]}.json'
-                try:
-                    with open(save_path, 'w') as f:
-                        json.dump(file_record, f)
-                    save_json_paths.append( str(save_path) )
-                    self.config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
-                except Exception as e:
-                    print(e)
-        self.config['LOGGER'].info(f"end intermediate file save location at {intermediate_save_dir.resolve().__str__()} with {len(save_json_paths)} files matching {self.target_extension}")
-        return True
+        NOTE: only 'pickle' is possible because of complicated structure
+        """
+        #TODO: add self.name_diff in-case a name change is needed
+        filename = record.id
+        filepath = self.output_files.directory / f'{filename}.pickle'
+        new_file = File(filepath, type)
+        new_file.content = record
+        check = new_file.export_to_file()
+        return check
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class ExportToLocalTableTask(Task):
@@ -130,7 +171,7 @@ class ExportToLocalTableTask(Task):
 
     def run(self):
         filename = 'export'
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         if len(unprocessed_files)>0:
             #process by batch of files
             if 'BATCH_COUNT' in list(self.config.keys()):
@@ -171,7 +212,7 @@ class ApplyTextModelsTask(Task):
     def run(self):
         TextClassifier.config(self.config)
         intermediate_save_dir=self.target_files.directory
-        unprocessed_files = self.get_next_run_files()
+        unprocessed_files = self.get_next_run_file()
         all_save_files = []
         if len(unprocessed_files)>0:
             #process by batch

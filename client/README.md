@@ -5,6 +5,7 @@
 This project builds into a single file: `./dist/index.html` using the [plugin](https://github.com/richardtallent/vite-plugin-singlefile) with command:
 
 ```
+npm i -g http-server
 npm run build
 http-server ./dist
 ```

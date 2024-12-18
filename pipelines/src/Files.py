@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import json
 import gzip
-import pickle
+import dill as pickle
 import yaml
 
 
@@ -35,13 +35,16 @@ class File:
         filepath = Path(filepath).resolve()
         if not filepath.is_file():
             with open(filepath, 'w') as f_out:
-                f_out.write("")
+                pass
         self.filepath = filepath
         if filetype in File.types:
             self.filetype = filetype
         else:
             raise TypeError
         self.content = None
+
+    def __repr__(self):
+        self.filepath
 
     def load_file(self, return_content=False):
         """Import from file"""
@@ -161,7 +164,7 @@ class File:
 
 
 class Files:
-    """..."""
+    """TODO: move methods into File class^^^^ and convert this to Factory pattern."""
 
     def __init__(self, name, directory, extension_patterns):
         path = Path(directory)
@@ -183,11 +186,14 @@ class Files:
             return file.stem
         def get_name_only(file):
             return file.stem.split('.')[0]
+        def get_suffix(file):
+            return ''
         options = {
             'full_path': get_full_path,
             'name_and_suffix': get_name_and_suffix,
             'name_without_suffix': get_name_without_suffix,
             'name_only': get_name_only,
+            'suffix': get_suffix,
         }
         files = [{'file': file, 'size':file.stat().st_size} 
                  for file in self.directory.rglob('*')
@@ -202,8 +208,12 @@ class Files:
             check2 = len(suffixes)==1
             if all([check1, check2]):
                 if file.is_file():
-                    result = options[filetype](file)
-                    yield result
+                    path_record = options[filetype](file)       #TODO:is this needed?
+                    new_file = File(
+                        filepath=file, 
+                        filetype=file.suffix.replace('.','')
+                        )
+                    yield new_file
                 else:
                     raise Exception(f'file {file} is not found')
             else:

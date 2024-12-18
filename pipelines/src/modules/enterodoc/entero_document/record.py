@@ -124,8 +124,8 @@ class DocumentRecord(DocumentBase):
                          new_kwargs[k] = None
                     else: 
                          new_kwargs[k] = kwargs[k]
-          self = super(DocumentRecord, cls).__new__(cls, **new_kwargs)
-          return self
+          super_self = super(DocumentRecord, cls).__new__(cls, **new_kwargs)
+          return super_self
      
      def _get_next_index(cls):
           """Control class index values."""
