@@ -12,6 +12,7 @@ from .extractor import Extractor
 
 import shutil
 import itertools
+import copy
 
 
 
@@ -84,10 +85,12 @@ class Document:
             self.record.file_document = None
             self.record.filetype, self.record.file_size_mb = self.determine_file_info()
 
+    def build_new(self):
+        """Build new Document from arguments."""
         # process inferred metadata
         self.set_filename_modified()
         if self.record.filetype == None:
-            logger.info(f"Document `{self.record.filename_original}` attributes could not be populated because filetype {self.record.filepath.suffix} is not supported")
+            self._logger.info(f"Document `{self.record.filename_original}` attributes could not be populated because filetype {self.record.filepath.suffix} is not supported")
             return None
         record_extracts = self.run_extraction_pipeline()
         self.update_record_attrs(record_extracts, replace=False)
@@ -100,10 +103,29 @@ class Document:
         # compare current and template attrs
         missing_attr = self.get_missing_attributes()
         cnt = missing_attr.__len__()
-        logger.info(f"Document `{self.record.filename_original}` populated with {cnt} missing (None) attributes: {missing_attr}")
+        self._logger.info(f"Document `{self.record.filename_original}` populated with {cnt} missing (None) attributes: {missing_attr}")
+
+    def build_from_record(self, record):
+        """Populate new Document from attribute record from a different Document."""
+        d = self.__dict__
+        missing = []
+        for k,v in d.items():
+            if hasattr(record, k):
+                d[k] = record[k]
+            else:
+                missing.append(k)
+        self._logger.info(f'While `build_from_record()` the following keys were missing from the previous record: {missing}')
+
+    def __eq__(self, other) :
+        """Provide `==` operator, 
+        ref: https://stackoverflow.com/questions/6423814/is-there-a-way-to-check-if-two-object-contain-the-same-values-in-each-of-their-v
+        """
+        copy_self = copy.deepcopy(self.record.__dict__)
+        copy_other = copy.deepcopy(other.record.__dict__)
+        return copy_self == copy_other
 
     def _asdict(self):
-        """Return dict of recode attributes."""
+        """Return dict of record attributes."""
         result = {}
         for attr in self._record_attrs:
             val = getattr(self, attr)

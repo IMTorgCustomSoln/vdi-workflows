@@ -13,6 +13,7 @@ from .record import DocumentRecord
 
 import logzero
 from logzero import logger
+from dotmap import DotMap
 
 import sys
 from pathlib import Path
@@ -61,16 +62,26 @@ class EnteroConfig:
             logzero.logfile(self.logging_dir, maxBytes=1000000, backupCount=3)       #set rotating log file
             self.logger.info('logger created, constants initialized')
         else:
-            self.logger = dotdict( {'info': self.print_info, 'error': self.print_error} )
+            '''TODO:cleanup
+            tmp = {
+                'info': self.print_info,
+                'error': self.print_error
+                }
+            self.logger = dotdict( tmp )
+            '''
+            m = DotMap()
+            m.info = self.print_info
+            m.error = self.print_error
+            self.logger = m
 
         # provisioning logic
         self.get_output_mapping_template()
+        pass
 
-    
-    def print_info(self, msg):
+    def print_info(self, msg): 
         sys.stdout.write(f'INFO: {msg}')
-
-    def print_error(self, msg):
+        
+    def print_error(self, msg): 
         sys.stdout.write(f'ERROR: {msg}')
 
     def set_logger(self, path_to_logfile):

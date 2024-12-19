@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 
+import dill
 
 
 hrefs = [
@@ -29,6 +30,12 @@ def test_check_scheme():
     check1 = result == [True, True, True, True, False, True]
     check2 = schemes == ['https://', 'https://', 'https://', 'https://', '', 'http://']
     assert all([check1,check2]) == True
+
+def test_check_serialize():
+    for url in urls:
+        d = dill.dumps(url)
+        l = dill.loads(d)
+        assert l == url
 
 def test_check_suffix_and_url_type():
     result = [url.check_suffix_and_url_type() for url in urls]

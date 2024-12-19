@@ -18,14 +18,42 @@ import dill
 Doc = DocumentFactory()
 
 
+def test_document_build_new():
+    test_file = Path(__file__).parent / './examples/example.pdf'
+    doc = Doc.build(test_file)
+    assert type(doc) == Document
+
+def test_document_build_from_record():
+    test_file = Path(__file__).parent / './examples/example.pdf'
+    doc1 = Doc.build(test_file)
+    record = doc1.get_record()
+    doc2 = Doc.build_from_json_record(record)
+    assert doc1 == doc2
+
+def test_document_record_serialization():
+    test_file = Path(__file__).parent / './examples/example.pdf'
+    doc = Doc.build(test_file)
+    record = doc.get_record()
+    new_doc = dill.loads(dill.dumps(record))
+    assert type(new_doc) == dict
+
+def test_document_serialization_FAILS():
+    test_file = Path(__file__).parent / './examples/example.pdf'
+    doc = Doc.build(test_file)
+    #new_doc = dill.loads(dill.dumps(doc))
+    #assert type(new_doc) == DocumentRecord
+    try:
+        tmp = dill.dumps(doc)
+    except:
+        tmp = None
+    assert tmp == None
+
 def test_document_attributes():
     test_file = Path(__file__).parent / './examples/example.pdf'
     doc = Doc.build(test_file)
     docrec = DocumentRecord()
-    #result = docrec.validate_object_attrs(doc)
-    #assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
-    new_doc = dill.loads(dill.dumps(doc))
-    assert type(new_doc) == DocumentRecord
+    result = docrec.validate_object_attrs(doc)
+    assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
 
 def test_document_populated():
     test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'

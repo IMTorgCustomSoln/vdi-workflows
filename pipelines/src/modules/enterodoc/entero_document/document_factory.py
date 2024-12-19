@@ -44,15 +44,28 @@ class DocumentFactory:
         """Create Document object with path or url."""
         validation_dict = self._validate(path_or_url=path_or_url)
         if validation_dict:
-            return Document(path_or_url_format = validation_dict[0],
+            doc = Document(path_or_url_format = validation_dict[0],
                             path_or_url_obj = validation_dict[1],
                             logger = self.config.logger,
                             applySpacy = self.config.applySpacy,
                             output_mapping = self.config.output_mapping
                             )
+            doc.build_new()
+            return doc
         else:
             return None
-
+        
+    def build_from_json_record(self, record):
+        """Build Document previously exported from json record."""
+        doc = Document(path_or_url_format = 'path',    #TODO:enable for url also (url is pickle serializable)
+                            path_or_url_obj = Path(record['filepath']),
+                            logger = self.config.logger,
+                            applySpacy = self.config.applySpacy,
+                            output_mapping = self.config.output_mapping
+                            )
+        doc.build_from_record(record)
+        return doc
+        
     def _validate(self, *args, **kwargs):
         """Validate input or fail object creation and return None."""
         try:

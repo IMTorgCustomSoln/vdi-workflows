@@ -22,6 +22,7 @@ import io
 import time
 import sys
 #import json
+import copy
 
 
 
@@ -129,6 +130,18 @@ class UniformResourceLocator():
     #basic
     def __repr__(self):
         return str(self.url)
+    
+    def __eq__(self, other) :
+        """Provide `==` operator, 
+        ref: https://stackoverflow.com/questions/6423814/is-there-a-way-to-check-if-two-object-contain-the-same-values-in-each-of-their-v
+        """
+        copy_self = copy.deepcopy(self.__dict__)
+        if 'logger' in list(copy_self.keys()):
+            del copy_self['logger']
+        copy_other = copy.deepcopy(other.__dict__)
+        if 'logger' in list(copy_other.keys()):
+            del copy_other['logger']
+        return copy_self == copy_other
             
     def get_metadata_(self):
         """Return basic information about the URL."""

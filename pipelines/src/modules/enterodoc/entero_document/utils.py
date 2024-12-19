@@ -13,6 +13,7 @@ import signal
 class dotdict(dict):
     """Enables dot.notation access to dictionary attributes
     ref: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary
+    TODO: not picklable - use DotMap instead
     """
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__

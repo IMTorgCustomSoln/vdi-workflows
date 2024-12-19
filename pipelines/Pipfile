@@ -45,6 +45,7 @@ python-magic = "*"
 libpff-python = "*"
 unicodecsv = "*"
 colorama = "*"
+dotmap = "*"
 
 [dev-packages]
 
