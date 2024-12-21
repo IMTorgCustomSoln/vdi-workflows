@@ -50,6 +50,7 @@ class PipelineRecord():
         self.root_source = root_source
         self.added_sources = []
         self.collected_docs = []
+        self.classifier = []
         
     def _populate_pdf_from_string(self):
         pass
@@ -95,8 +96,15 @@ class Task:
         pass
 
     def create_pipeline_record_from_file(self, file):
-        """Create PipelineRecords from Files"""
-        pass
+        """Create PipelineRecords from File.
+        Typically, this is only needed for initial file import - not intermediate files.
+        """
+        record = self.factory.create_from_id(
+            id=file.filepath.stem, 
+            source_type='single_file', 
+            root_source=file.filepath
+            )
+        return record
 
     def get_next_run_file(self, method='same'):
         """Get the remaining files that should be provided to run()
@@ -148,107 +156,3 @@ class Task:
         new_file.content = record
         check = new_file.export_to_file()
         return check
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class ExportToLocalTableTask(Task):
-    """Simple export to local .csv table."""
-    def __init__(self, config, input, output):
-        super().__init__(config, input, output)
-        self.target_folder = output.directory
-
-    def run(self):
-        filename = 'export'
-        unprocessed_files = self.get_next_run_file()
-        if len(unprocessed_files)>0:
-            #process by batch of files
-            if 'BATCH_COUNT' in list(self.config.keys()):
-                idx = 0
-                for bidx, batch in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
-                    records = []
-                    for fidx, file in enumerate( batch ):
-                        record_content = File(filepath=file, filetype='json').load_file(return_content=True)
-                        records.append(record_content)
-                        self.config['LOGGER'].info(f'text-classification processing for file {idx} - {file.stem}')
-                        idx += 1
-                    df = pd.DataFrame(records)
-                    df.to_csv(self.target_folder / f'{filename}-{bidx}.csv')
-            #process by file
-            else:
-                records = []
-                for fidx, file in enumerate( unprocessed_files ):
-                    record_content = File(filepath=file, filetype='json').load_file(return_content=True)
-                    records.append(record_content)
-                    self.config['LOGGER'].info(f'text-classification processing for file {fidx} - {file.stem}')
-                df = pd.DataFrame(records)
-                df.to_csv(self.target_folder / f'{filename}-{fidx+1}.csv')
-        return True
-
-
-from src.models.classification import TextClassifier
-import time
-import json
-
-class ApplyTextModelsTask(Task):
-    """Apply text models (keyterms, classification, etc.) to documents in most simple scenario.
-    """
-
-    def __init__(self, config, input, output):
-        super().__init__(config, input, output)
-        self.target_files = output
-
-    def run(self):
-        TextClassifier.config(self.config)
-        intermediate_save_dir=self.target_files.directory
-        unprocessed_files = self.get_next_run_file()
-        all_save_files = []
-        if len(unprocessed_files)>0:
-            #process by batch
-            for idx, batch in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
-                #run classification models on each: chunk,item
-                records = []
-                for idx, file in enumerate(batch):
-                    record = File(filepath=file, filetype='json').load_file(return_content=True)
-                    record['classifier'] = []
-                    for chunk in record['chunks']:
-                        results = TextClassifier.run(chunk)
-                        for result in results:
-                            if result != None:
-                                record['classifier'].append(result)
-                            else:
-                                record['classifier'].append({})
-                    record['time_textmdl'] = time.time() - self.config['START_TIME']
-                    records.append(record)
-                    self.config['LOGGER'].info(f'text-classification processing for file {idx} - {record["file_name"]}')
-       
-                #save
-                from src.io import export
-
-                save_json_paths = []
-                if intermediate_save_dir:
-                    for idx, record in enumerate(records):
-                        save_path = Path(intermediate_save_dir) / f'{record["file_name"]}.json'
-                        out_file = File(filepath=save_path, filetype='json')
-                        out_file.content = record
-                        check = out_file.export_to_file()
-                        if check:
-                            save_json_paths.append( str(save_path) )
-                            self.config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
-                        else:
-                            self.config['LOGGER'].info(f'failed to save intermediate file {idx} - {save_path}')
-                all_save_files.extend(save_json_paths)
-
-        self.config['LOGGER'].info(f'completed text-classification processing for file {len(all_save_files)}')
-        return True

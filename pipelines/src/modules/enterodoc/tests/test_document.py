@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
 Tests for Document class
+
+
+TODO: IS THIS REALLY THE PATTERN I WANT (below)???
+* factory makes document
+* document populates attributes
+* document exports record to save to intermediate file
+* import then create new document from previous record
+
 """
 
 __author__ = "Jason Beach"

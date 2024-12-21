@@ -23,6 +23,7 @@ from config._constants import (
 
 
 def test_ImportFromLocalFileTask():
+  #setup
   config = {
     'LOGGER': logger
     }
@@ -39,6 +40,7 @@ def test_ImportFromLocalFileTask():
       extension_patterns=['.txt']
       )
    name_diff = ''
+   #implement
    tmp_task = ImportFromLocalFileTask(
      config, 
      input_files, 

@@ -8,7 +8,7 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
-from src.Task import ApplyTextModelsTask
+from src.TaskTransform import ApplyTextModelsTask
 from src.Files import Files
 
 from pathlib import Path
@@ -27,4 +27,5 @@ class LoggerPlaceholder:
 
 
 def test_ApplyTextModelsTask():
+   #TODO: this is not complete!!!
    assert True == True

@@ -19,10 +19,10 @@ from src.Workflow import Workflow
 from src.Files import Files
 
 from src.Task import (
-    ImportFromLocalFileTask,
     ApplyTextModelsTask,
     ExportToLocalTableTask
 )
+from src.TaskImport import ImportFromLocalFileTask
 """TODO
 from src.Report import (
     TaskStatusReport,
@@ -60,7 +60,7 @@ class WorkflowTemplate(Workflow):
             #system input
             CONFIG['START_TIME'] = None
             CONFIG['LOGGER'] = logger
-            CONFIG['BATCH_COUNT'] = 50
+            CONFIG['BATCH_RECORD_COUNT'] = 50
             CONFIG['WORKSPACE_SCHEMA'] = None
             #CONFIG['REGEX_INPUT_FILES_NAMES'] = '_Calls_'
             self.config = CONFIG
