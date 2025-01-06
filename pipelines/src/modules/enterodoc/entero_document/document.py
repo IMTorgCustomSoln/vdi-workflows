@@ -35,6 +35,7 @@ class Document:
     #TODO:add lists of extensions, i.e. `.doc` with `.docx`
     _useable_suffixes = {'.html': Extractor.extract_from_html,
                          '.pdf': Extractor.extract_from_pdf,
+                         '.txt': Extractor.extract_from_txt,
                          '.ppt': None,
                          '.docx': None,
                          '.csv': None,
@@ -115,6 +116,12 @@ class Document:
             else:
                 missing.append(k)
         self._logger.info(f'While `build_from_record()` the following keys were missing from the previous record: {missing}')
+
+    def populate_record(self):
+        """Populate empty Document from `self.extraction_pipeline()`."""
+        record_extracts = self.run_extraction_pipeline()
+        self.update_record_attrs(record_extracts, replace=False)
+        return True
 
     def __eq__(self, other) :
         """Provide `==` operator, 

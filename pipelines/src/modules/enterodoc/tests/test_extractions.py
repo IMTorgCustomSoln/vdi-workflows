@@ -11,6 +11,7 @@ __license__ = "MIT"
 from src.modules.enterodoc.entero_document.url import UrlFactory, UniformResourceLocator
 from src.modules.enterodoc.entero_document.extracts_pdf import PdfExtracts
 from src.modules.enterodoc.entero_document.extracts_html import HtmlExtracts
+from src.modules.enterodoc.entero_document.extracts_txt import TxtExtracts
 #from src.modules.enterodoc.entero_document.extracts_msg import MsgExtracts
 #from entero_document.office_extracts import OfficeExtracts
 
@@ -101,6 +102,28 @@ def test_web_local_extract_html():
     #check_title =  record_from_context['title'] == 'Chase helps more than two million customers avoid overdraft service fees'
     assert check_pdf_bytes == True
 
+
+def test_extract_txt():
+    filepath = Path(__file__).parent / 'examples' / 'example.txt'
+    txt_str = ''
+    with open(filepath, 'r') as f:
+        txt_str = f.read()
+    record = {}
+    for key in record_attrs:
+        record[key] = None
+    Txt = TxtExtracts(config)
+    pdf_bytes  = Txt.txt_string_to_pdf_bytes(txt_str=txt_str, record=record)
+    check_pdf_bytes = len(pdf_bytes) > 0
+    #TODO: removed all the following
+    #check_title =  record_from_context['title'] == 'Research Articles in Simplified HTML: a Web-first format for HTML-based scholarly articles'
+    #meta_attrs = ["title", "author", "subject", "keywords"]
+    #check_record_attrs = [ record_from_context[key]!=None for key in meta_attrs ]
+    checks = []
+    checks.extend([check_pdf_bytes])
+    #checks.extend([check_pdf_bytes, check_title])
+    #checks.extend(check_record_attrs)
+    assert all(checks) == True
+    assert True == True
 
 def test_extract_doc():
     #TODO: improve convert .docx to .pdf

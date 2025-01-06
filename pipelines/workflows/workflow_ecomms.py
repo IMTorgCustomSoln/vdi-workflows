@@ -19,7 +19,7 @@ from src.modules.parse_ediscovery.loadfile import (
 )
 from src.modules.parse_orgchart.orgchart import OrgChartParser
 
-from src.Task import ApplyTextModelsTask
+from src.TaskTransform import ApplyTextModelsTask
 from src.TaskComponents import (
     ImportValidateCombineEcommsTask,
     #ConvertEcommsToDocTask,

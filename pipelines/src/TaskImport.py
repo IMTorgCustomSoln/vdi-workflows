@@ -37,6 +37,7 @@ class ImportFromLocalFileTask(Task):
             check = file.load_file(return_content=False)
             record = self.create_pipeline_record_from_file(file)
             doc = Doc.build(file.filepath)
+            check = doc.run_extraction_pipeline()
             doc_record = doc.get_record()
             record.collected_docs.append(doc_record)
             self.pipeline_record_ids.append(record.id)

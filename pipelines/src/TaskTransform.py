@@ -38,7 +38,15 @@ class ApplyTextModelsTask(Task):
         super().__init__(config, input, output)
 
     def apply_models(self, record):
-        #for chunk in record['chunks']:
+        #TODO: I DON"T KNOW HOW TO DO THIS!!!
+        '''
+        N = 10
+        for doc in record.collected_docs:
+            if doc['clean_body'].__len__() > N:
+                chunks = doc['clean_body']
+                for chunk in chunks:
+                    pass
+        '''
         for chunk in record['chunks']:
             results = TextClassifier.run(chunk)
             for result in results:
@@ -48,7 +56,7 @@ class ApplyTextModelsTask(Task):
                     record['classifier'].append({})
                 record['time_textmdl'] = time.time() - self.config['START_TIME']
                 self.config['LOGGER'].info(f'text-classification processed for file {record.id} - {record.root_source}')
-                return chunks
+                return record['classifier']
 
     def run(self):
         TextClassifier.config(self.config)

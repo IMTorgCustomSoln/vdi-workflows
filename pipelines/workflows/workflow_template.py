@@ -18,11 +18,9 @@ __license__ = "AGPL-3.0"
 from src.Workflow import Workflow
 from src.Files import Files
 
-from src.Task import (
-    ApplyTextModelsTask,
-    ExportToLocalTableTask
-)
+from src.TaskTransform import ApplyTextModelsTask
 from src.TaskImport import ImportFromLocalFileTask
+from src.TaskExport import ExportToLocalTableTask
 """TODO
 from src.Report import (
     TaskStatusReport,

@@ -23,31 +23,31 @@ from pathlib import Path
 import pytest
 import dill
 
-Doc = DocumentFactory()
+doc_factory = DocumentFactory()
 
 
 def test_document_build_new():
     test_file = Path(__file__).parent / './examples/example.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     assert type(doc) == Document
 
 def test_document_build_from_record():
     test_file = Path(__file__).parent / './examples/example.pdf'
-    doc1 = Doc.build(test_file)
+    doc1 = doc_factory.build(test_file)
     record = doc1.get_record()
-    doc2 = Doc.build_from_json_record(record)
+    doc2 = doc_factory.build_from_json_record(record)
     assert doc1 == doc2
 
 def test_document_record_serialization():
     test_file = Path(__file__).parent / './examples/example.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     record = doc.get_record()
     new_doc = dill.loads(dill.dumps(record))
     assert type(new_doc) == dict
 
 def test_document_serialization_FAILS():
     test_file = Path(__file__).parent / './examples/example.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     #new_doc = dill.loads(dill.dumps(doc))
     #assert type(new_doc) == DocumentRecord
     try:
@@ -58,14 +58,14 @@ def test_document_serialization_FAILS():
 
 def test_document_attributes():
     test_file = Path(__file__).parent / './examples/example.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     docrec = DocumentRecord()
     result = docrec.validate_object_attrs(doc)
     assert result['target_attrs_to_remove'] == result['target_attrs_to_add'] == set()
 
 def test_document_populated():
     test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     docrec = DocumentRecord()
     result = docrec.validate_object_attrs(doc)
     check1 = len(result['target_attrs_to_remove']) == 0
@@ -80,7 +80,7 @@ def test_document_creation_fail():
         doc = Doc.build(test_file)
     assert type(e_info) == pytest.ExceptionInfo
     '''
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     assert doc == None
 
 def test_document_determine_filetype_fail():
@@ -90,13 +90,14 @@ def test_document_determine_filetype_fail():
     are None, and not empty string ''.
     """
     test_file = Path(__file__).parent / './examples/unavailable_extension.doc'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     assert doc.record.file_document == None
 
 def test_document_extraction():
     """TODO: create separate tests using pytest."""
     #TODO:currently these fail to capture actual title
-    lst = { '.docx': ['./examples/example.docx', 'Document Title'],
+    lst = { '.txt': ['./examples/example.txt', 'Text File Title'],
+            '.docx': ['./examples/example.docx', 'Document Title'],
             '.html': ['./examples/example.html', 'The Website Title'],
             '.pdf': ['./examples/example.pdf', 'The Website Title'],
             '.csv': ['./examples/example.csv', 'Document Title'],
@@ -107,13 +108,13 @@ def test_document_extraction():
         filepath = v[0]
         title = v[1]
         test_file = Path(__file__).parent / filepath
-        doc = Doc.build(test_file)
+        doc = doc_factory.build(test_file)
         check = hasattr(doc.record, 'title') == True
         checks.append(check)
     assert all(checks) == True
 
 def test_get_record():
     test_file = Path(__file__).parent / './demo/econ_2301.00410.pdf'
-    doc = Doc.build(test_file)
+    doc = doc_factory.build(test_file)
     record = doc.get_record()
     assert list(record.keys()).__len__() == 25

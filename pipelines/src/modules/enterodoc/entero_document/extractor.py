@@ -10,6 +10,7 @@ __license__ = "MIT"
 from .config import ConfigObj
 from .extracts_pdf import PdfExtracts
 from .extracts_html import HtmlExtracts
+from .extracts_txt import TxtExtracts
 #from .office_extracts import OfficeExtracts
 
 
@@ -24,6 +25,7 @@ class ExtractsSuite:
         Selected from within Document and applied for use with each file_type
         _useable_suffixes = {'.html': Extractor.extract_from_html,
                              '.pdf': Extractor.extract_from_pdf,
+                             '.txt': Extractor.extract_from_txt,
                              '.ppt': None,
                              '.docx': None,
                              '.csv': None,
@@ -34,6 +36,8 @@ class ExtractsSuite:
     def __init__(self, config):
         self.Pdf = PdfExtracts(config)
         self.Html = HtmlExtracts(config)
+        self.Txt = TxtExtracts(config)
+
 
     def extract_from_pdf(self, record):
         pdf_stream = ''
@@ -61,6 +65,27 @@ class ExtractsSuite:
                                                         url_path=None, 
                                                         record=record
                                                         )
+        if not pdf_bytes:
+            from src.io.export import text_to_pdf
+            pdf_bytes = text_to_pdf(record.file_document.text)
+
+        #get record attributes from pdf
+        result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes)
+        result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
+        return result_record
+    
+
+    def extract_from_txt(self, record):
+        """..."""
+        #get txt_str
+        txt_str = ''
+        if record.file_str:
+            txt_str = record.file_str
+        else:
+            with open(record.filepath, 'r') as f:
+                txt_str = f.read()
+        #txt_string to pdf
+        pdf_bytes = self.Txt.txt_string_to_pdf_bytes(txt_str=txt_str, record=record)
         if not pdf_bytes:
             from src.io.export import text_to_pdf
             pdf_bytes = text_to_pdf(record.file_document.text)
