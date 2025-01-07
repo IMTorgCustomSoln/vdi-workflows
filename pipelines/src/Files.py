@@ -29,7 +29,7 @@ class File:
     >>> result = test_file.export_to_file()
     ```
     """
-    types = ['txt','json','yaml','pickle','schema','workspace']#TODO:,'archive']
+    types = ['txt','json','yaml','yml','pickle','schema','workspace']#TODO:,'archive']
 
     def __init__(self, filepath, filetype):
         filepath = Path(filepath).resolve()
@@ -100,6 +100,7 @@ class File:
             'json-.json': import_json,
             'yaml-.yaml': import_yaml,
             'yaml-.yml': import_yaml,
+            'yml-.yml': import_yaml,
             'pickle-.pickle': import_pickle,
             'schema-.json': import_json,
             'workspace-.gz': import_workspace
