@@ -73,8 +73,10 @@ class ApplyTextModelsTask(Task):
             else:
                 self.config['LOGGER'].info(f'failed to save intermediate file {record.id}')
         self.config['LOGGER'].info(f'completed text-classification processing for file {len(self.pipeline_record_ids)}')
+        return True
 
-    """
+
+"""
 class ApplyTextModelsTask(Task):
     '''Apply text models (keyterms, classification, etc.) to documents in most simple scenario.
     '''
@@ -128,4 +130,4 @@ class ApplyTextModelsTask(Task):
         return True
         
         return True
-        """
+"""
