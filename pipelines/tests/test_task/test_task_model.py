@@ -35,15 +35,18 @@ def test_ApplyTextModelsTask():
     extension_patterns=['.txt']
     )
   with tempfile.TemporaryDirectory() as t_dir:
+   t_dir = Path(t_dir)
+   intermediate_dir = t_dir / 'intermediate'
    intermediate_files = Files(
       name='intermediate',
-      directory=t_dir,
+      directory=intermediate_dir,
       extension_patterns=['.pickle']
       )
+   output_dir = t_dir / 'output'
    output_files = Files(
       name='output',
-      directory=t_dir,
-      extension_patterns=['.json']
+      directory=output_dir,
+      extension_patterns=['.pickle']
       )
    name_diff = ''
    #implement
@@ -60,8 +63,8 @@ def test_ApplyTextModelsTask():
    check = import_task.run()
    check = xform_task.run()
 
-   export_file = [item for item in Path(t_dir).glob('**/*') if item.is_file()]
-   assert len(export_file) == 1
-   assert export_file[0].stem == 'export-4'     #4records in 1 export file
+   export_files = [item for item in Path(t_dir).glob('**/*') if item.is_file()]
+   assert len(export_files) == 8
+   assert export_files[7].stem == 'test_file3'     #4records in 1 export file
   #batches of files
   #assert True == True

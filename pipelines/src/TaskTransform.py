@@ -28,7 +28,13 @@ from pathlib import Path
 import sys
 import datetime
 import copy
+import math
 
+
+def split_str_into_chunks(str_item, N):
+    """Split string into list of equal length chunks."""
+    chunks = [{'text': str_item[i:i+N]} for i in range(0, len(str_item), N)]
+    return chunks
 
   
 class ApplyTextModelsTask(Task):
@@ -38,41 +44,37 @@ class ApplyTextModelsTask(Task):
         super().__init__(config, input, output)
 
     def apply_models(self, record):
-        #TODO: I DON"T KNOW HOW TO DO THIS!!!
-        '''
-        N = 10
+        N = 500
+        classifier = []
         for doc in record.collected_docs:
-            if doc['clean_body'].__len__() > N:
-                chunks = doc['clean_body']
-                for chunk in chunks:
-                    pass
-        '''
-        for chunk in record['chunks']:
-            results = TextClassifier.run(chunk)
-            for result in results:
-                if result != None:
-                    record['classifier'].append(result)
-                else:
-                    record['classifier'].append({})
-                record['time_textmdl'] = time.time() - self.config['START_TIME']
+            chunks = split_str_into_chunks(doc['body'], N)
+            for chunk in chunks:
+                results = TextClassifier.run(chunk)
+                for result in results:
+                    if result != None:
+                        classifier.append(result)
+                    else:
+                        classifier.append({})
+                #TODO: record['time_textmdl'] = time.time() - self.config['START_TIME']
                 self.config['LOGGER'].info(f'text-classification processed for file {record.id} - {record.root_source}')
-                return record['classifier']
+                return classifier
 
     def run(self):
         TextClassifier.config(self.config)
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
             record = file.get_content()
-            chunks = self.apply_models(record)
-            record.classifier.extend(chunks)
+            classifier_results = self.apply_models(record)
+            record.classifier.extend(classifier_results)
             self.pipeline_record_ids.append(record.id)
-            self.export_pipeline_record_to_file(record)
-        self.config['LOGGER'].info(f"end table creation file {self.output_files.__str__()} with {len(self.pipeline_record_ids)} files")
-        
-        """
-        
+            filepath = self.export_pipeline_record_to_file(record)
+            if filepath:
+                self.config['LOGGER'].info(f'saved intermediate file {record.id} - {filepath}')
+            else:
+                self.config['LOGGER'].info(f'failed to save intermediate file {record.id}')
+        self.config['LOGGER'].info(f'completed text-classification processing for file {len(self.pipeline_record_ids)}')
 
-
+    """
 class ApplyTextModelsTask(Task):
     '''Apply text models (keyterms, classification, etc.) to documents in most simple scenario.
     '''
@@ -124,5 +126,6 @@ class ApplyTextModelsTask(Task):
 
         self.config['LOGGER'].info(f'completed text-classification processing for file {len(all_save_files)}')
         return True
-        """
+        
         return True
+        """

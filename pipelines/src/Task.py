@@ -155,4 +155,7 @@ class Task:
         new_file = File(filepath, type)
         new_file.content = record
         check = new_file.export_to_file()
-        return check
+        if check:
+            return filepath
+        else:
+            return False
