@@ -86,6 +86,15 @@ class Document:
             self.record.file_document = None
             self.record.filetype, self.record.file_size_mb = self.determine_file_info()
 
+        elif self._file_format=='object':
+            path = self._obj
+            self.record.filepath = None
+            self.record.filename_original = None
+            self.record.file_extension = '.pdf'
+            self.record.file_str = None
+            self.record.file_document = None
+            self.record.filetype, self.record.file_size_mb = '.pdf', None
+
     def build_new(self):
         """Build new Document from arguments."""
         # process inferred metadata

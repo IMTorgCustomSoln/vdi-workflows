@@ -24,7 +24,7 @@ from pathlib import Path
 import sys
 import datetime
 
-Doc = DocumentFactory()
+DocFactory = DocumentFactory()
 
 class ImportFromLocalFileTask(Task):
     """Simple import of local files."""
@@ -35,11 +35,12 @@ class ImportFromLocalFileTask(Task):
     def run(self):
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
-            record = self.create_pipeline_record_from_file(file)
-            doc = Doc.build(file.filepath)
+            record = self.create_pipeline_record_from_file(file, source_type='single_file')
+            doc = DocFactory.build(file.filepath)
             check = doc.run_extraction_pipeline()
             doc_record = doc.get_record()
             record.collected_docs.append(doc_record)
+            #record.populate_presentation_doc()
             self.pipeline_record_ids.append(record.id)
             filepath = self.export_pipeline_record_to_file(record)
             self.config['LOGGER'].info(f"exported processed file to: {filepath}")
@@ -55,15 +56,16 @@ class ImportBatchDocsFromLocalFileTask(Task):
     def run(self):
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
-            record = self.create_pipeline_record_from_file(file)
+            record = self.create_pipeline_record_from_file(file, source_type='multiple_files')
             content = file.get_content()
             doc_filenames = content[list(content.keys())[0]]['docs']
             for doc_filename in doc_filenames:
                 doc_filepath = file.filepath.parent / doc_filename
-                doc = Doc.build(doc_filepath)
+                doc = DocFactory.build(doc_filepath)
                 check = doc.run_extraction_pipeline()
                 doc_record = doc.get_record()
                 record.collected_docs.append(doc_record)
+            #record.populate_presentation_doc()
             self.pipeline_record_ids.append(record.id)
             filepath = self.export_pipeline_record_to_file(record)
             self.config['LOGGER'].info(f"exported processed file to: {filepath}")

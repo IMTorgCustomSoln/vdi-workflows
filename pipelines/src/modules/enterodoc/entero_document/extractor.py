@@ -47,7 +47,10 @@ class ExtractsSuite:
         else:
             pdf_stream = record.file_str
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream)
-        result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
+        if result_record["file_pdf_bytes"]:
+            result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
+        else: 
+            result_record["file_uint8arr"] = None
         return result_record
 
 
@@ -80,7 +83,7 @@ class ExtractsSuite:
         #get txt_str
         txt_str = ''
         if record.file_str:
-            txt_str = record.file_str
+            txt_str = record.file_str    #TODO: txt_str = io.StringIO(record.file_str)
         else:
             with open(record.filepath, 'r') as f:
                 txt_str = f.read()

@@ -62,12 +62,10 @@ class PdfExtracts:
     def extract_from_pdf_string(self, pdf_stream):
         """TODO"""
         time0 = time.time()
-
         record = DocumentTemplate()
         if len(record.keys())==0:
             for key in record_attrs:
                 record[key] = None
-
         #pymupdf
         try:
             with fitz.open(stream = pdf_stream) as ingest:

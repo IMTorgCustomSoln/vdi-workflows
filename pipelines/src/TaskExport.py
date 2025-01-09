@@ -122,9 +122,10 @@ class ExportToVdiWorkspaceTask(Task):
             check = file.load_file(return_content=False)
             record = file.get_content()
             workspace_document = xform_record_to_workspace_documents(self._vdi_schema, record)
-            workspace_documents.extend(workspace_document)
+            workspace_documents.apply(workspace_document)
         workspace_schema['documentsIndex']['documents'] = workspace_documents
-        filepath_export_wksp_gzip = self.output_files.directory / 'VDI_ApplicationStateData_vTEST.gz'
+        #TODO: filepath_export_wksp_gzip = self.output_files.directory / 'VDI_ApplicationStateData_vTEST.gz'
+        filepath_export_wksp_gzip = Path('./tests/test_task/data') / 'VDI_ApplicationStateData_vTEST.gz'
         #filepath_export_wksp_gzip = filepath
         with gzip.open(filepath_export_wksp_gzip, 'wb') as f_out:
             f_out.write( bytes(json.dumps(workspace_schema, default=utils.date_handler), encoding='utf8') )    #TODO: datetime handlder, ref: https://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
@@ -134,15 +135,25 @@ class ExportToVdiWorkspaceTask(Task):
 
 import gzip
 import json
+from datetime import datetime as dt
+import random
 
 #def export_documents_to_vdiworkspace(schema, records):
 def xform_record_to_workspace_documents(schema, record):
     workspace_schema = copy.deepcopy(schema)
     documents_schema = workspace_schema['documentsIndex']['documents']
     #doc_filenames = record[list(record.keys())[0]]['docs']
-    documents = []
-    for idx, rec in enumerate(record.collected_docs):
-        document_record = copy.deepcopy(documents_schema)
+    
+    #record.body_pages = {idx: doc['clean_body'][0] for idx,doc in enumerate(record.collected_docs) }
+    #record.file_str = '       '.join( [doc['clean_body'][0] for doc in record.collected_docs] )
+    #record.presentation['pdf_byte_string'] = txt_string_to_pdf_bytes( record.presentation['text'] )
+    record.pp_toc = []
+    
+
+    #documents = []
+    document_record = copy.deepcopy(documents_schema)
+    for idx, doc in enumerate(record.collected_docs):
+        #document_record = copy.deepcopy(documents_schema)
 
         #for body_pages, but is it necessary???
         #byte_string = bytes(rec['file_str'].encode('utf-8'))
@@ -156,40 +167,43 @@ def xform_record_to_workspace_documents(schema, record):
         '''
 
         #raw
-        document_record['id'] = str(idx)
-        document_record['body_chars'] = None    #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
+        document_record['id'] = random.randint(1000,9999)
+        document_record['body_chars'] = None           #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
         document_record['body_pages'] = None           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
-        document_record['date_created'] = rec['date']
+        doc_date = dt.strptime(doc['date'], '%Y-%m-%d')
+        min_date = min([document_record['date_created'], doc_date]) if type(document_record['date_created'])==dt else doc_date
+        document_record['date_created'] = min_date
         #document_record['length_lines'] = None    #0
         #document_record['length_lines_array'] = None    #[26, 26, 7, 
-        document_record['page_nos'] = rec['page_nos']
-        document_record['length_lines'] = rec['length_lines']
+        document_record['page_nos'] = document_record['page_nos'] + doc['page_nos'] if type(document_record['page_nos'])==int else doc['page_nos']
+        document_record['length_lines'] = document_record['length_lines'] + doc['length_lines'] if type(document_record['length_lines'])==int else doc['length_lines']
 
         #data_array = {idx: val for idx,val in enumerate(list( byte_string ))} 
         #data_array = [x for x in byte_string]
         #document_record['dataArray'] = data_array
-        document_record['dataArray'] = rec['file_str']
-        document_record['toc'] = rec['toc']
-        document_record['pp_toc'] = rec['pp_toc']
-        document_record['body_pages'] = rec['body_pages']
+        #document_record['dataArray'] = doc['file_str']
+        document_record['dataArray'] = [x for x in record.presentation['pdf_byte_string']]
+        document_record['toc'] = record.pp_toc
+        document_record['pp_toc'] = record.pp_toc
+        document_record['body_pages'] = record.body_pages
         #document_record['clean_body'] = rec['clean_body']     #''.join(rec['clean_body'])          #NOTE:created during workspace import
         #file info
         #record_path = Path(rec['dialogue']['file_path'])
-        document_record['file_extension'] = rec['file_extension']
-        document_record['file_size_mb'] = rec['file_size_mb']
-        document_record['filename_original'] = rec['filename_original']
-        document_record['title'] = rec['title']
-        document_record['filepath'] = rec['filepath']
-        document_record['filetype'] = rec['filetype']
-        document_record['author'] = rec['author']
-        document_record['subject'] = rec['subject']
+        document_record['file_extension'] = doc['file_extension']
+        document_record['file_size_mb'] = doc['file_size_mb']
+        document_record['filename_original'] = doc['filename_original']
+        document_record['title'] = doc['title'][:20]
+        document_record['filepath'] = doc['filepath']
+        document_record['filetype'] = doc['filetype']
+        document_record['author'] = doc['author']
+        document_record['subject'] = doc['subject']
         #models
-        if 'classifier' in rec.keys():#TODO:move 'classifier to ???
-            highest_pred_target = max(rec['dialogue']['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
-            hit_count = len([model for model in rec['dialogue']['classifier'] if model!={}])
-            models = rec['dialogue']['classifier']
-            time_asr = rec['time_asr']
-            time_textmdl = rec['time_textmdl']
+        if 'classifier' in doc.keys():
+            highest_pred_target = max(doc['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+            hit_count = len([model for model in doc['classifier'] if model!={}])
+            models = doc['classifier']
+            time_asr = doc['time_asr']
+            time_textmdl = doc['time_textmdl']
         else:
             highest_pred_target = {}
             hit_count = None
@@ -205,6 +219,59 @@ def xform_record_to_workspace_documents(schema, record):
         document_record['summary'] = "TODO:summary"
         document_record['_showDetails'] = False
         document_record['_activeDetailsTab'] = 0
-        document_record['models'] = models
-        documents.append(document_record)
-    return documents
+        document_record['models'] = None    #models
+        #documents.append(document_record)
+    return document_record
+
+
+'''
+import textwrap
+from fpdf import FPDF
+import io
+import time
+
+def txt_string_to_pdf_bytes(txt_str):
+    """Generate a pdf:str and associated record metadata (title, toc, ...) 
+    from text string content.
+    """
+    time0 = time.time()
+    pdf_bytes = None
+    text = txt_str   #io.StringIO(txt_str) 
+
+    if not pdf_bytes:
+        a4_width_mm = 210
+        pt_to_mm = 0.35
+        fontsize_pt = 10
+        fontsize_mm = fontsize_pt * pt_to_mm
+        margin_bottom_mm = 10
+        character_width_mm = 7 * pt_to_mm
+        width_text = a4_width_mm / character_width_mm
+
+        pdf = FPDF(orientation='P', unit='mm', format='A4')
+        pdf.set_auto_page_break(True, margin=margin_bottom_mm)
+        pdf.add_page()
+        pdf.set_font(family='Courier', size=fontsize_pt)
+        if '\n' in text:
+            splitted = text.split('\n')
+        else:
+            splitted = text
+
+        for line in splitted:
+            try:
+                lines = textwrap.wrap(line, width_text)
+            except Exception as e:
+                print(e)
+                lines = [line[:int(width_text)]]
+
+            if len(lines) == 0:
+                pdf.ln()
+
+            for wrap in lines:
+                pdf.cell(0, fontsize_mm, wrap, ln=1)
+        #pdf_bytes = weasyprint.HTML(html).write_pdf()
+        pdf_bytes = pdf.output("output_file.pdf", 'S').encode('latin-1')
+    
+    time1 = time.time()
+    print(f'Convert text to pdf took: {time1 - time0} secs')
+    #return context, pdf_bytes
+    return pdf_bytes'''

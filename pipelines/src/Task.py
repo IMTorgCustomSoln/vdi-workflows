@@ -18,6 +18,12 @@ from src.Files import File
 from src.io import export
 from src.io import utils
 from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
+from src.modules.enterodoc.entero_document.record import DocumentRecord
+from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
+from src.modules.enterodoc.entero_document.document import Document
+from src.modules.enterodoc.entero_document.extracts_txt import TxtExtracts
+
+from src.modules.enterodoc.entero_document.config import EnteroConfig
 
 import pandas as pd
 
@@ -25,7 +31,13 @@ from pathlib import Path
 import sys
 import datetime
 
+import textwrap
+from fpdf import FPDF
+import io
+import time
 
+config = EnteroConfig(apply_logger=False)
+DocFactory = DocumentFactory()
 
 class PipelineRecordFactory():
     """TODO: maybe later create different subclasses from PipelineRecords."""
@@ -46,14 +58,45 @@ class PipelineRecord():
     def __init__(self, id, source_type=None, root_source=None):
         """..."""
         self.id = id
-        self.source_type = source_type
-        self.root_source = root_source
-        self.added_sources = []
-        self.collected_docs = []
-        self.classifier = []
-        
-    def _populate_pdf_from_string(self):
-        pass
+        self.source_type = source_type              #['single_file', 'single_url', 'multiple_files']
+        self.root_source = root_source              #grouping
+        self.added_sources = []                     #filepaths for manually added documents
+        self.collected_docs = []                    #manual and automated collection of docs
+        self.presentation_doc = {}                  #combine collected_docs, added_docs into pdf Doc
+
+    def populate_presentation_doc(self):
+        """Populate presentation DocumentRecord from collected_docs."""
+        if len(self.collected_docs)==0:
+            return False
+        elif len(self.collected_docs)==1:
+            self.presentation_doc = self.collected_docs[0]
+            return True
+        else:
+            result = {}
+            for key in self.collected_docs[0].keys():
+                result[key] = ''
+            for docrec in self.collected_docs:
+                result['filetype'] = '.txt'
+                #result['filepath'] = f"{result['filepath']}, {docrec['filepath']}"
+                #result['filename_modified'] = f"{result['filename_modified']}, {docrec['filename_modified']}"
+                #result['title'] = f"{result['title']}, {docrec['title'][:15]}"
+                #result['date'] = min([result['date'], docrec['date']])
+                result['clean_body'] = f"{result['clean_body']}, {docrec['clean_body'][0]}"
+            #result['pdf_byte_string'] = self.get_pdf_bytes_from_text_str(result['clean_body'])
+            #result['data_array'] = [x for x in result['pdf_byte_string']]
+            #result['classifier'] = []
+            doc = DocFactory.build_from_object(result)
+            #doc.record.file_str = self.get_pdf_from_text_str(txt_str=result['clean_body'], type='bytes')
+            #Txt = TxtExtracts(config)
+            #pdf_bytes  = Txt.txt_string_to_pdf_bytes(txt_str=result['clean_body'])
+            #doc.record.file_str = result['clean_body']
+            result['clean_body'] = ' '.join([docrec['clean_body'][0] for docrec in self.collected_docs])
+            doc.record.filetype = '.txt'
+            doc.record.file_str = result['clean_body']
+            #record = doc.run_extraction_pipeline()
+            doc.populate_record()
+            self.presentation_doc = doc.get_record()
+        return True
     #def export_to_json(self):
     #    """TODO: this is too complicated because of the nested internal classes"""
     #    return True
@@ -95,13 +138,13 @@ class Task:
         """Run processing steps on input Files"""
         pass
 
-    def create_pipeline_record_from_file(self, file):
+    def create_pipeline_record_from_file(self, file, source_type):
         """Create PipelineRecords from File.
         Typically, this is only needed for initial file import - not intermediate files.
         """
         record = self.factory.create_from_id(
             id=file.filepath.stem, 
-            source_type='single_file', 
+            source_type=source_type, 
             root_source=file.filepath
             )
         return record

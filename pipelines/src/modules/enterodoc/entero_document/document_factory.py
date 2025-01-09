@@ -65,6 +65,17 @@ class DocumentFactory:
                             )
         doc.build_from_record(record)
         return doc
+    
+    def build_from_object(self, record):
+        """Build Document previously exported from json record."""
+        doc = Document(path_or_url_format = 'object',
+                            path_or_url_obj = None,
+                            logger = self.config.logger,
+                            applySpacy = self.config.applySpacy,
+                            output_mapping = self.config.output_mapping
+                            )
+        doc.build_from_record(record)
+        return doc
         
     def _validate(self, *args, **kwargs):
         """Validate input or fail object creation and return None."""

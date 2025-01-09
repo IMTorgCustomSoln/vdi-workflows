@@ -10,7 +10,7 @@ __license__ = "AGPL-3.0"
 
 from src.TaskExport import ExportToLocalTableTask, ExportToVdiWorkspaceTask
 from src.TaskImport import ImportFromLocalFileTask,ImportBatchDocsFromLocalFileTask 
-from src.TaskTransform import ApplyTextModelsTask
+from src.TaskTransform import CreatePresentationDocument, ApplyTextModelsTask
 from src.Files import Files
 from src.io import load
 
@@ -21,6 +21,7 @@ import os
 import tempfile
 import shutil
 import json
+import time
 
 from config._constants import (
     logging_dir,
@@ -41,11 +42,12 @@ def prepare_workspace(wdir, schema_name='workspace_schema_v0.2.1.json'):
 
 
 
-def test_ExportToLocalTableTask():
+def test_multiple_files_ExportToLocalTableTask():
   #setup
   config = {
     'LOGGER': logger,
-    'TRAINING_DATA_DIR': Path('./src/data/template/')
+    'TRAINING_DATA_DIR': Path('./src/data/template/'),
+    'START_TIME': time.time()
     }
   input_dir = Path(__file__).parent / 'data'
   input_files = Files(
@@ -61,6 +63,12 @@ def test_ExportToLocalTableTask():
        directory=intermediate_dir,
        extension_patterns=['.pickle']
        )
+    xform_dir = t_dir / 'xform'
+    xform_files = Files(
+      name='intermediate',
+      directory=xform_dir,
+      extension_patterns=['.pickle']
+      )
     classified_dir = t_dir / 'classified'
     classified_files = Files(
        name='classified',
@@ -80,9 +88,14 @@ def test_ExportToLocalTableTask():
       input_files, 
       intermediate_files
       )
-    xform_task = ApplyTextModelsTask(
+    xform_task = CreatePresentationDocument(
+     config, 
+     intermediate_files, 
+     xform_files
+     )
+    model_task = ApplyTextModelsTask(
       config, 
-      intermediate_files, 
+      xform_files, 
       classified_files
       )
     export_task = ExportToLocalTableTask(
@@ -92,9 +105,10 @@ def test_ExportToLocalTableTask():
       )
     check = import_task.run()
     check = xform_task.run()
+    check = model_task.run()
     check = export_task.run()
     
-    export_file = [item for item in Path(t_dir).glob('**/*') 
+    export_file = [item for item in export_dir.glob('**/*') 
                    if item.is_file() if '.csv' in item.name
                    ]
     assert len(export_file) == 1
@@ -103,11 +117,85 @@ def test_ExportToLocalTableTask():
     assert df.shape == (4,6)
 
 
-def test_ExportToVdiWorkspaceTask():
+def test_single_file_ExportToVdiWorkspaceTask():
   #setup
   config = {
     'LOGGER': logger,
-    'TRAINING_DATA_DIR': Path('./src/data/template/')
+    'TRAINING_DATA_DIR': Path('./src/data/template/'),
+    'START_TIME': time.time()
+    }
+  input_dir = Path(__file__).parent / 'data'
+  input_files = Files(
+    name='input',
+    directory=input_dir,
+    extension_patterns=['.txt']
+    )
+  with tempfile.TemporaryDirectory() as t_dir:
+    t_dir = Path(t_dir)
+    schema_name='workspace_schema_v0.2.1.json'
+    vdi_schema = prepare_workspace(t_dir, schema_name)
+    intermediate_dir = t_dir / 'intermediate'
+    intermediate_files = Files(
+       name='intermediate',
+       directory=intermediate_dir,
+       extension_patterns=['.pickle']
+       )
+    xform_dir = t_dir / 'xform'
+    xform_files = Files(
+      name='intermediate',
+      directory=xform_dir,
+      extension_patterns=['.pickle']
+      )
+    classified_dir = t_dir / 'classified'
+    classified_files = Files(
+       name='classified',
+       directory=classified_dir,
+       extension_patterns=['.pickle']
+       )
+    export_dir = t_dir / 'export'
+    export_files = Files(
+       name='export',
+       directory=export_dir,
+       extension_patterns=['.pickle']
+       )
+    name_diff = ''
+    #implement
+    import_task = ImportFromLocalFileTask(
+      config, 
+      input_files, 
+      intermediate_files
+      )
+    xform_task = CreatePresentationDocument(
+     config, 
+     intermediate_files, 
+     xform_files
+     )
+    model_task = ApplyTextModelsTask(
+      config, 
+      xform_files, 
+      classified_files
+      )
+    export_task = ExportToLocalTableTask(
+      config, 
+      classified_files, 
+      export_files
+      )
+    check = import_task.run()
+    check = xform_task.run()
+    check = model_task.run()
+    check = export_task.run()
+
+    export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
+    assert len(export_file) == 1
+    assert export_file[0].name == 'VDI_ApplicationStateData_vTEST.gz'
+
+
+def test_multiple_files_ExportToVdiWorkspaceTask():
+  #setup
+  config = {
+    'LOGGER': logger,
+    'TRAINING_DATA_DIR': Path('./src/data/template/'),
+    'START_TIME': time.time()
     }
   input_dir = Path(__file__).parent / 'data'
   input_files = Files(
@@ -125,6 +213,12 @@ def test_ExportToVdiWorkspaceTask():
        directory=intermediate_dir,
        extension_patterns=['.pickle']
        )
+    xform_dir = t_dir / 'xform'
+    xform_files = Files(
+      name='intermediate',
+      directory=xform_dir,
+      extension_patterns=['.pickle']
+      )
     classified_dir = t_dir / 'classified'
     classified_files = Files(
        name='classified',
@@ -144,19 +238,24 @@ def test_ExportToVdiWorkspaceTask():
       input_files, 
       intermediate_files
       )
-    xform_task = ApplyTextModelsTask(
+    xform_task = CreatePresentationDocument(
+     config, 
+     intermediate_files, 
+     xform_files
+     )
+    model_task = ApplyTextModelsTask(
       config, 
-      intermediate_files, 
+      xform_files, 
       classified_files
       )
-    export_task = ExportToVdiWorkspaceTask(
+    export_task = ExportToLocalTableTask(
       config, 
       classified_files, 
-      export_files,
-      vdi_schema
+      export_files
       )
     check = import_task.run()
     check = xform_task.run()
+    check = model_task.run()
     check = export_task.run()
 
     export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
@@ -165,11 +264,11 @@ def test_ExportToVdiWorkspaceTask():
     """
     TODO:
     note: prepare with the following:
-    $ cp /tmp/tmp7o6zyvd2/export/VDI_ApplicationStateData_vTEST.gz tests/test_task/data
+    ~~~$ cp /tmp/tmp7o6zyvd2/export/VDI_ApplicationStateData_vTEST.gz tests/test_task/data
 
 
-    * classification results
-      - add some hits
+    * ~~classification results
+      - ~~add some hits
     * doc id
     * title
     * combine doc bodies into multiple pdf pages

@@ -57,7 +57,7 @@ def test_single_file_ImportFromLocalFileTask():
   assert type(pipeline_record) == PipelineRecord
 
 
-def test_batch_files_ImportBatchDocsFromLocalFileTask():
+def test_multiple_files_ImportBatchDocsFromLocalFileTask():
   #setup
   config = {
     'LOGGER': logger
