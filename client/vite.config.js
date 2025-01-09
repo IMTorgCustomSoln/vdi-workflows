@@ -21,6 +21,9 @@ export default ({mode}) => {
       __EXPORT_TEXT_NAME__: `"${process.env.EXPORT_TEXT_NAME}"`,
       __UPLOAD_LOGS_TEXT_NAME__: `"${process.env.UPLOAD_LOGS_TEXT_NAME}"`
     },
+    server: {
+      host: '127.0.0.1'
+    },
     resolve: {
       alias: {
         vue: '@vue/compat',

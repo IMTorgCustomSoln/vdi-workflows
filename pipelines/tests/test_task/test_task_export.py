@@ -175,17 +175,19 @@ def test_single_file_ExportToVdiWorkspaceTask():
       xform_files, 
       classified_files
       )
-    export_task = ExportToLocalTableTask(
+    export_task = ExportToVdiWorkspaceTask(
       config, 
       classified_files, 
-      export_files
+      export_files,
+      vdi_schema
       )
     check = import_task.run()
     check = xform_task.run()
     check = model_task.run()
     check = export_task.run()
 
-    export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
+    #export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
+    export_file = [item for item in Path('./tests/test_task/data').glob('**/*.gz') if item.is_file()]
     assert len(export_file) == 1
     assert export_file[0].name == 'VDI_ApplicationStateData_vTEST.gz'
 
@@ -248,17 +250,19 @@ def test_multiple_files_ExportToVdiWorkspaceTask():
       xform_files, 
       classified_files
       )
-    export_task = ExportToLocalTableTask(
+    export_task = ExportToVdiWorkspaceTask(
       config, 
       classified_files, 
-      export_files
+      export_files,
+      vdi_schema
       )
     check = import_task.run()
     check = xform_task.run()
     check = model_task.run()
     check = export_task.run()
 
-    export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
+    #export_file = [item for item in export_dir.glob('**/*') if item.is_file()]
+    export_file = [item for item in Path('./tests/test_task/data').glob('**/*.gz') if item.is_file()]
     assert len(export_file) == 1
     assert export_file[0].name == 'VDI_ApplicationStateData_vTEST.gz'
     """

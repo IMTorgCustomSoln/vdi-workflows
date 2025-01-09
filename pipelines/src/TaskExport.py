@@ -22,9 +22,11 @@ import pandas as pd
 
 from pathlib import Path
 import json
-import sys
-import datetime
 import copy
+import gzip
+import json
+from datetime import datetime as dt
+import random
 
 
   
@@ -41,7 +43,8 @@ class ExportToLocalTableTask(Task):
             'doc': None
         }
 
-    def convert_pipeline_record_to_table_record(self, pipeline_record):
+    def add_collected_docs_to_table_record(self, pipeline_record):
+        """Add the `.collected_docs` (not the combined `.presentation_doc`) to the table record."""
         records = []
         for doc in pipeline_record.collected_docs:
             temp = copy.deepcopy(self._table_record_template)
@@ -60,7 +63,7 @@ class ExportToLocalTableTask(Task):
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
             record = file.get_content()
-            table_row_records = self.convert_pipeline_record_to_table_record(record)
+            table_row_records = self.add_collected_docs_to_table_record(record)
             table_records.extend(table_row_records)
             self.pipeline_record_ids.append(record.id)
         df = pd.DataFrame(table_records)
@@ -70,7 +73,7 @@ class ExportToLocalTableTask(Task):
         df.to_csv(output_filepath, index=False)
         self.config['LOGGER'].info(f"end table creation file {output_filepath.__str__()} with {len(self.pipeline_record_ids)} files")
         
-        """
+        """TODO:check and remove
         #self.target_folder = output.directory
         ....
         filename = 'export'
@@ -118,11 +121,12 @@ class ExportToVdiWorkspaceTask(Task):
     def run(self):
         workspace_schema = copy.deepcopy(self._vdi_schema)
         workspace_documents = []
-        for file in self.get_next_run_file():
+        for idx,file in enumerate(self.get_next_run_file()):
             check = file.load_file(return_content=False)
             record = file.get_content()
-            workspace_document = xform_record_to_workspace_documents(self._vdi_schema, record)
-            workspace_documents.apply(workspace_document)
+            workspace_document = map_record_presentation_doc_to_workspace_document(self._vdi_schema, record)
+            workspace_document['id'] = str(idx)
+            workspace_documents.append(workspace_document)
         workspace_schema['documentsIndex']['documents'] = workspace_documents
         #TODO: filepath_export_wksp_gzip = self.output_files.directory / 'VDI_ApplicationStateData_vTEST.gz'
         filepath_export_wksp_gzip = Path('./tests/test_task/data') / 'VDI_ApplicationStateData_vTEST.gz'
@@ -133,98 +137,74 @@ class ExportToVdiWorkspaceTask(Task):
 
 
 
-import gzip
-import json
-from datetime import datetime as dt
-import random
-
-#def export_documents_to_vdiworkspace(schema, records):
-def xform_record_to_workspace_documents(schema, record):
+def map_record_presentation_doc_to_workspace_document(schema, record):
+    """Map the `.presentation_doc` to k,v of workspace document:
+    (`workspace_schema['documentsIndex']['documents']`)
+    
+    """
     workspace_schema = copy.deepcopy(schema)
     documents_schema = workspace_schema['documentsIndex']['documents']
-    #doc_filenames = record[list(record.keys())[0]]['docs']
-    
-    #record.body_pages = {idx: doc['clean_body'][0] for idx,doc in enumerate(record.collected_docs) }
-    #record.file_str = '       '.join( [doc['clean_body'][0] for doc in record.collected_docs] )
-    #record.presentation['pdf_byte_string'] = txt_string_to_pdf_bytes( record.presentation['text'] )
-    record.pp_toc = []
-    
-
-    #documents = []
     document_record = copy.deepcopy(documents_schema)
-    for idx, doc in enumerate(record.collected_docs):
-        #document_record = copy.deepcopy(documents_schema)
+    doc = record.presentation_doc
+    #raw
+    document_record['id'] = None
+    document_record['reference_number'] = str(random.randint(1001,9999))
+    document_record['body_chars'] = {}                          #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
+    document_record['body_pages'] = doc['body_pages']           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
+    dt_extracted = dt.strptime(doc['date'], '%Y-%m-%d')
+    document_record['date_created'] = doc['date']+'T00:00:00'          #TODO:"2020-03-01T00:00:00"
+    #document_record['length_lines'] = None    #0
+    #document_record['length_lines_array'] = None    #[26, 26, 7, 
+    document_record['page_nos'] = doc['page_nos']
+    document_record['length_lines'] = doc['length_lines']
 
-        #for body_pages, but is it necessary???
-        #byte_string = bytes(rec['file_str'].encode('utf-8'))
-        '''
-        pdf_pages = {}
-        with io.BytesIO(byte_string) as open_pdf_file:
-            reader = PdfReader(open_pdf_file)
-            for page in range( len(reader.pages) ):
-                text = reader.pages[page].extract_text()
-                pdf_pages[page+1] = text
-        '''
-
-        #raw
-        document_record['id'] = random.randint(1000,9999)
-        document_record['body_chars'] = None           #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
-        document_record['body_pages'] = None           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
-        doc_date = dt.strptime(doc['date'], '%Y-%m-%d')
-        min_date = min([document_record['date_created'], doc_date]) if type(document_record['date_created'])==dt else doc_date
-        document_record['date_created'] = min_date
-        #document_record['length_lines'] = None    #0
-        #document_record['length_lines_array'] = None    #[26, 26, 7, 
-        document_record['page_nos'] = document_record['page_nos'] + doc['page_nos'] if type(document_record['page_nos'])==int else doc['page_nos']
-        document_record['length_lines'] = document_record['length_lines'] + doc['length_lines'] if type(document_record['length_lines'])==int else doc['length_lines']
-
-        #data_array = {idx: val for idx,val in enumerate(list( byte_string ))} 
-        #data_array = [x for x in byte_string]
-        #document_record['dataArray'] = data_array
-        #document_record['dataArray'] = doc['file_str']
-        document_record['dataArray'] = [x for x in record.presentation['pdf_byte_string']]
-        document_record['toc'] = record.pp_toc
-        document_record['pp_toc'] = record.pp_toc
-        document_record['body_pages'] = record.body_pages
-        #document_record['clean_body'] = rec['clean_body']     #''.join(rec['clean_body'])          #NOTE:created during workspace import
-        #file info
-        #record_path = Path(rec['dialogue']['file_path'])
-        document_record['file_extension'] = doc['file_extension']
-        document_record['file_size_mb'] = doc['file_size_mb']
-        document_record['filename_original'] = doc['filename_original']
-        document_record['title'] = doc['title'][:20]
-        document_record['filepath'] = doc['filepath']
-        document_record['filetype'] = doc['filetype']
-        document_record['author'] = doc['author']
-        document_record['subject'] = doc['subject']
-        #models
-        if 'classifier' in doc.keys():
-            highest_pred_target = max(doc['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
-            hit_count = len([model for model in doc['classifier'] if model!={}])
-            models = doc['classifier']
-            time_asr = doc['time_asr']
-            time_textmdl = doc['time_textmdl']
-        else:
-            highest_pred_target = {}
-            hit_count = None
-            models = None
-            time_asr = None
-            time_textmdl = None
-        document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
-        document_record['hit_count'] = hit_count
-        document_record['time_asr'] = time_asr
-        document_record['time_textmdl'] = time_textmdl
-        #display
-        document_record['snippets'] = []
-        document_record['summary'] = "TODO:summary"
-        document_record['_showDetails'] = False
-        document_record['_activeDetailsTab'] = 0
-        document_record['models'] = None    #models
-        #documents.append(document_record)
+    #data_array = {idx: val for idx,val in enumerate(list( byte_string ))} 
+    #data_array = [x for x in byte_string]
+    #document_record['dataArray'] = data_array
+    #document_record['dataArray'] = doc['file_str']
+    document_record['dataArrayKey'] = None
+    document_record['dataArray'] = {idx: item for idx,item in enumerate(doc['file_uint8arr'])}                     #TODO: {"0":37, "1": 80, ...
+    document_record['toc'] = doc['toc']
+    document_record['pp_toc'] = doc['pp_toc']
+    #document_record['clean_body'] = rec['clean_body']     #''.join(rec['clean_body'])          #NOTE:created during workspace import
+    #file info
+    #record_path = Path(rec['dialogue']['file_path'])
+    document_record['file_extension'] = doc['file_extension']
+    document_record['file_size_mb'] = doc['file_size_mb']
+    document_record['filename_original'] = doc['filename_original']                             #TODO:add suffix
+    document_record['title'] = doc['title'] if len(doc['title'])<50 else doc['title'][:50]
+    document_record['filepath'] = doc['filepath']
+    document_record['filetype'] = doc['filetype']
+    document_record['author'] = doc['author']
+    document_record['subject'] = doc['subject']
+    #models
+    if False:
+    #if 'classifier' in doc.keys():   #TODO:this is broke
+        highest_pred_target = max(doc['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+        hit_count = len([model for model in doc['classifier'] if model!={}])
+        models = doc['classifier']
+        time_asr = doc['time_asr']
+        time_textmdl = doc['time_textmdl']
+    else:
+        highest_pred_target = {}
+        hit_count = None
+        models = None
+        time_asr = None
+        time_textmdl = None
+    document_record['sort_key'] = highest_pred_target['pred'] if 'pred' in highest_pred_target.keys() else 0.0
+    document_record['hit_count'] = hit_count
+    document_record['time_asr'] = time_asr
+    document_record['time_textmdl'] = time_textmdl
+    #display
+    document_record['snippets'] = []
+    document_record['summary'] = "TODO:summary"
+    document_record['_showDetails'] = False
+    document_record['_activeDetailsTab'] = 0
+    document_record['models'] = None    #models
     return document_record
 
 
-'''
+'''TODO:check and remove
 import textwrap
 from fpdf import FPDF
 import io

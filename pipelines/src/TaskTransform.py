@@ -17,23 +17,20 @@ from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
 from src.modules.enterodoc.entero_document.record import DocumentRecord
 from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
 from src.modules.enterodoc.entero_document.document import Document
-
 from src.models.classification import TextClassifier
-import time
-import json
 
 import pandas as pd
 
-from pathlib import Path
-import sys
-import datetime
+import time
 import copy
-import math
 
 
 
 class CreatePresentationDocument(Task):
-    """Create the presentation Document from multiple collected, added Documents."""
+    """Create the presentation Document from multiple collected, added Documents.
+    The `.presentation_doc` is used for final export.
+    
+    """
 
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
@@ -42,7 +39,6 @@ class CreatePresentationDocument(Task):
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
             record = file.get_content()
-
             check = record.populate_presentation_doc()
             self.pipeline_record_ids.append(record.id)
             filepath = self.export_pipeline_record_to_file(record)
@@ -57,9 +53,11 @@ def split_str_into_chunks(str_item, N):
     chunks = [{'text': str_item[i:i+N]} for i in range(0, len(str_item), N)]
     return chunks
 
-  
+
 class ApplyTextModelsTask(Task):
-    """Apply text models (keyterms, classification, etc.) to documents in most simple scenario."""
+    """Apply text models (keyterms, classification, etc.) to documents in most 
+    simple scenario.
+    """
 
     def __init__(self, config, input, output):
         super().__init__(config, input, output)
@@ -101,7 +99,7 @@ class ApplyTextModelsTask(Task):
         return True
 
 
-"""
+"""TODO:check and remove
 class ApplyTextModelsTask(Task):
     '''Apply text models (keyterms, classification, etc.) to documents in most simple scenario.
     '''
