@@ -64,31 +64,30 @@ class ApplyTextModelsTask(Task):
 
     def apply_models(self, record):
         N = 500
-        doc = copy.deepcopy(record.presentation_doc['clean_body'][0])
-        classifier = {}
-        model_results = []
-        chunks = split_str_into_chunks(doc, N)
+        doc = copy.deepcopy(record.presentation_doc)
+        models = []
+        chunks = split_str_into_chunks(doc['clean_body'][0], N)
         for chunk in chunks:
             results = TextClassifier.run(chunk)
             for result in results:
                 if result != None:
-                    model_results.append(result)
+                    models.append(result)
                 else:
-                    model_results.append({})
+                    models.append({})
         #TODO:fix time_asr
-        classifier['classifier'] = model_results
-        classifier['time_asr'] = 0
-        classifier['time_textmdl'] = time.time() - self.config['START_TIME']
+        doc['models'] = models
+        doc['time_asr'] = 0
+        doc['time_textmdl'] = time.time() - self.config['START_TIME']
         self.config['LOGGER'].info(f'text-classification processed for file {record.id} - {record.root_source}')
-        return classifier
+        return doc
 
     def run(self):
         TextClassifier.config(self.config)
         for file in self.get_next_run_file():
             check = file.load_file(return_content=False)
             record = file.get_content()
-            presentation_doc = self.apply_models(record)
-            record.presentation_doc['classifier'] = presentation_doc
+            new_presentation_doc = self.apply_models(record)
+            record.presentation_doc = new_presentation_doc
             self.pipeline_record_ids.append(record.id)
             filepath = self.export_pipeline_record_to_file(record)
             if filepath:

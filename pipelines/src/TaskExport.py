@@ -178,11 +178,10 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['author'] = doc['author']
     document_record['subject'] = doc['subject']
     #models
-    if False:
-    #if 'classifier' in doc.keys():   #TODO:this is broke
-        highest_pred_target = max(doc['classifier'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
-        hit_count = len([model for model in doc['classifier'] if model!={}])
-        models = doc['classifier']
+    if 'models' in doc.keys():   #TODO:this is broke
+        highest_pred_target = max(doc['models'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
+        hit_count = len([model for model in doc['models'] if model!={}])
+        models = doc['models']
         time_asr = doc['time_asr']
         time_textmdl = doc['time_textmdl']
     else:
@@ -200,7 +199,7 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['summary'] = "TODO:summary"
     document_record['_showDetails'] = False
     document_record['_activeDetailsTab'] = 0
-    document_record['models'] = None    #models
+    document_record['models'] = models
     return document_record
 
 

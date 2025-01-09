@@ -62,6 +62,7 @@ def kw_classifier(config, chunk):
         }
     hits = []
     for word in config['KEYWORDS']:
+        word = word.strip()
         if word in chunk['text'].lower():
             hits.append(word)
     #words = word_tokenize(chunk['text'])

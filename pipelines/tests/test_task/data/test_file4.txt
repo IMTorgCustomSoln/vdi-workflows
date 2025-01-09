@@ -1,7 +1,7 @@
 firstName John
-lastNameDoe
+lastName Doe
 age 30
-emailjohn.doe@example.com
+email john.doe@example.com
 isAdmin true
 courses [Math Science History]
 address 
