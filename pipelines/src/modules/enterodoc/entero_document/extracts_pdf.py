@@ -98,6 +98,7 @@ class PdfExtracts:
 
                 
                 record["file_pdf_bytes"] = pdf_stream
+                #pymupdf
                 if not record['body']:
                     record['body'], record["body_pages"] = self.get_pdf_raw_text(pdf_stream=ingest, 
                                                             mode='pymupdf', 
@@ -113,12 +114,12 @@ class PdfExtracts:
         except:
             self.config.logger.info('there was an error extract_from_pdf_string()')
             
-        self.config.logger.info(f'Convert html to pdf took: {time.time() - time0} secs')
+        self.config.logger.info(f'Convert stream to pdf took: {time.time() - time0} secs')
         return record
 
 
     def get_pdf_title(self, pdf_stream,):
-        """TODO"""
+        """Try different methods to extract the title from the pdf."""
         title = None
         tmp = io.BytesIO(pdf_stream)
         #pdf.miner

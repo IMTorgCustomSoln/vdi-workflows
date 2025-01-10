@@ -15,7 +15,6 @@ from src.Task import PipelineRecord
 
 from pathlib import Path
 import tempfile
-import shutil
 import pickle
 import time
 

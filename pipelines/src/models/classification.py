@@ -53,7 +53,7 @@ TextClassifier = Classifier()
 
 
 def kw_classifier(config, chunk):
-    """..."""
+    """Apply key word classifier to chunk."""
     result = {
         'search': 'KW',
         'target': None,
@@ -67,7 +67,7 @@ def kw_classifier(config, chunk):
             hits.append(word)
     #words = word_tokenize(chunk['text'])
     if len(hits)>0:
-            result['target'] = ' '.join(hits)       #TODO: provide formatted chunk['text']
+            result['target'] = hits[0]       #TODO: provide formatted chunk['text'], previously: `' '.join(hits)`
             result['pred'] = len(hits) / len(chunk['text'])
             if 'timestamp' in chunk.keys():
                 result['timestamp'] = chunk['timestamp']
@@ -77,12 +77,12 @@ def kw_classifier(config, chunk):
     
 
 def phrase_classifier(config, chunk):
-    """..."""
+    """Apply phrase classifiers to chunk."""
     return None
 
 
 def fs_classifier(config, chunk):
-    """..."""
+    """Apply fs classifier to chunk."""
     result = {
         'search': 'FS',
         'target': None,

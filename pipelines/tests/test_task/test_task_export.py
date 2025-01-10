@@ -17,9 +17,7 @@ from src.io import load
 import pandas as pd
 
 from pathlib import Path
-import os
 import tempfile
-import shutil
 import json
 import time
 

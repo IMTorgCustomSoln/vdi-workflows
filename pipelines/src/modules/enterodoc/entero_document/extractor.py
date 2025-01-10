@@ -79,7 +79,9 @@ class ExtractsSuite:
     
 
     def extract_from_txt(self, record):
-        """..."""
+        """Extract information from filetype 'text'
+        Note: convert text to pdf, then apply `extract_from_pdf()` where possible.
+        """
         #get txt_str
         txt_str = ''
         if record.file_str:
@@ -96,6 +98,7 @@ class ExtractsSuite:
         #get record attributes from pdf
         result_record = self.Pdf.extract_from_pdf_string(pdf_stream=pdf_bytes)
         result_record["file_uint8arr"] = [x for x in result_record["file_pdf_bytes"]]
+        result_record['filetype'] = 'text'
         return result_record
 
 

@@ -9,6 +9,7 @@ __license__ = "MIT"
 
 from .record import record_attrs, DocumentTemplate, DocumentRecord
 from .extractor import Extractor
+from .utils import bytes_to_megabytes
 
 import shutil
 import itertools
@@ -124,6 +125,7 @@ class Document:
                 d[k] = record[k]
             else:
                 missing.append(k)
+        #TODO:is this doing what I want it to???
         self._logger.info(f'While `build_from_record()` the following keys were missing from the previous record: {missing}')
 
     def populate_record(self):
@@ -207,13 +209,17 @@ class Document:
         if check1:
             fun_call = self._useable_suffixes[self.record.filetype]
             result = (fun_call)(self.record)
+            #TODO:improve logic
             #result["file_text"] = self.record["file_document"].text
             #result["page_nos"] = len(rdr.pages)
             #result["body_pages"] = [rdr.pages[idx].extract_text() for idx in range(len(rdr.pages))]
             result['pp_toc'] = self.pretty_print_toc( result['toc'] )
+            result['body_chars'] = {k:len(v) for k,v in result['body_pages'].items()}
+            result['file_size_mb'] = bytes_to_megabytes(len(result['file_pdf_bytes']))
+            result['length_lines'] = 0    #TODO:utils.length_lines(???)
         else:
             self._logger.info("filetype (extension) is not one of the supported suffixes")
-            result['pp_toc'] = None
+            result['pp_toc'] = ''
         return result
 
     def run_spacy_pipeline(self, body):

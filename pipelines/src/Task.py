@@ -15,26 +15,9 @@ __license__ = "AGPL-3.0"
 
 
 from src.Files import File
-from src.io import export
-from src.io import utils
-from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
-from src.modules.enterodoc.entero_document.record import DocumentRecord
 from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
-from src.modules.enterodoc.entero_document.document import Document
-from src.modules.enterodoc.entero_document.extracts_txt import TxtExtracts
-
 from src.modules.enterodoc.entero_document.config import EnteroConfig
 
-import pandas as pd
-
-from pathlib import Path
-import sys
-import datetime
-
-import textwrap
-from fpdf import FPDF
-import io
-import time
 
 config = EnteroConfig(apply_logger=False)
 DocFactory = DocumentFactory()
@@ -75,25 +58,21 @@ class PipelineRecord():
             result = {}
             for key in self.collected_docs[0].keys():
                 result[key] = ''
-            for docrec in self.collected_docs:
-                result['filetype'] = '.txt'
-                #result['filepath'] = f"{result['filepath']}, {docrec['filepath']}"
-                #result['filename_modified'] = f"{result['filename_modified']}, {docrec['filename_modified']}"
-                #result['title'] = f"{result['title']}, {docrec['title'][:15]}"
-                #result['date'] = min([result['date'], docrec['date']])
-                result['clean_body'] = f"{result['clean_body']}, {docrec['clean_body'][0]}"
-            #result['pdf_byte_string'] = self.get_pdf_bytes_from_text_str(result['clean_body'])
-            #result['data_array'] = [x for x in result['pdf_byte_string']]
-            #result['classifier'] = []
+            #TODO:improve logic
+            #result['filename_modified'] = f"{result['filename_modified']}, {docrec['filename_modified']}"
+            #result['title'] = f"{result['title']}, {docrec['title'][:15]}"
+            #result['date'] = min([result['date'], docrec['date']])
+            result['filetype'] = ', '.join([doc['filetype'] for doc in self.collected_docs])
             doc = DocFactory.build_from_object(result)
             #doc.record.file_str = self.get_pdf_from_text_str(txt_str=result['clean_body'], type='bytes')
             #Txt = TxtExtracts(config)
             #pdf_bytes  = Txt.txt_string_to_pdf_bytes(txt_str=result['clean_body'])
             #doc.record.file_str = result['clean_body']
-            result['clean_body'] = ' '.join([docrec['clean_body'][0] for docrec in self.collected_docs])
             doc.record.filetype = '.txt'
-            doc.record.file_str = result['clean_body']
-            #record = doc.run_extraction_pipeline()
+            doc.record.filepath = ', '.join([doc['filepath'] for doc in self.collected_docs])
+            page_break = '\n'*5 + '-'*20 + 'END OF DOCUMENT' + '-'*20 + '\n'*2
+            doc.record.body = page_break.join([doc['body'] for doc in self.collected_docs])
+            doc.record.file_str = doc.record.body
             doc.populate_record()
             self.presentation_doc = doc.get_record()
         return True

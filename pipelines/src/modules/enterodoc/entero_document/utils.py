@@ -50,7 +50,7 @@ def load_svg(filepath):
 
 
 def get_clean_text(txt):
-    """TODO"""
+    """Get clean text for record['clean_body'] from record['body']."""
     if type(txt) is list:
         combined_txt = ('.').join(txt)
         return combined_txt.replace('.','.  ').replace('\n',' ')
@@ -58,6 +58,12 @@ def get_clean_text(txt):
         txts = txt.split('.\n')
         #TODO:if the len(item)<50, then append to the earlier item
         txts = [txt.replace('-\n','').replace('\n',' ') for txt in txts]
+        txts = ' '.join(txts)
         return txts
     else:
         return txt
+    
+
+def bytes_to_megabytes(bytes_value):
+    """Converts bytes to megabytes"""
+    return bytes_value / (1024 * 1024)

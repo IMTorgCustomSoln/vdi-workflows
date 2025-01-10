@@ -42,7 +42,7 @@ from config._constants import (
 
 def test_pipeline_record():
   #TODO:test `populate_presentation_doc()` with differetn Document types: pdf, html, ecomms,...
-  assert True == True
+  assert False == True
 
 
 def test_task_template():

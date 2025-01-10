@@ -41,8 +41,7 @@ class TxtExtracts:
                 record[key] = None
         meta_attrs = ["title", "author", "subject", "keywords"]
 
-        text = txt_str   #io.StringIO(txt_str) 
-
+        text = txt_str
         if not pdf_bytes:
             a4_width_mm = 210
             pt_to_mm = 0.35
@@ -60,17 +59,14 @@ class TxtExtracts:
                 splitted = text.split('\n')
             else:
                 splitted = text
-
             for line in splitted:
                 try:
                     lines = textwrap.wrap(line, width_text)
                 except Exception as e:
                     print(e)
                     lines = [line[:int(width_text)]]
-
                 if len(lines) == 0:
                     pdf.ln()
-
                 for wrap in lines:
                     pdf.cell(0, fontsize_mm, wrap, ln=1)
             #pdf_bytes = weasyprint.HTML(html).write_pdf()
@@ -78,5 +74,4 @@ class TxtExtracts:
         
         time1 = time.time()
         self.config.logger.info(f'Convert text to pdf took: {time1 - time0} secs')
-        #return context, pdf_bytes
         return pdf_bytes

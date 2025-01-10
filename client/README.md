@@ -101,6 +101,8 @@ __Staging__
   - ~~dropdown for search type~~
   - ~~searchExact() does not work~~
   - ~~fix Guide which no longer uses backticks: `checkBackticks`~~
+  - `SearchBar.vue,ln.316`: `const hit = rec.clean_body.includes(model.target)`
+    + model.target will have hit on `chunk['text'].lower()`, so there can be a mismatch in case
   - reduce `DocumentRecord()` size to improve search speed
   - implement concept search
     + [orama client vector search db: full text and vector](https://github.com/askorama/orama)

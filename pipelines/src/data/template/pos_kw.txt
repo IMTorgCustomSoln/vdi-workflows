@@ -1,6 +1,4 @@
 markdown
 text
 json
-firstname
-lastname
-name
+age

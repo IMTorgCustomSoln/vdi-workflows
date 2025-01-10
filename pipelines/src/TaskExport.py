@@ -11,12 +11,7 @@ __license__ = "AGPL-3.0"
 
 from src.Task import Task
 from src.Files import File
-from src.io import export
 from src.io import utils
-from src.modules.enterodoc.entero_document.url import UrlFactory#, UrlEncoder
-from src.modules.enterodoc.entero_document.record import DocumentRecord
-from src.modules.enterodoc.entero_document.document_factory import DocumentFactory
-from src.modules.enterodoc.entero_document.document import Document
 
 import pandas as pd
 
@@ -129,7 +124,7 @@ class ExportToVdiWorkspaceTask(Task):
             workspace_documents.append(workspace_document)
         workspace_schema['documentsIndex']['documents'] = workspace_documents
         #TODO: filepath_export_wksp_gzip = self.output_files.directory / 'VDI_ApplicationStateData_vTEST.gz'
-        filepath_export_wksp_gzip = Path('./tests/test_task/data') / 'VDI_ApplicationStateData_vTEST.gz'
+        filepath_export_wksp_gzip = Path('./tests/test_task/data') / 'VDI_ApplicationStateData_vTEST.gz'    #TODO:remove - just use to output for testing
         #filepath_export_wksp_gzip = filepath
         with gzip.open(filepath_export_wksp_gzip, 'wb') as f_out:
             f_out.write( bytes(json.dumps(workspace_schema, default=utils.date_handler), encoding='utf8') )    #TODO: datetime handlder, ref: https://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
@@ -140,15 +135,20 @@ class ExportToVdiWorkspaceTask(Task):
 def map_record_presentation_doc_to_workspace_document(schema, record):
     """Map the `.presentation_doc` to k,v of workspace document:
     (`workspace_schema['documentsIndex']['documents']`)
-    
     """
     workspace_schema = copy.deepcopy(schema)
     documents_schema = workspace_schema['documentsIndex']['documents']
     document_record = copy.deepcopy(documents_schema)
     doc = record.presentation_doc
+
+    #TODO
+    document_record['filetype'] = 'text'   #TODO: still wrong - where to put in code organization???
+    document_record['length_lines'] = None   #TODO: utils.length_lines(???)
+    #document_record['clean_body'] = ''.join(doc['clean_body'])    #TODO: utils.get_clean_text
+
     #raw
     document_record['id'] = None
-    document_record['reference_number'] = str(random.randint(1001,9999))
+    document_record['reference_number'] = str(random.randint(1000000001, 9999999999))
     document_record['body_chars'] = {}                          #{idx+1: len(page) for idx, page in enumerate(pdf_pages.values())}                 #{1: 3958, 2: 3747, 3: 4156, 4: 4111,
     document_record['body_pages'] = doc['body_pages']           #{1: 'Weakly-Supervised Questions for Zero-Shot Relation…a- arXiv:2301.09640v1 [cs.CL] 21 Jan 2023<br><br>', 2: 'tive approach without using any gold question temp…et al., 2018) with unanswerable questions<br><br>', 3: 'by generating a special unknown token in the out- …ng training. These spurious questions can<br><b
     dt_extracted = dt.strptime(doc['date'], '%Y-%m-%d')
@@ -158,17 +158,14 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['page_nos'] = doc['page_nos']
     document_record['length_lines'] = doc['length_lines']
 
-    #data_array = {idx: val for idx,val in enumerate(list( byte_string ))} 
-    #data_array = [x for x in byte_string]
-    #document_record['dataArray'] = data_array
-    #document_record['dataArray'] = doc['file_str']
+    #important
     document_record['dataArrayKey'] = None
-    document_record['dataArray'] = {idx: item for idx,item in enumerate(doc['file_uint8arr'])}                     #TODO: {"0":37, "1": 80, ...
+    document_record['dataArray'] = {idx: item for idx,item in enumerate(doc['file_uint8arr'])}                     #TODO: {"0":37, "1": 80, ...   or [37, 80, ...]
     document_record['toc'] = doc['toc']
-    document_record['pp_toc'] = doc['pp_toc']
-    #document_record['clean_body'] = rec['clean_body']     #''.join(rec['clean_body'])          #NOTE:created during workspace import
+    document_record['pp_toc'] = ""
+    document_record['clean_body'] = ' '.join(doc['clean_body'])          #NOTE:created during workspace import
+
     #file info
-    #record_path = Path(rec['dialogue']['file_path'])
     document_record['file_extension'] = doc['file_extension']
     document_record['file_size_mb'] = doc['file_size_mb']
     document_record['filename_original'] = doc['filename_original']                             #TODO:add suffix
@@ -177,8 +174,9 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['filetype'] = doc['filetype']
     document_record['author'] = doc['author']
     document_record['subject'] = doc['subject']
+
     #models
-    if 'models' in doc.keys():   #TODO:this is broke
+    if 'models' in doc.keys():
         highest_pred_target = max(doc['models'], key=lambda model: model['pred'] if 'pred' in model.keys() else 0 )
         hit_count = len([model for model in doc['models'] if model!={}])
         models = doc['models']
@@ -194,6 +192,7 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['hit_count'] = hit_count
     document_record['time_asr'] = time_asr
     document_record['time_textmdl'] = time_textmdl
+
     #display
     document_record['snippets'] = []
     document_record['summary'] = "TODO:summary"
@@ -201,56 +200,3 @@ def map_record_presentation_doc_to_workspace_document(schema, record):
     document_record['_activeDetailsTab'] = 0
     document_record['models'] = models
     return document_record
-
-
-'''TODO:check and remove
-import textwrap
-from fpdf import FPDF
-import io
-import time
-
-def txt_string_to_pdf_bytes(txt_str):
-    """Generate a pdf:str and associated record metadata (title, toc, ...) 
-    from text string content.
-    """
-    time0 = time.time()
-    pdf_bytes = None
-    text = txt_str   #io.StringIO(txt_str) 
-
-    if not pdf_bytes:
-        a4_width_mm = 210
-        pt_to_mm = 0.35
-        fontsize_pt = 10
-        fontsize_mm = fontsize_pt * pt_to_mm
-        margin_bottom_mm = 10
-        character_width_mm = 7 * pt_to_mm
-        width_text = a4_width_mm / character_width_mm
-
-        pdf = FPDF(orientation='P', unit='mm', format='A4')
-        pdf.set_auto_page_break(True, margin=margin_bottom_mm)
-        pdf.add_page()
-        pdf.set_font(family='Courier', size=fontsize_pt)
-        if '\n' in text:
-            splitted = text.split('\n')
-        else:
-            splitted = text
-
-        for line in splitted:
-            try:
-                lines = textwrap.wrap(line, width_text)
-            except Exception as e:
-                print(e)
-                lines = [line[:int(width_text)]]
-
-            if len(lines) == 0:
-                pdf.ln()
-
-            for wrap in lines:
-                pdf.cell(0, fontsize_mm, wrap, ln=1)
-        #pdf_bytes = weasyprint.HTML(html).write_pdf()
-        pdf_bytes = pdf.output("output_file.pdf", 'S').encode('latin-1')
-    
-    time1 = time.time()
-    print(f'Convert text to pdf took: {time1 - time0} secs')
-    #return context, pdf_bytes
-    return pdf_bytes'''
