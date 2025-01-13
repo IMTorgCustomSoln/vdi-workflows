@@ -19,8 +19,8 @@ from src.modules.parse_emails.parse_emails import EmailParser
 def test_parse_emails():
     import os
     print(os.getcwd())
-    test_eml_path = 'tests/test_ecomms/data_email/eml_contains_base64_eml.eml'
-    test_msg_path = 'tests/test_ecomms/data_email/utf_subject.msg'
+    test_eml_path = 'tests/test_wf_ecomms/data_email/eml_contains_base64_eml.eml'
+    test_msg_path = 'tests/test_wf_ecomms/data_email/utf_subject.msg'
     test_path = [test_eml_path, test_msg_path]
 
     email_parser = EmailParser(file_path=test_path[0], max_depth=2)
@@ -37,7 +37,7 @@ def test_parse_emails():
 
 
 def test_msg_html_with_attachments():
-    msg = MsOxMessage('tests/test_ecomms/data_email/html_attachment.msg')
+    msg = MsOxMessage('tests/test_wf_ecomms/data_email/html_attachment.msg')
     assert msg is not None
     msg_dict = msg.as_dict(max_depth=2, original_depth=3)
     assert 'This is an html email' in msg_dict['Text']
@@ -51,7 +51,7 @@ def test_msg_html_with_attachments():
 
 
 def test_msg_utf_encoded_subject():
-    msg = MsOxMessage('tests/test_ecomms/data_email/utf_subject.msg')
+    msg = MsOxMessage('tests/test_wf_ecomms/data_email/utf_subject.msg')
     assert msg is not None
     msg_dict = msg.as_dict(max_depth=2, original_depth=2)
     # we test that subject which has utf-8 encoding (in the middle) is actually decoded
@@ -61,7 +61,7 @@ def test_msg_utf_encoded_subject():
 
 
 def test_msg_with_attachments():
-    test_path = 'tests/test_ecomms/data_email/html_attachment.msg'
+    test_path = 'tests/test_wf_ecomms/data_email/html_attachment.msg'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False)
     results.parse()
@@ -79,7 +79,7 @@ def test_msg_parse_only_headers():
     Then:
      - Validate that the email was parsed.
     """
-    test_path = 'tests/test_ecomms/data_email/html_attachment.msg'
+    test_path = 'tests/test_wf_ecomms/data_email/html_attachment.msg'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=True)
     results.parse()
@@ -116,7 +116,7 @@ def test_parse_email_headers(headers, email_sender):
                                        'multipart/mixed', 'multipart/related', 'multipart/signed', 'rfc 822 mail',
                                        'smtp mail', 'utf-8 (with bom) text'])
 def test_eml_smtp_type(file_type):
-    test_path = 'tests/test_ecomms/data_email/smtp_email_type.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/smtp_email_type.eml'
     test_type = f'{file_type}, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -127,7 +127,7 @@ def test_eml_smtp_type(file_type):
 
 
 def test_eml_smtp_envelope_headers():
-    test_path = 'tests/test_ecomms/data_email/smtp_envelope_headers.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/smtp_envelope_headers.eml'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -138,7 +138,7 @@ def test_eml_smtp_envelope_headers():
 
 
 def test_eml_non_ascii():
-    test_path = 'tests/test_ecomms/data_email/eml_non_ascii.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_non_ascii.eml'
     test_type = 'news or mail text, Non-ISO extended-ASCII text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -151,7 +151,7 @@ def test_eml_non_ascii():
 # this is a test for another version of a multipart signed eml file
 def test_smime2():
 
-    test_path = 'tests/test_ecomms/data_email/smime2.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/smime2.p7m'
     test_type = 'multipart/signed; protocol="application/pkcs7-signature";, ASCII text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -163,7 +163,7 @@ def test_smime2():
 
 def test_smime_entity_ascii_crlf():
 
-    test_path = 'tests/test_ecomms/data_email/smime_mime_entity_ascii_crlf.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/smime_mime_entity_ascii_crlf.p7m'
     test_type = 'MIME entity text, ASCII text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -176,7 +176,7 @@ def test_smime_entity_ascii_crlf():
 
 
 def test_eml_contains_eml():
-    test_path = 'tests/test_ecomms/data_email/Fwd_test-inner_attachment_eml.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/Fwd_test-inner_attachment_eml.eml'
     test_type = 'news or mail text, ASCII text'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -193,7 +193,7 @@ def test_eml_contains_eml():
 
 
 def test_eml_contains_msg():
-    test_path = 'tests/test_ecomms/data_email/DONT_OPEN-MALICIOUS.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/DONT_OPEN-MALICIOUS.eml'
     test_type = 'news or mail text, ASCII text'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -209,7 +209,7 @@ def test_eml_contains_msg():
 
 def test_eml_contains_eml_depth():
 
-    test_path = 'tests/test_ecomms/data_email/Fwd_test-inner_attachment_eml.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/Fwd_test-inner_attachment_eml.eml'
     test_type = 'news or mail text, ASCII text'
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -236,7 +236,7 @@ def test_eml_utf_text():
               the conditional check 'if "@"' in the get_email_address function can be removed.
     """
 
-    test_path = 'tests/test_ecomms/data_email/utf_8_email.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/utf_8_email.eml'
     test_type = 'UTF-8 Unicode text, with very long lines, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -249,7 +249,7 @@ def test_eml_utf_text():
 
 
 def test_eml_utf_text_special_chars():
-    test_path = 'tests/test_ecomms/data_email/eml_with_special_utf_8_chars.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_with_special_utf_8_chars.eml'
     email_parser = EmailParser(file_path=test_path, max_depth=2)
     results = email_parser.parse()
 
@@ -271,7 +271,7 @@ def test_eml_utf_text_with_bom():
     - Ensure eml email file is properly parsed
     """
 
-    test_path = 'tests/test_ecomms/data_email/utf_8_with_bom.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/utf_8_with_bom.eml'
     test_type = 'RFC 822 mail text, UTF-8 Unicode (with BOM) text, with very long lines, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -293,7 +293,7 @@ def test_FileName_ParentFileName_exist():
     Then
     - FileName & ParentFileName exist on the outputs
     """
-    test_path = 'tests/test_ecomms/data_email/eml_contains_base64_eml.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_base64_eml.eml'
 
     email_parser = EmailParser(file_path=test_path)
     results = email_parser.parse()
@@ -306,7 +306,7 @@ def test_FileName_ParentFileName_exist():
 
 def test_email_with_special_character():
 
-    test_path = 'tests/test_ecomms/data_email/email_with_special_char_bytes.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/email_with_special_char_bytes.eml'
     test_type = 'RFC 822 mail text, ISO-8859 text, with very long lines, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -322,7 +322,7 @@ def test_unfold():
 
 
 def test_email_raw_headers():
-    test_path = 'tests/test_ecomms/data_email/multiple_to_cc.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/multiple_to_cc.eml'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -349,7 +349,7 @@ def test_email_raw_headers_from_is_cyrillic_characters():
     Then:
      - Validate that all raw headers are valid.
     """
-    test_path = 'tests/test_ecomms/data_email/multiple_to_cc_from_Cyrillic_characters.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/multiple_to_cc_from_Cyrillic_characters.eml'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -366,7 +366,7 @@ def test_email_raw_headers_from_is_cyrillic_characters():
 
 def test_eml_contains_eml_with_status():
 
-    test_path = 'tests/test_ecomms/data_email/ParseEmailFiles-test-emls.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/ParseEmailFiles-test-emls.eml'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -379,7 +379,7 @@ def test_eml_contains_eml_with_status():
 
 @pytest.mark.parametrize('file_name', ['eml_contains_base64_eml.eml', 'eml_contains_base64_eml2.eml'])
 def test_eml_contains_base64_encoded_eml(file_name):
-    test_path = f'tests/test_ecomms/data_email/{file_name}'
+    test_path = f'tests/test_wf_ecomms/data_email/{file_name}'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -397,7 +397,7 @@ def test_eml_contains_base64_encoded_eml(file_name):
 # check that we parse an email with "data" type and eml extension
 @pytest.mark.parametrize('file_info', ['data', 'data\n'])
 def test_eml_data_type(file_info):
-    test_path = 'tests/test_ecomms/data_email/smtp_email_type.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/smtp_email_type.eml'
     test_type = file_info
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -407,7 +407,7 @@ def test_eml_data_type(file_info):
 
 
 def test_smime():
-    test_path = 'tests/test_ecomms/data_email/smime.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/smime.p7m'
     test_type = 'multipart/signed; protocol="application/pkcs7-signature";, ASCII text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -420,7 +420,7 @@ def test_smime():
 
 
 def test_smime_msg():
-    test_path = 'tests/test_ecomms/data_email/smime-p7s.msg'
+    test_path = 'tests/test_wf_ecomms/data_email/smime-p7s.msg'
     test_type = 'CDFV2 Microsoft Outlook Message'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -431,7 +431,7 @@ def test_smime_msg():
 
 
 def test_msg_headers_map():
-    email_data, _, _ = handle_msg('tests/test_ecomms/data_email/utf_subject.msg', 'utf_subject.msg')
+    email_data, _, _ = handle_msg('tests/test_wf_ecomms/data_email/utf_subject.msg', 'utf_subject.msg')
     assert '?utf-8' not in email_data['Subject']
     assert 'TESTING' in email_data['Subject']
     assert 'This is a test email.' in email_data['Text']
@@ -447,7 +447,7 @@ def test_msg_headers_map():
 
 
 def test_unknown_file_info():
-    test_path = 'tests/test_ecomms/data_email/smtp_email_type.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/smtp_email_type.eml'
     test_type = 'bad'
 
     try:
@@ -463,7 +463,7 @@ def test_unknown_file_info():
 
 
 def test_no_content_type_file():
-    test_path = 'tests/test_ecomms/data_email/no_content_type.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/no_content_type.eml'
     test_type = 'ascii text'
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -491,7 +491,7 @@ def test_get_msg_mail_format():
 
 
 def test_no_content_file():
-    test_path = 'tests/test_ecomms/data_email/no_content.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/no_content.eml'
     test_type = 'ascii text'
 
     try:
@@ -505,7 +505,7 @@ def test_no_content_file():
 
 
 def test_eml_contains_htm_attachment():
-    test_path = 'tests/test_ecomms/data_email/eml_contains_htm_attachment.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_htm_attachment.eml'
     test_type = 'SMTP mail, UTF-8 Unicode text, with CRLF terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -516,7 +516,7 @@ def test_eml_contains_htm_attachment():
 
 
 def test_signed_attachment():
-    test_path = 'tests/test_ecomms/data_email/email_with_signed_attachment.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/email_with_signed_attachment.eml'
     test_type = 'multipart/mixed'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -526,7 +526,7 @@ def test_signed_attachment():
 
 
 def test_eml_format_multipart_mix():
-    test_path = 'tests/test_ecomms/data_email/multipart_mixed_format.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/multipart_mixed_format.p7m'
     test_type = 'multipart/mixed'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -537,7 +537,7 @@ def test_eml_format_multipart_mix():
 
 
 def test_eml_format_multipart_related():
-    test_path = 'tests/test_ecomms/data_email/multipart_related_format.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/multipart_related_format.p7m'
     test_type = 'multipart/related'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -548,7 +548,7 @@ def test_eml_format_multipart_related():
 
 
 def test_eml_base64_header_comment_although_string():
-    test_path = 'tests/test_ecomms/data_email/DONT_OPEN-MALICIOUS_base64_headers.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/DONT_OPEN-MALICIOUS_base64_headers.eml'
     test_type = 'UTF-8 Unicode text, with very long lines, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -576,7 +576,7 @@ def test_message_rfc822_without_info():
      - Verify the script runs successfully
      - Ensure 2 entries are returned as expected
     """
-    test_path = 'tests/test_ecomms/data_email/eml_contains_base64_eml2.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_base64_eml2.eml'
     test_type = 'message/rfc822'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -615,7 +615,7 @@ def test_eml_contains_htm_attachment_empty_file():
     Then: Three entries will be returned to the war room. One containing the command results. Another
           containing the empty file. The last contains the htm file.
     """
-    test_path = 'tests/test_ecomms/data_email/eml_contains_emptytxt_htm_file.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_emptytxt_htm_file.eml'
     test_type = "RFC 822 mail text, with CRLF line terminators"
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -631,7 +631,7 @@ def test_eml_contains_htm_attachment_empty_file_max_depth():
     When: Parsing a valid email file with max_depth=1.
     Then: One entry containing the command results will be returned to the war room.
     """
-    test_path = 'tests/test_ecomms/data_email/eml_contains_emptytxt_htm_file.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_emptytxt_htm_file.eml'
     test_type = "RFC 822 mail text, with CRLF line terminators"
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -650,7 +650,7 @@ def test_only_parts_of_object_email_saved():
         filter only parts that are of type email.message.Message.
 
     """
-    test_path = 'tests/test_ecomms/data_email/new-line-in-parts.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/new-line-in-parts.eml'
     test_type = "RFC 822 mail text, with CRLF line terminators"
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -667,7 +667,7 @@ def test_pkcs7_mime():
     When: Parsing the email.
     Then: The email is parsed correctly.
     """
-    test_path = 'tests/test_ecomms/data_email/smime2.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/smime2.p7m'
     test_type = "MIME entity text, ISO-8859 text, with very long lines, with CRLF line terminators"
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -689,7 +689,7 @@ def test_PtypString():
 
 
 def test_parse_body_with_russian_language():
-    email_data, _, _ = handle_msg('tests/test_ecomms/data_email/Phishing_TEST.msg', 'Phishing_TEST.msg')
+    email_data, _, _ = handle_msg('tests/test_wf_ecomms/data_email/Phishing_TEST.msg', 'Phishing_TEST.msg')
     assert str(email_data['Text']).startswith('Уважаемые коллеги')
     if isinstance(email_data['HTML'], bytes):
         email_data['HTML'] = email_data['HTML'].decode()
@@ -697,7 +697,7 @@ def test_parse_body_with_russian_language():
 
 
 def test_eml_contains_html_and_text():
-    test_path = 'tests/test_ecomms/data_email/multipart_alternative_format.p7m'
+    test_path = 'tests/test_wf_ecomms/data_email/multipart_alternative_format.p7m'
     test_type = 'multipart/alternative;, ISO-8859 text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False, file_info=test_type)
@@ -716,7 +716,7 @@ def test_double_dots_removed():
     Then:
         replace the two dots with one and test that `part.get_payload()` decodes it correctly.
     """
-    test_path = 'tests/test_ecomms/data_email/multiple_to_cc.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/multiple_to_cc.eml'
     test_type = "RFC 822 mail text, with CRLF line terminators"
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -734,7 +734,7 @@ def test_handle_eml_parses_correct_message_id():
      - Validate that correct 'Message-ID' case sensitive is in 'HeadersMap' dict.
        Must be 'Message-ID' case sensitive.
     """
-    email_data, _ = handle_eml(file_path='tests/test_ecomms/data_email/invalid_message_id.eml')
+    email_data, _ = handle_eml(file_path='tests/test_wf_ecomms/data_email/invalid_message_id.eml')
     assert 'Message-ID' in email_data['HeadersMap']
 
 
@@ -747,7 +747,7 @@ def test_long_subject_and_special_characters():
         assert all the subject is parsed correctly.
 
     """
-    test_path = 'tests/test_ecomms/data_email/file_with_a_long_subject_and_special_characters.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/file_with_a_long_subject_and_special_characters.eml'
     test_type = 'RFC 822 mail text, with CRLF line terminators'
 
     results = EmailParser(file_path=test_path, max_depth=1, parse_only_headers=False, file_info=test_type)
@@ -764,7 +764,7 @@ def test_rtf_msg():
         assert the body is parsed correctly.
 
     """
-    test_path = 'tests/test_ecomms/data_email/msg_with_rtf_compressed.msg'
+    test_path = 'tests/test_wf_ecomms/data_email/msg_with_rtf_compressed.msg'
     email_parser = EmailParser(file_path=test_path)
     results = email_parser.parse()
     if isinstance(results['HTML'], bytes):
@@ -783,7 +783,7 @@ def test_eml_with_attachment_with_no_name():
         assert it is parsed correctly.
 
     """
-    test_path = 'tests/test_ecomms/data_email/test-eml-text-html.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/test-eml-text-html.eml'
     parse_emails = EmailParser(file_path=test_path, max_depth=3, parse_only_headers=False)
     results = parse_emails.parse()
     assert results['To'] == 'demisto.test@test.com'
@@ -813,7 +813,7 @@ def test_parse_msg_contains_eml():
     Then:
      - Validate that both emails are parsed.
     """
-    test_path = 'tests/test_ecomms/data_email/msg_contains_eml.msg'
+    test_path = 'tests/test_wf_ecomms/data_email/msg_contains_eml.msg'
 
     email_parser = EmailParser(file_path=test_path, max_depth=3)
     results = email_parser.parse()
@@ -825,19 +825,19 @@ def test_parse_msg_contains_eml():
 @pytest.mark.parametrize(
     'test_file_path, expected_chinese_str', [
         (
-            'tests/test_ecomms/data_email/chinese_gb2312_encoding.eml',
+            'tests/test_wf_ecomms/data_email/chinese_gb2312_encoding.eml',
             '你好，我是程序员，很高兴认识你'
         ),
         (
-            'tests/test_ecomms/data_email/chinese_iso_2022_jp_encoding.eml',
+            'tests/test_wf_ecomms/data_email/chinese_iso_2022_jp_encoding.eml',
             '中文字'
         ),
         (
-            'tests/test_ecomms/data_email/chinese_big5_encoding.eml',
+            'tests/test_wf_ecomms/data_email/chinese_big5_encoding.eml',
             '圖形碼'
         ),
         (
-            'tests/test_ecomms/data_email/chinese_gbk_encoding.eml',
+            'tests/test_wf_ecomms/data_email/chinese_gbk_encoding.eml',
             '你好，中国'
         )
     ]
@@ -865,7 +865,7 @@ def test_parse_eml_file_chinese_chars_encodings(test_file_path, expected_chinese
 @pytest.mark.parametrize(
     'test_file_path', [
         (
-            'tests/test_ecomms/data_email/smime_unicode_issue.p7m'
+            'tests/test_wf_ecomms/data_email/smime_unicode_issue.p7m'
         )
     ]
 )
@@ -896,7 +896,7 @@ def test_parse_bcc_addresses_in_eml():
     Then:
      - Validate that the bcc was returned.
     """
-    test_path = 'tests/test_ecomms/data_email/test bcc.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/test bcc.eml'
 
     email_parser = EmailParser(file_path=test_path, max_depth=3)
     results = email_parser.parse()
@@ -912,7 +912,7 @@ def test_parse_eml_with_text_before_the_headers():
     Then:
      - Validate that the text was removed and th efile is parsed.
     """
-    test_path = 'tests/test_ecomms/data_email/test_text_before_headers.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/test_text_before_headers.eml'
 
     email_parser = EmailParser(file_path=test_path, max_depth=3)
     results = email_parser.parse()
@@ -928,7 +928,7 @@ def test_multipart_defective():
     Then:
      - Validate that the eml parsed correctly.
     """
-    test_path = 'tests/test_ecomms/data_email/multipart-defective.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/multipart-defective.eml'
 
     email_parser = EmailParser(file_path=test_path, max_depth=2)
     results = email_parser.parse()
@@ -947,7 +947,7 @@ def test_handle_eml_utf8_8bit():
     Then:
      - make sure the chinese characters were decoded successfully.
     """
-    email_parser = EmailParser(file_path='tests/test_ecomms/data_email/chinese_email_test.eml')
+    email_parser = EmailParser(file_path='tests/test_wf_ecomms/data_email/chinese_email_test.eml')
     results = email_parser.parse()
     expected_response = '这是一个示例邮件，用于演示指定的条件。\r\n它使用了 UTF-8 编码，可以支持多种语言的字符，包括中文。\r\n祝好，\r\n发件人'
     assert results['Text'] == expected_response
@@ -964,7 +964,7 @@ def test_eml_contains_image_name_with_Thai_characters():
     Then:
      - make sure the Thai character were decoded successfully.
     """
-    test_path = 'tests/test_ecomms/data_email/eml_contains_image_name_with_Thai_characters.eml'
+    test_path = 'tests/test_wf_ecomms/data_email/eml_contains_image_name_with_Thai_characters.eml'
 
     email_parser = EmailParser(file_path=test_path, max_depth=2)
     results = email_parser.parse()

@@ -51,7 +51,8 @@ class PipelineRecord():
         """Populate presentation DocumentRecord from collected_docs."""
         if len(self.collected_docs)==0:
             return False
-        elif len(self.collected_docs)==1:
+        #TODO: is this necessary? only if self.collected_docs[0] is a complete doc
+        elif len(self.collected_docs)==1 and 'page_nos' in self.collected_docs[0].keys():
             self.presentation_doc = self.collected_docs[0]
             return True
         else:

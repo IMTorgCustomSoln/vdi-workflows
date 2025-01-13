@@ -6,7 +6,7 @@ from src.modules.parse_pst.pstobjects import PSTFolder, PSTRecordEntry, parse_pa
 
 
 def test_main():
-    pst_file = 'tests/test_ecomms/data_dialogue/test.pst'
+    pst_file = 'tests/test_wf_ecomms/data_dialogue/test.pst'
 
     root_parser = set_args()
     sys.argv = ['pst_parser.py', pst_file, 'folder', '--path', '1']

@@ -14,6 +14,7 @@ from src.models.classification import TextClassifier
 
 import pandas as pd
 
+from pathlib import Path
 import time
 import copy
 
@@ -89,3 +90,147 @@ class ApplyTextModelsTask(Task):
                 self.config['LOGGER'].info(f'failed to save intermediate file {record.id}')
         self.config['LOGGER'].info(f'completed text-classification processing for file {len(self.pipeline_record_ids)}')
         return True
+    
+
+
+
+
+
+#from src.models.classification import classifier
+from src.models.classification import TextClassifier
+import time
+import json
+
+class TextClassifyEcommEmailTask(Task):
+    """Apply text classification to documents
+    """
+
+    def __init__(self, config, input, output, name_diff):
+        super().__init__(config, input, output, name_diff)
+        self.target_files = output
+
+    def run(self):
+        TextClassifier.config(self.config)
+        intermediate_save_dir=self.target_files.directory
+        unprocessed_files = self.get_next_run_file()
+        if len(unprocessed_files)>0:
+            #process by batch
+            for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
+                '''
+                batch_files = asr.run_workflow(
+                    config=self.config,
+                    sound_files=batch, 
+                    intermediate_save_dir=self.target_files.directory,
+                    infer_text_classify_only=False
+                    )
+                self.config['LOGGER'].info(f"end model workflow, batch-index: {idx} with {len(batch_files)} files")
+
+                '''
+                #run classification models on each: chunk,item
+                dialogues = []
+                for idx, batch in enumerate(batches):
+                    dialogue = File(filepath=batch, filetype='pickle').load_file(return_content=True)
+                    #with open(batch, 'r') as f_in:
+                    #    dialogue = json.load(f_in)
+                    #dialogues[idx]['classifier'] = []
+                    dialogue['classifier'] = []
+                    for chunk in dialogue['chunks']:
+                        results = TextClassifier.run(chunk)
+                        for result in results:
+                            if result != None:
+                                dialogue['classifier'].append(result)
+                            else:
+                                dialogue['classifier'].append({})
+                    dialogue['time_textmdl'] = time.time() - self.config['START_TIME']
+                    dialogues.append(dialogue)
+                    self.config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
+                
+        #save
+        from src.io import export
+
+        save_json_paths = []
+        if intermediate_save_dir:
+            for idx, dialogue in enumerate(dialogues):
+                save_path = Path(intermediate_save_dir) / f'{dialogue["file_name"]}.json'
+                try:
+                    with open(save_path, 'w') as f:
+                        json.dump(dialogue, f)
+                    save_json_paths.append( str(save_path) )
+                    self.config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
+                except Exception as e:
+                    print(e)
+                #TODO:   dialogues.extend(processed_dialogues)   #combine records of previously processed dialogues
+
+        return save_json_paths
+
+
+
+
+
+#from src.models.classification import classifier
+from src.models.classification import TextClassifier
+import time
+import json
+
+class TextClassifyEcommTask(Task):
+    """Apply text classification to documents
+    """
+
+    def __init__(self, config, input, output, name_diff):
+        super().__init__(config, input, output, name_diff)
+        self.target_files = output
+
+    def run(self):
+        TextClassifier.config(self.config)
+        intermediate_save_dir=self.target_files.directory
+        unprocessed_files = self.get_next_run_file()
+        if len(unprocessed_files)>0:
+            #process by batch
+            for idx, batches in enumerate( utils.get_next_batch_from_list(unprocessed_files, self.config['BATCH_COUNT']) ):
+                '''
+                batch_files = asr.run_workflow(
+                    config=self.config,
+                    sound_files=batch, 
+                    intermediate_save_dir=self.target_files.directory,
+                    infer_text_classify_only=False
+                    )
+                self.config['LOGGER'].info(f"end model workflow, batch-index: {idx} with {len(batch_files)} files")
+
+                '''
+                #run classification models on each: chunk,item
+                dialogues = []
+                for idx, batch in enumerate(batches):
+                    dialogue = File(filepath=batch, filetype='pickle').load_file(return_content=True)
+                    #with open(batch, 'r') as f_in:
+                    #    dialogue = json.load(f_in)
+                    #dialogues[idx]['classifier'] = []
+                    dialogue['classifier'] = []
+                    for chunk in dialogue['chunks']:
+                        results = TextClassifier.run(chunk)
+                        for result in results:
+                            if result != None:
+                                dialogue['classifier'].append(result)
+                            else:
+                                dialogue['classifier'].append({})
+                    dialogue['time_textmdl'] = time.time() - self.config['START_TIME']
+                    dialogues.append(dialogue)
+                    self.config['LOGGER'].info(f'text-classification processing for file {idx} - {dialogue["file_name"]}')
+                
+        #save
+        from src.io import export
+
+        save_json_paths = []
+        if intermediate_save_dir:
+            for idx, dialogue in enumerate(dialogues):
+                save_path = Path(intermediate_save_dir) / f'{dialogue["file_name"]}.json'
+                try:
+                    with open(save_path, 'w') as f:
+                        json.dump(dialogue, f)
+                    save_json_paths.append( str(save_path) )
+                    self.config['LOGGER'].info(f'saved intermediate file {idx} - {save_path}')
+                except Exception as e:
+                    print(e)
+                #TODO:   dialogues.extend(processed_dialogues)   #combine records of previously processed dialogues
+
+        return save_json_paths
+    

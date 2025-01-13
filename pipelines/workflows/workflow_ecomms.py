@@ -18,22 +18,25 @@ from src.modules.parse_ediscovery.loadfile import (
     copy_dat_file_with_fixed_format
 )
 from src.modules.parse_orgchart.orgchart import OrgChartParser
-
-from src.TaskTransform import ApplyTextModelsTask
+from src.TaskImport import ImportValidateCombineEcommsTask
+#from src.TaskTransform import TextClassifyEcommTask
+from src.TaskTransform import CreatePresentationDocument, ApplyTextModelsTask, ApplyTextModelsTask
+from src.TaskExport import ExportToVdiWorkspaceTask
+"""
 from src.TaskComponents import (
-    ImportValidateCombineEcommsTask,
+    #ImportValidateCombineEcommsTask,
     #ConvertEcommsToDocTask,
     #ApplyModelsTask,
-    TextClassifyEcommTask,
+    #TextClassifyEcommTask,
 
     #ExportVdiWorkspaceTask,
     #ExportIndividualPdfTask,
 
-    ConvertUrlDocToPdf,
-    ExportVdiWorkspaceTask,
-    ExportEcommsToVdiWorkspaceTask
+    #ConvertUrlDocToPdf,
+    #ExportVdiWorkspaceTask,
+    #ExportEcommsToVdiWorkspaceTask
 )
-"""
+
 from src.Report import (
     TaskStatusReport,
     MapBatchFilesReport,
@@ -78,11 +81,11 @@ class WorkflowEcomms(Workflow):
             #working dirs
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
-            #DIR_CONVERTED = CONFIG['WORKING_DIR'] / '2_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '2_MODELS_APPLIED'
+            DIR_XFORM = CONFIG['WORKING_DIR'] / '2_XFORM'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '3_MODELS_APPLIED'
             DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
-            DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
-            CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
+            #DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
+            #CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
 
             #files
             input_files = Files(
@@ -93,19 +96,17 @@ class WorkflowEcomms(Workflow):
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.json']
+                extension_patterns=['.pickle']
                 )
-            '''
-            converted_files = Files(
-                name='converted',
-                directory=DIR_CONVERTED,
-                extension_patterns=['.json']
+            xform_files = Files(
+                name='xform',
+                directory=DIR_XFORM,
+                extension_patterns=['.pickle']
                 )
-            '''
             models_applied_files = Files(
                 name='models_applied',
                 directory=DIR_MODELS_APPLIED,
-                extension_patterns=['.json']
+                extension_patterns=['.pickle']
                 )
             
             output_files = Files(
@@ -123,7 +124,7 @@ class WorkflowEcomms(Workflow):
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
-                #'converted_files': converted_files,
+                'xform_files': xform_files,
                 'models_applied_files': models_applied_files,
                 'output_files': output_files,
                 #'output_individual_files': output_individual_files
@@ -134,42 +135,34 @@ class WorkflowEcomms(Workflow):
                 input=input_files,
                 output=validated_files
             )
-            '''
-            convert_task = ConvertEcommsToDocTask(
+            xform_task = CreatePresentationDocument(
                 config=CONFIG,
-                input=converted_files,
+                input=validated_files,
+                output=xform_files
+            )
+            apply_models_task = ApplyTextModelsTask(
+                config=CONFIG,
+                input=xform_files,
                 output=models_applied_files
             )
             '''
-            apply_models_task = ApplyTextModelsTask(
-                #apply_models_task = TextClassifyEcommTask(
-                config=CONFIG,
-                input=validated_files,
-                output=models_applied_files,
-                #name_diff='.pickle'
-            )
             output_task = ExportEcommsToVdiWorkspaceTask(
                 config=CONFIG,
                 input=models_applied_files,
                 output=output_files
             )
             '''
-            output_task = ExportVdiWorkspaceTask(
+            output_task = ExportToVdiWorkspaceTask(
                 config=CONFIG,
                 input=models_applied_files,
-                output=output_files
+                output=output_files,
+                vdi_schema=None
             )
-            output_files_task = ExportIndividualPdfTask(
-                config=CONFIG,
-                input=models_applied_files,
-                output=output_files
-            )'''
             tasks = [
                 validate_task,
-                #crawl_task,
-                #convert_task,
+                xform_task,
                 apply_models_task,
-                output_task
+                output_task,
                 #output_files_task
                 ]
             self.tasks = tasks
