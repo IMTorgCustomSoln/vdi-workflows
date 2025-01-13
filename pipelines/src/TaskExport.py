@@ -108,8 +108,10 @@ class ExportToVdiWorkspaceTask(Task):
 
     def __init__(self, config, input, output, vdi_schema):
         super().__init__(config, input, output)
+        if not vdi_schema:
+            vdi_schema = self.config['WORKING_DIR'] / 'workspace_schema_v0.2.1.json'
         self._vdi_schema = File(vdi_schema, filetype='json').load_file(return_content=True)
-    
+
     #def convert_pipeline_record_to_table_record(self, pipeline_record):
     #    pass
 

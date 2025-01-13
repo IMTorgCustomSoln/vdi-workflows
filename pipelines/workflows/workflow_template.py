@@ -16,11 +16,11 @@ __license__ = "AGPL-3.0"
 
 
 from src.Workflow import Workflow
-from src.Files import Files
+from src.Files import File, Files
 
-from src.TaskTransform import ApplyTextModelsTask
-from src.TaskImport import ImportFromLocalFileTask
-from src.TaskExport import ExportToLocalTableTask
+from src.TaskImport import ImportBatchDocsFromLocalFileTask 
+from src.TaskTransform import CreatePresentationDocument, ApplyTextModelsTask
+from src.TaskExport import ExportToVdiWorkspaceTask
 """TODO
 from src.Report import (
     TaskStatusReport,
@@ -38,7 +38,6 @@ from config._constants import (
 )
 
 from pathlib import Path
-import json
 import time
 import sys
 
@@ -66,9 +65,9 @@ class WorkflowTemplate(Workflow):
             #working dirs
             CONFIG['WORKING_DIR'].mkdir(parents=True, exist_ok=True)
             DIR_VALIDATED = CONFIG['WORKING_DIR'] / '1_VALIDATED'
-            #DIR_CONVERTED = CONFIG['WORKING_DIR'] / '2_CONVERTED'
-            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '2_MODELS_APPLIED'
-            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '3_OUTPUT'
+            DIR_XFORM = CONFIG['WORKING_DIR'] / '2_XFORM'
+            DIR_MODELS_APPLIED = CONFIG['WORKING_DIR'] / '3_MODELS_APPLIED'
+            DIR_OUTPUT = CONFIG['WORKING_DIR'] / '4_OUTPUT'
             DIR_ARCHIVE = CONFIG['WORKING_DIR'] / 'ARCHIVE'
             CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
 
@@ -76,48 +75,60 @@ class WorkflowTemplate(Workflow):
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
-                extension_patterns=['.txt', '.md']
+                extension_patterns=['.yml']
                 )
             validated_files = Files(
                 name='validated',
                 directory=DIR_VALIDATED,
-                extension_patterns=['.json']
+                extension_patterns=['.pickle']
+                )
+            xform_files = Files(
+                name='xform',
+                directory=DIR_XFORM,
+                extension_patterns=['.pickle']
                 )
             models_applied_files = Files(
                 name='models_applied',
                 directory=DIR_MODELS_APPLIED,
-                extension_patterns=['.json']
+                extension_patterns=['.pickle']
                 )
             output_files = Files(
                 name='output',
                 directory=DIR_OUTPUT,
-                extension_patterns=['.csv']
+                extension_patterns=['.gz']
                 )
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
+                'xform_files': xform_files,
                 'models_applied_files': models_applied_files,
                 'output_files': output_files
             }
             #tasks
-            validate_task = ImportFromLocalFileTask(
-                config=CONFIG,
+            import_task = ImportBatchDocsFromLocalFileTask(
+                config=CONFIG, 
                 input=input_files,
                 output=validated_files
-            )
-            apply_models_task = ApplyTextModelsTask(
+                )
+            xform_task = CreatePresentationDocument(
                 config=CONFIG,
                 input=validated_files,
+                output=xform_files
+                )
+            apply_models_task = ApplyTextModelsTask(
+                config=CONFIG,
+                input=xform_files,
                 output=models_applied_files
             )
-            
-            output_task = ExportToLocalTableTask(
+            output_task = ExportToVdiWorkspaceTask(
                 config=CONFIG,
                 input=models_applied_files,
-                output=output_files
+                output=output_files,
+                vdi_schema=None
             )
             tasks = [
-                validate_task,
+                import_task,
+                xform_task,
                 apply_models_task,
                 output_task
                 ]
@@ -146,10 +157,11 @@ class WorkflowTemplate(Workflow):
             workspace_schema = load.get_schema_from_workspace(filepath)
         self.config['WORKSPACE_SCHEMA'] = workspace_schema
         schema = self.config['WORKING_DIR'] / 'workspace_schema_v0.2.1.json'
-        with open(schema, 'w') as f:
-            json.dump(workspace_schema, f)
-        #TODO:validate file paths
-        return True
+        schema_file = File(schema, 'json')
+        schema_file.load_file(return_content=False)
+        schema_file.content = workspace_schema
+        check = schema_file.export_to_file()
+        return check
     
     def run(self):
         """Run the workflow of tasks"""

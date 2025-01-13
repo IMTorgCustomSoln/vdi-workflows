@@ -77,7 +77,7 @@ def test_multiple_files_ExportToLocalTableTask():
     export_files = Files(
        name='export',
        directory=export_dir,
-       extension_patterns=['.pickle']
+       extension_patterns=['.csv']
        )
     name_diff = ''
     #implement
@@ -154,7 +154,7 @@ def test_single_file_ExportToVdiWorkspaceTask():
     export_files = Files(
        name='export',
        directory=export_dir,
-       extension_patterns=['.pickle']
+       extension_patterns=['.gz']
        )
     name_diff = ''
     #implement
@@ -229,7 +229,7 @@ def test_multiple_files_ExportToVdiWorkspaceTask():
     export_files = Files(
        name='export',
        directory=export_dir,
-       extension_patterns=['.pickle']
+       extension_patterns=['.gz']
        )
     name_diff = ''
     #implement
@@ -252,7 +252,7 @@ def test_multiple_files_ExportToVdiWorkspaceTask():
       config, 
       classified_files, 
       export_files,
-      vdi_schema
+      vdi_schema = vdi_schema
       )
     check = import_task.run()
     check = xform_task.run()
