@@ -19,30 +19,8 @@ from src.modules.parse_ediscovery.loadfile import (
 )
 from src.modules.parse_orgchart.orgchart import OrgChartParser
 from src.TaskImport import ImportValidateCombineEcommsTask
-#from src.TaskTransform import TextClassifyEcommTask
 from src.TaskTransform import CreatePresentationDocument, ApplyTextModelsTask, ApplyTextModelsTask
 from src.TaskExport import ExportToVdiWorkspaceTask
-"""
-from src.TaskComponents import (
-    #ImportValidateCombineEcommsTask,
-    #ConvertEcommsToDocTask,
-    #ApplyModelsTask,
-    #TextClassifyEcommTask,
-
-    #ExportVdiWorkspaceTask,
-    #ExportIndividualPdfTask,
-
-    #ConvertUrlDocToPdf,
-    #ExportVdiWorkspaceTask,
-    #ExportEcommsToVdiWorkspaceTask
-)
-
-from src.Report import (
-    TaskStatusReport,
-    MapBatchFilesReport,
-    ProcessTimeAnalysisReport
-)
-"""
 from src.models import prepare_models
 from src.io import load
 #from tests.estimate_processing_time import ProcessTimeQrModel
@@ -114,20 +92,12 @@ class WorkflowEcomms(Workflow):
                 directory=DIR_OUTPUT,
                 extension_patterns=['.gz']
                 )
-            '''
-            output_individual_files = Files(
-                name='output',
-                directory=DIR_OUTPUT,
-                extension_patterns=['.pdf']
-                )
-            '''
             self.files = {
                 'input_files': input_files,
                 'validated_files': validated_files,
                 'xform_files': xform_files,
                 'models_applied_files': models_applied_files,
-                'output_files': output_files,
-                #'output_individual_files': output_individual_files
+                'output_files': output_files
             }
             #tasks
             validate_task = ImportValidateCombineEcommsTask(
@@ -145,13 +115,6 @@ class WorkflowEcomms(Workflow):
                 input=xform_files,
                 output=models_applied_files
             )
-            '''
-            output_task = ExportEcommsToVdiWorkspaceTask(
-                config=CONFIG,
-                input=models_applied_files,
-                output=output_files
-            )
-            '''
             output_task = ExportToVdiWorkspaceTask(
                 config=CONFIG,
                 input=models_applied_files,

@@ -20,11 +20,15 @@ from datetime import datetime
 from config import config_env
 from workflows import (
     workflow_asr,
-    workflow_site_scrape
+    workflow_site_scrape,
+    workflow_ecomms,
+    workflow_template
 )
 workflow_options = {
     'workflow_asr': workflow_asr.workflow_asr,
-    'workflow_site_scrape': workflow_site_scrape.workflow_site_scrape
+    'workflow_site_scrape': workflow_site_scrape.workflow_site_scrape,
+    'workflow_ecomms': workflow_ecomms.workflow_ecomms,
+    'workflow_template': workflow_template.workflow_template
     }
 
 
