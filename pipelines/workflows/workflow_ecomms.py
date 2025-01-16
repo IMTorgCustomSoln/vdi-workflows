@@ -25,10 +25,7 @@ from src.models import prepare_models
 from src.io import load
 #from tests.estimate_processing_time import ProcessTimeQrModel
 
-from config._constants import (
-    logging_dir,
-    logger
-)
+from config._constants import logger
 
 from pathlib import Path
 import json
@@ -138,7 +135,7 @@ class WorkflowEcomms(Workflow):
         """Prepare by loading train,test data and refine models"""
         self.config['LOGGER'].info("Begin prepare_models")
         check_prepare_keywords = prepare_models.validate_key_terms(self.config)
-        check_prepare_model = prepare_models.finetune_classification_model(self.config)
+        check_prepare_model = True    #prepare_models.finetune_classification_model(self.config)
         if not (check_prepare_keywords | check_prepare_model): 
             self.config['LOGGER'].info(f"keywords or models failed to prepare")
             return False
@@ -146,7 +143,16 @@ class WorkflowEcomms(Workflow):
         return True
 
     def prepare_workspace(self):
-        """Prepare workspace with output schema and file paths"""
+        """Prepare workspace, including: create .mdat files, create output schema, 
+        and validate file paths.
+        
+        Note:
+        The .mdat files are foundational to the process primarily because they ensure:
+        i) consistent columns - mapped using `rename_fields`
+        ii) TODO: validated path links - `'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'`
+        The .mdat files may need to be created manually, but should fit the directory
+        structure to work with the `run()` method. 
+        """
         #prepare schema
         filepath = Path('./tests/data/VDI_ApplicationStateData_v0.2.1.gz')
         if filepath.is_file():
@@ -155,10 +161,10 @@ class WorkflowEcomms(Workflow):
         schema = self.config['WORKING_DIR'] / 'workspace_schema_v0.2.1.json'
         with open(schema, 'w') as f:
             json.dump(workspace_schema, f)
-        #validate file paths
+        #prepare modified .dat file, .mdat, with consistent columns
         if not self.config['INPUT_DIR'].is_dir():
             raise Exception
-        fields = {
+        rename_fields = {
             'Control Number':'documentID', 'Custodian':'custodian',
             'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
             'number of attachments': 'numberOfAttachments',
@@ -177,7 +183,7 @@ class WorkflowEcomms(Workflow):
                     separator_str='|', 
                     remove_chars=[], 
                     new_separator=SEP,
-                    rename_fields = fields
+                    rename_fields = rename_fields
                     )
                 if not check:
                     raise Exception
@@ -189,7 +195,10 @@ class WorkflowEcomms(Workflow):
         return True
     
     def run(self):
-        """Run the workflow of tasks"""
+        """Run the workflow of tasks.  Ensure `prepare_workspace()` results are
+        in-place: directory structure, .mdat files, .mdat file links
+        
+        """
         self.config['LOGGER'].info('begin process')
         self.config['START_TIME'] = time.time()
         for task in self.tasks:

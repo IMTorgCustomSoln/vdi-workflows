@@ -98,11 +98,11 @@ class ImportValidateCombineEcommsTask(Task):
         self.target_extension=['.mdat','.txt','.eml','.msg']
 
     def run(self):
-        #orgchart
+        #load orgchart
         file_path_csv = self.config['INPUT_DIR'] / 'org1.csv'
         orgchart_parser = OrgChartParser(file_path=file_path_csv)
         check = orgchart_parser.validate()
-        #msg records
+        #load and collect msg records
         dfdats = pd.DataFrame()
         file_collection = collect_workspace_files(self.config['INPUT_DIR'])
         for idx, volume_key in enumerate(file_collection.keys()):
@@ -134,7 +134,7 @@ SUBJECT: {row['subject']}\n
                     else:
                         contents.append(None)
                 dfdat['text'] = contents
-                dfdats['volume'] = volume_key
+                dfdat['volume'] = volume_key
                 dfdats = pd.concat([dfdats, dfdat])
             else:
                 raise Exception
@@ -146,30 +146,31 @@ SUBJECT: {row['subject']}\n
         #cols=['subject','documentID','Date Received','from']
         #dfdats[['documentID','groupID','Date Received','from','to','subject','text']]
 
-        #output to pipeline_record by subject
+        #group by subject to create dialogues
+        # collect msgs into one pipeline_record
         for subject in list(dfdats['subject'].unique()):
             dfsubj = dfdats[dfdats['subject']==subject].reset_index()
             filename = f"filegrp-subj_{dfsubj['documentID'][0]}_{dfsubj.shape[0]}"
             ftype = self.output_files.extension_patterns[0].replace('.','')
             output_file = self.output_files.directory / f"{filename}.{ftype}"
 
-            #pipeline record
+            #output to pipeline_record
             outfile = File(output_file, ftype)
             outfile.load_file(return_content=False)
             record = self.create_pipeline_record_from_file(outfile, source_type='multiple_files')
-            rec = dfsubj.to_dict('records')
-            record.added_sources = rec
-            body_pages = {idx:page['text'] for idx,page in enumerate(rec)}
-            doc = {
+            dialogue_rec = dfsubj.to_dict('records')
+            record.added_sources = dialogue_rec
+            body_pages = {idx:page['text'] for idx,page in enumerate(dialogue_rec)}
+            dialogue_doc = {
                 'filetype': '.txt',
-                'date': rec[0]['Date Received'].split(' ')[0],
-                'filepath': rec[0]['textLink'],
-                'body': rec[0]['text'],
+                'date': dialogue_rec[0]['Date Received'].split(' ')[0],
+                'filepath': dialogue_rec[0]['textLink'],
+                'body': dialogue_rec[0]['text'],
                 'body_pages': body_pages,
                 #'page_nos': max([int(pg) for pg in list(body_pages.keys())]),
-                'clean_body': rec[0]['text'].replace('\n','')
+                'clean_body': dialogue_rec[0]['text'].replace('\n','')
             }
-            record.collected_docs = [doc]
+            record.collected_docs = [dialogue_doc]
             #TODO: add to document Extractor()
             #email_parser = EmailParser(file_path=eml, max_depth=2)
             #results = email_parser.parse()

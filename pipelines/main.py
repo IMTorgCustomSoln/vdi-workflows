@@ -7,13 +7,8 @@ __author__ = "Jason Beach"
 __version__ = "0.1.0"
 __license__ = "AGPL-3.0"
 
-import os
 import sys
 import argparse
-from pathlib import Path
-import time
-import json
-from datetime import datetime
 
 
 #register here
@@ -39,6 +34,7 @@ def main(args):
     if args.workflow in workflow_options.keys():
         workflow = workflow_options[args.workflow]
         getattr(workflow, args.task)()
+    sys.exit()
 
 
 
