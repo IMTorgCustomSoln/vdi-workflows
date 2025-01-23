@@ -172,17 +172,22 @@ def copy_dat_file_with_fixed_format(
     new_separator='\x14', 
     rename_fields={
         #document control and source
-        'Control Number':'documentId', 'Custodian':'custodian',
+        'Control Number':'documentId', 'DocID':'documentId',
+        'Custodian':'custodian', 'All Custodians':'allCustodians', 'AllCustodians':'allCustodians', 
         #groupid
-        'Group Identifier': 'groupId', 'Parent Document ID': 'parentDocumentId',
+        'Group Identifier': 'groupId', 'groupID': 'groupId', 'GroupIdentifier': 'groupId', 
+        'Parent Document ID': 'parentDocumentId', 'ParentID': 'parentId',
         #attachments
-        'number of attachments': 'numberOfAttachments',
+        'number of attachments': 'numberOfAttachments', 'Attachment ID':'attachmentId', 'AttachmentID':'attachmentId', 
         #doc / file info
-        'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
+        'Document Extension': 'documentExtension', 'Filename': 'fileName', 'filename': 'fileName', 'Filesize':'fileSize', 
+        'Page Count':'pageCount', 'PageCount':'pageCount', 
         #msg info
-        'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+        'Email Subject': 'emailSubject','EmailSubject': 'emailSubject',  'Subject':'subject',
+        'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+        'From':'from', 'To':'to', 'CC':'cc',
         #references
-        'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
+        'Extracted Text':'textLink', 'FILE_PATH':'nativeLink', 'TextLink':'textLink', 'NativeLink':'nativeLink'
         },
     return_df=True
     ):
