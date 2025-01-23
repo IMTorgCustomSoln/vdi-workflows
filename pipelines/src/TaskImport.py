@@ -179,3 +179,89 @@ SUBJECT: {row['subject']}\n
             self.config['LOGGER'].info(f"exported processed file to: {filepath}")
         self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(self.pipeline_record_ids)} of {dfdats.shape[0]} files matching {self.target_extension}")
         return True
+    
+
+class ImportCombinedDatsEcommsTask(Task):
+    """Import e-communication data that is pre-processed into
+    combined_dats.pickle using `script-combine_dats_to_pickle.py`
+    
+    ecomms types:
+    * email - .eml, .msg, .pst, .mbox, ...
+    * chat - Teams, Bloomburg: .json
+    * legal - .dat, .opt, .txt, ...
+    * org chart - .csv
+    """
+
+    def __init__(self, config, input, output):
+        super().__init__(config, input, output)
+        self.target_extension=['.mdat','.txt','.eml','.msg']
+
+    def run(self):
+        #TODO:load orgchart
+        #file_path_csv = self.config['INPUT_DIR'] / 'org1.csv'
+        #orgchart_parser = OrgChartParser(file_path=file_path_csv)
+        #check = orgchart_parser.validate()
+        #load and collect msg records
+        file = list(self.get_next_run_file())[0]
+        dfdats = pd.read_pickle(file.filepath)
+        dfdats['text'] = None
+        contents = []
+        #TODO:there is too much presentation logic here
+        for idx, row in enumerate(dfdats.to_dict('records')):
+            txt_file = Path(row['textLink'])
+            if txt_file.suffix in self.target_extension:
+                with open(txt_file, 'r') as f:
+                    content = f.read()
+                    #content = txt + '\n' + f.read()
+                    formatted_content = f'''{row['textLink']}\n
+FROM: {row['from']}\n
+TO: {row['to']}\n
+SUBJECT: {row['subject']}\n
+{content}\n
+'''
+                    contents.append(formatted_content )
+            else:
+                contents.append(None)
+            dfdats.iloc[idx]['text'] = contents
+        #group into discussions ('subject')
+        dfdats.reset_index(inplace=True, drop=True)
+        dfdats.sort_values(by=['subject','documentId','Date Received','from'], inplace=True, ascending=True)
+        #dfdats['Date Received'] = dfdats['Date Received'].astype(str)
+        #cols=['subject','documentID','Date Received','from']
+        #dfdats[['documentID','groupID','Date Received','from','to','subject','text']]
+
+        #group by subject to create dialogues
+        # collect msgs into one pipeline_record
+        for subject in list(dfdats['subject'].unique()):
+            dfsubj = dfdats[dfdats['subject']==subject].reset_index()
+            filename = f"filegrp-subj_{dfsubj['documentId'][0]}_{dfsubj.shape[0]}"
+            ftype = self.output_files.extension_patterns[0].replace('.','')
+            output_file = self.output_files.directory / f"{filename}.{ftype}"
+
+            #output to pipeline_record
+            outfile = File(output_file, ftype)
+            outfile.load_file(return_content=False)
+            record = self.create_pipeline_record_from_file(outfile, source_type='multiple_files')
+            dialogue_rec = dfsubj.to_dict('records')
+            record.added_sources = dialogue_rec
+            body_pages = {idx:page['text'] for idx,page in enumerate(dialogue_rec)}
+            tmp = dialogue_rec[0]
+            tmp['text'] = type(tmp['text'])==str if tmp['text'] else ''
+            dialogue_doc = {
+                'filetype': '.txt',
+                'date': str(tmp['sentDt']).split(' ')[0],
+                'filepath': tmp['textLink'],
+                'body': tmp['text'],
+                'body_pages': body_pages,
+                #'page_nos': max([int(pg) for pg in list(body_pages.keys())]),
+                'clean_body': tmp['text'].replace('\n','')
+            }
+            record.collected_docs = [dialogue_doc]
+            #TODO: add to document Extractor()
+            #email_parser = EmailParser(file_path=eml, max_depth=2)
+            #results = email_parser.parse()
+            #result = outfile.export_to_file()
+            filepath = self.export_pipeline_record_to_file(record)
+            self.config['LOGGER'].info(f"exported processed file to: {filepath}")
+        self.config['LOGGER'].info(f"end ingest file location from {self.input_files.directory.resolve().__str__()} with {len(self.pipeline_record_ids)} of {dfdats.shape[0]} files matching {self.target_extension}")
+        return True

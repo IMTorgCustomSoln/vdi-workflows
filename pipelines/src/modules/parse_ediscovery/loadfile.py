@@ -42,13 +42,30 @@ def collect_workspace_files(cwdir):
             record["native_dir"] = native_dir[0]
         else:
             raise Exception
+        text_dir = [dir for dir in dirTgt.rglob('**/*') if (dir.is_dir() and dir.stem=='TEXT')]
+        if len(text_dir)==1:
+            record["text_dir"] = text_dir[0]
+        else:
+            raise Exception
         data_index[dirTgt.stem] = record
     return data_index
 
 
 def get_linux_path_from_windows(win_path):
-        posix = str(PurePosixPath(PureWindowsPath(win_path)))
-        return posix
+        if '\\' not in win_path:
+            return win_path
+        else:
+            posix = str(PurePosixPath(PureWindowsPath(win_path)))
+            return posix
+
+
+def complete_path(p, vol_p):
+    vol_key = vol_p.name
+    lin_p = Path( get_linux_path_from_windows(p) )
+    idx = lin_p.parents._parts.index(vol_key)
+    end_path = '/'.join(lin_p.parents._parts[idx+1:])
+    whole_path = vol_p / end_path
+    return whole_path
 
 
 def validate_files(
@@ -155,9 +172,9 @@ def copy_dat_file_with_fixed_format(
     new_separator='\x14', 
     rename_fields={
         #document control and source
-        'Control Number':'documentID', 'Custodian':'custodian',
+        'Control Number':'documentId', 'Custodian':'custodian',
         #groupid
-        'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+        'Group Identifier': 'groupId', 'Parent Document ID': 'parentDocumentId',
         #attachments
         'number of attachments': 'numberOfAttachments',
         #doc / file info
@@ -166,7 +183,8 @@ def copy_dat_file_with_fixed_format(
         'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
         #references
         'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
-        }
+        },
+    return_df=True
     ):
     """Copy the dat file (in utf-8 with BOM format) to a new file using utf-8 only encoding.
 
@@ -200,7 +218,11 @@ def copy_dat_file_with_fixed_format(
         print('dfdat columns')
         print(dfdat.columns)
         print(e)
-    return True
+    if return_df:
+        return dfdat
+    else:
+        return True
+
 
 
 def get_file_names(dir_path):

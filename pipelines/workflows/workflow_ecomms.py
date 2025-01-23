@@ -18,7 +18,7 @@ from src.modules.parse_ediscovery.loadfile import (
     copy_dat_file_with_fixed_format
 )
 from src.modules.parse_orgchart.orgchart import OrgChartParser
-from src.TaskImport import ImportValidateCombineEcommsTask
+from src.TaskImport import ImportValidateCombineEcommsTask, ImportCombinedDatsEcommsTask
 from src.TaskTransform import CreatePresentationDocument, ApplyTextModelsTask, ApplyTextModelsTask
 from src.TaskExport import ExportToVdiWorkspaceTask
 from src.models import prepare_models
@@ -40,7 +40,7 @@ class WorkflowEcomms(Workflow):
         CONFIG = {}
         try:
             #user input
-            CONFIG['INPUT_DIR'] = Path('./tests/test_wf_ecomms/data_email/')
+            CONFIG['INPUT_DIR'] = Path('./tests/test_wf_ecomms/data_ediscovery/extended_layout')
             CONFIG['TRAINING_DATA_DIR'] = Path('./src/data/account/') 
             CONFIG['WORKING_DIR'] = Path('./tests/test_wf_ecomms/tmp/')
             CONFIG['OUTPUT_DIRS'] = [Path('./tests/test_wf_ecomms/tmp/OUTPUT')]
@@ -63,10 +63,17 @@ class WorkflowEcomms(Workflow):
             #CONFIG['DIR_ARCHIVE'] = DIR_ARCHIVE
 
             #files
+            """
             input_files = Files(
                 name='input',
                 directory=CONFIG['INPUT_DIR'],
                 extension_patterns=['.mdat','.txt','.eml','.msg']
+                )
+            """
+            input_files = Files(
+                name='input',
+                directory=CONFIG['INPUT_DIR'],
+                extension_patterns=['.pickle']
                 )
             validated_files = Files(
                 name='validated',
@@ -97,7 +104,14 @@ class WorkflowEcomms(Workflow):
                 'output_files': output_files
             }
             #tasks
+            """
             validate_task = ImportValidateCombineEcommsTask(
+                config=CONFIG,
+                input=input_files,
+                output=validated_files
+            )
+            """
+            validate_task = ImportCombinedDatsEcommsTask(
                 config=CONFIG,
                 input=input_files,
                 output=validated_files
@@ -165,29 +179,30 @@ class WorkflowEcomms(Workflow):
         if not self.config['INPUT_DIR'].is_dir():
             raise Exception
         rename_fields = {
-            'Control Number':'documentID', 'Custodian':'custodian',
-            'Group Identifier': 'groupID', 'Parent Document ID': 'parentDocumentID',
+            'Control Number':'documentId', 'Custodian':'custodian',
+            'Group Identifier': 'groupId', 'Parent Document ID': 'parentDocumentId',
             'number of attachments': 'numberOfAttachments',
             'Document Extension': 'documentExtension', 'Filename': 'fileName', 'Filesize':'fileSize',
-            'Email Subject': 'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
+            'Email Subject': 'emailSubject', 'Subject':'subject', 'Email From': 'from', 'Email To': 'to', 'Email CC': 'cc',
             'Extracted Text':'textLink', 'FILE_PATH':'nativeLink'
             }
         file_collection = collect_workspace_files(self.config['INPUT_DIR'])
-        for volume_key in file_collection.keys():
-            if not file_collection[volume_key]['mdat']:
-                new_file = file_collection[volume_key]['dat'].parent / 'new_file.mdat'
-                SEP = '\x14'
-                check = copy_dat_file_with_fixed_format(
-                    bom_file = file_collection[volume_key]['dat'], 
-                    new_file = new_file, 
-                    separator_str='|', 
-                    remove_chars=[], 
-                    new_separator=SEP,
-                    rename_fields = rename_fields
-                    )
-                if not check:
-                    raise Exception
-                file_collection[volume_key]['mdat'] = new_file
+        if False:
+            for volume_key in file_collection.keys():
+                if not file_collection[volume_key]['mdat']:
+                    new_file = file_collection[volume_key]['dat'].parent / 'new_file.mdat'
+                    SEP = '\x14'
+                    check = copy_dat_file_with_fixed_format(
+                        bom_file = file_collection[volume_key]['dat'], 
+                        new_file = new_file, 
+                        separator_str='|', 
+                        remove_chars=[], 
+                        new_separator=SEP,
+                        rename_fields = rename_fields
+                        )
+                    if not check:
+                        raise Exception
+                    file_collection[volume_key]['mdat'] = new_file
         #validate input files, ie org chart
         file_path_csv = self.config['INPUT_DIR'] / 'org1.csv'
         orgchart_parser = OrgChartParser(file_path=file_path_csv)
